@@ -1,0 +1,22 @@
+\name{buildGenDF}
+\alias{buildGenDF}
+\title{Returns the data frame of labels and plot coordinates of all ancestors and descendants of a variety}
+\usage{
+buildGenDF(v1, mAnc, mDes, tree)
+}
+\arguments{
+  \item{v1}{variety of interest}
+
+  \item{mAnc}{maximum number of ancestors of v1 to be
+  shown}
+
+  \item{mDes}{maximum number of descendants of v1 to be
+  shown}
+
+  \item{tree}{the tree}
+}
+\description{
+Returns the data frame that includes labels and plot coordinates of all ancestors and descendants of
+a variety. Users can specify the maximum number of ancestors and descendants to display
+}
+

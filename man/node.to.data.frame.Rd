@@ -1,0 +1,23 @@
+\name{node.to.data.frame}
+\alias{node.to.data.frame}
+\title{Returns the data frame representation of all ancestors and descendants of a variety}
+\usage{
+node.to.data.frame(tlist, branch = 0, par.id = NA, id.offset = 1)
+}
+\arguments{
+  \item{tlist}{list of varieties}
+
+  \item{branch}{of particular variety in tree}
+
+  \item{par.id}{the id of the parent of the variety}
+
+  \item{id.offset}{value to ensure labels are at unique
+  locations}
+}
+\description{
+Converts the list-style-tree to a data frame, where each variety has an id value
+and references its' parent's id value. ID value ranges correspond to generation.
+It is possible that with more complex trees the range of id values may need to
+expand to reduce the probability of two varieties being assigned the same id value.
+}
+

@@ -1,0 +1,39 @@
+<!--
+%\VignetteEngine{knitr::knitr}
+%\VignetteDepends{knitr}
+%\VignetteIndexEntry{phyViz: Phylogenetic Visualization}
+
+-->
+
+How to use the package phyViz
+========================================================
+
+The very first thing to do is to load the necessary libraries and the example tree datatype (tree.rda). 
+
+```{r}
+library(phyViz)
+library(plyr)
+library(reshape2)
+library(ggplot2)
+library(stringr)
+library(igraph)
+load(system.file("doc","example","tree.rda",package="phyViz"))
+```
+
+Now that you have uploaded the raw tree.rda file, you can observe the first ten lines of it:
+
+```{r}
+head(tree)
+```
+
+You can convert it to the treeGraph format that will be used in subsequent functions:
+
+#```{r}
+#treeGraph = processTreeGraph(tree)
+#head(treeGraph)
+#```
+
+Convert the data frame object into an object that can be read by igraph package
+
+mygraph = graph.data.frame(treeGraph, directed= T)
+

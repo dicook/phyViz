@@ -1,0 +1,861 @@
+#' Process the tree graph
+#' 
+#' Processes the tree into a treeGraph object with appropriately labeled columns and format for analysis.
+#' @param t tree
+#' @export
+processTreeGraph = function(t){
+  treeGraph = as.data.frame(cbind(t$child, t$parent))
+  # Remove any rows with "NA" relationship (340*2)
+  treeGraph = treeGraph[-which(is.na(t$parent)),]
+  # Add an edge weight to each pair of vertices (all of weight value equal to one)
+  treeGraph = cbind(treeGraph, rep(1, dim(treeGraph)[1]))
+  # Add column names the tree (treeGraph has dimensions 340*3)
+  colnames(treeGraph) = c("child","parent","edgeWt")
+  treeGraph
+}
+
+#' Determine if a variety is a parent of another
+#' 
+#' Returns a boolean variable for whether the second variety is a parent of the first variety
+#' @param child possible child variety
+#' @param parent possible parent variety
+#' @param tree tree
+#' @export
+#' @examples
+#' isParent("Essex","Young",tree)
+#' isParent("Young","Essex",tree)
+isParent = function(child, parent, tree){
+  return (tree[which(tree$child==child),]$parent[1] == parent
+  || tree[which(tree$child==child),]$parent[2] == parent)
+}
+
+#' Determine if a variety is a child of another
+#' 
+#' Returns a boolean variable for whether the first variety is a child of the second variety
+#' @param child possible child variety
+#' @param parent possible parent variety
+#' @param tree tree
+#' @export
+#' @examples
+#' isChild("Essex","Young",tree)
+#' isChild("Young","Essex",tree)
+isChild = function(child, parent, tree){
+  for (i in 1:length(which(tree$parent==parent))){
+    # Only consider if the parent is indicated in the tree
+    if (sum(which(tree$parent==parent))!=0){
+      if (tree[which(tree$parent==parent),]$child[i] == child){
+        return (TRUE)
+      }      
+    }
+  }
+  return (FALSE)
+}
+
+#' Determine the year of a variety
+#' 
+#' Returns the documented year of the inputted variety
+#' @param v1 the variety
+#' @param tree tree
+#' @export
+#' @examples
+#' getYear("Essex",tree)
+#' getYear("Tokyo",tree)
+getYear = function(v1, tree){
+  return(tree[which(tree$child == v1),]$year[1])
+}
+
+#' Determine the degree between two varieties
+#' 
+#' Returns the degree (distance between unweighted edges) between two varieties, where an edge
+#' represents a parent-child relationship
+#' @param v1 the first variety
+#' @param v2 the second variety
+#' @param mygraph mygraph
+#' @export
+#' @examples
+#' getDegree("Brim","Bedford",mygraph)
+getDegree = function(v1, v2, mygraph){
+  path = getPath(v1, v2, F, mygraph)
+  # The degree between two vertices is equal to one less than the number of nodes in the shortest path
+  return(length(path$pathVertices)-1)
+}
+
+#' Determine basic statistics of the graph object
+#' 
+#' Returns basic statistics of the graph object (number of nodes, number of edges, whether or not the
+#' whole graph is connected, number of components, average path length, graph diameter, etc.)
+#' @param mygraph graph representation of the tree
+#' @export
+#' @examples
+#' getBasicStatistics(mygraph)
+getBasicStatistics = function(mygraph){
+  retStats = list()
+  # Get edge and node count from "structure.info" function of igraph
+  numNodes = vcount(mygraph)
+  numEdges = ecount(mygraph)
+  # Determine if the graph is connected or not from "clusters" function of igraph
+  isConnected = is.connected(mygraph)
+  # Determine the number of connected components in the graph from "clusters"
+  # function of igraph
+  numComponents = no.clusters(mygraph)
+  # Compute the average path length of the graph
+  connected = FALSE
+  if(isConnected)
+  {
+    connected = TRUE
+  }
+  avePathLength = average.path.length(mygraph, directed=F, unconnected= !isConnected)
+  # Determine the log(N) value of the graph
+  logN = log(numNodes)
+  # Determine the network diameter
+  graphDiameter = diameter(mygraph, directed = F, unconnected = !isConnected, weights = NULL)
+  # Create a list of statistics
+  retStats = list(isConnected = isConnected, numComponents = numComponents, avePathLength = avePathLength,
+                 graphDiameter = graphDiameter, numNodes = numNodes, numEdges = numEdges, logN = logN)
+  # Return the list of statistis
+  retStats
+}
+
+#' Determine the degree between two varieties
+#' 
+#' Determines the shortest path between the two inputted vertices, and takes into
+#' account whether or not the graph is directed. If there is a path, the list of vertices of the
+#' path will be returned. If there is not a path, a list of character(0) will be returned. Note:
+#' For a directed graph, the direction matters. However, this function will check both directions
+#' and return the path if it exists.
+#' @param v1 the first variety
+#' @param v2 the second variety
+#' @param isDirected boolean whether or not the graph is directed
+#' @param mygraph mygraph
+#' @export
+#' @examples
+#' getPath("Brim","Bedford",mygraph)
+#' getPath("Tokyo","Volstate",mygraph)
+getPath = function(v1, v2, isDirected, mygraph){
+  retPath = list()
+  yearVertices = character()
+  pathVertices = character()
+  # If the tree is directed
+  if (isDirected){
+    # We need to look at both forward and reverse cases of directions, because the user may not know
+    # the potential direction of a path between the two vertices
+    pathVIndicesForward = get.shortest.paths(mygraph, v1, v2, weights = NA, output="vpath")$vpath[[1]]
+    pathVIndicesReverse = get.shortest.paths(mygraph, v2, v1, weights = NA, output="vpath")$vpath[[1]]
+    # If there is a path in the forward direction, then we save the names of the vertices in that order
+    if (length(pathVIndicesForward) != 0){
+      for (i in 1:length(pathVIndicesForward)){
+        pathVertices = c(pathVertices, get.vertex.attribute(mygraph, "name", index=pathVIndicesForward[i]))
+        yearVertices = c(yearVertices, getYear(pathVertices[i], tree))
+      }
+      retPath = list(pathVertices = pathVertices, yearVertices = yearVertices)
+    }
+    # If there is a path in the reverse direction, then we save the names of the vertices in that order
+    if (length(pathVIndicesReverse) != 0){
+      for (i in 1:length(pathVIndicesReverse)){
+        pathVertices = c(pathVertices, get.vertex.attribute(mygraph, "name", index=pathVIndicesReverse[i]))
+        yearVertices = c(yearVertices, getYear(pathVertices[i], tree))
+      }
+      retPath = list(pathVertices = pathVertices, yearVertices = yearVertices)
+    }
+  }
+  # If the tree is undirected
+  if (!isDirected){
+    mygraph = graph.data.frame(treeGraph, directed= F)
+    # The direction does not matter, any shortest path between the vertices will be listed
+    pathVIndices = get.shortest.paths(mygraph, v1, v2, weights = NA, output="vpath")$vpath[[1]]
+    if (length(pathVIndices) != 0){
+      for (i in 1:length(pathVIndices)){
+        pathVertices = c(pathVertices, get.vertex.attribute(mygraph, "name", index=pathVIndices[i]))
+        yearVertices = c(yearVertices, getYear(pathVertices[i], tree))
+      }
+      retPath = list(pathVertices = pathVertices, yearVertices = yearVertices)
+    }
+  }
+  if(length(retPath)==0){
+    print("Warning: There is no path between those two vertices")
+  }
+  # Return the shortest path, if it exists
+  retPath
+}
+
+#' Build data frame for path representation
+#' 
+#' This function builds a dataframe of information about the path object that can later be used
+#' for visualization. The dataframe includes "label" (name of each variety) of each node,
+#' "x" (the year of the variety, the x-axis value for which the label and
+#' incoming/outgoing edges are centered), "y" (the y-axis value, which is the index
+#' of the path, incremented by unity), "xstart" (the x-axis position of the 
+#' outgoing edge (leaving to connect to the node at the next largest y-value)),
+#' "xend" (the x-axis position of the outgoing edge (connected to the node at the
+#' next largest y-value)), "ystart" (the y-axis position of the outgoing edge (leaving
+#' to connect to the node at the next largest y-value), "yend" (the y-axis position
+#' of the outgoing edge (connected to the node at the next largest y-value))).
+#' @param path path object representing the path between two vertices
+#' @export
+buildPathDF = function(path){
+  if(length(path) > 0){
+    # The labels of the nodes are the names of the varieties in the path
+    label=path$pathVertices
+    # The x-axis position of the node labels are the years of the varieties in the path
+    x=as.numeric(path$yearVertices)
+    # The y-axis position of the node labels are incremented by unity for each new connected
+    # node in the path
+    y=seq(1, length(label), 1)
+    # The starting x-axis position of the edge between two nodes will be the x-axis position
+    # of the label of the first node
+    xstart=x
+    xend=rep(0,length(label))
+    yend=rep(0,length(label))
+    for (i in 1:length(label)){
+      y[i] = i
+      xend[i] = xstart[i]
+      if (i < length(label)){
+        # The ending x-axis position of the edge between two nodes will be the x-axis position
+        # of the label of the second node
+        xend[i] = xstart[i+1]
+        # The ending y-axis position of the edge between two nodes will be 0.1 below the y-axis
+        # of the label of the second node
+        yend[i] = y[i+1]-.1
+      }
+    }
+    # The starting y-axis position of the edge between two nodes will be 0.1 above the y-axis of
+    # the label of the first node
+    ystart = y+.1
+    # The last edge should have equal y-axis values of the ends of its segment because it should
+    # not be drawn (as there are n-1 edges for n nodes of a graph)
+    yend[length(label)] = ystart[length(label)]
+    # Create the dataframe about the path that includes the 7 necessary parameters
+    plotPathDF = data.frame(label,xstart,ystart,xend,yend,x,y)
+    # Return the dataframe about the path
+  }
+  else{
+    print("Warning: There was no plotPathDF object created")
+    plotPathDF = NA
+  }
+  plotPathDF
+}
+
+#' Construct the graphic object of the path
+#' 
+#' This function takes the path data frame as input, and outputs an ggplot2 object. The
+#' image will correctly position the node labels with x-axis representing the node
+#' year, and y-axis representing the node path index. Edges between two nodes represent
+#' parent-child relationships between those nodes. For visual appeal, there is a grey
+#' box that outlines the node label, as well as an underline and overline for each label.
+#' @param pPDF plotPathDF object created from function buildPathDF
+#' @export
+generatePathPlot = function(pPDF){
+  if (!is.na(pPDF)){
+    # The textFrame object will be used to create a grey rectangle around each node label
+    textFrame = data.frame(x = pPDF$x, y = pPDF$y, label = pPDF$label)
+    textFrame = transform(textFrame,
+                          w = strwidth(pPDF$label, 'inches') + 0.25,
+                          h = strheight(pPDF$label, 'inches') + 0.25
+    )
+    
+    # The plotImage object creates a grey rectangle (geom_rect) to highlight the node
+    # label; three line segments (geom_segment) to create node label underline, node
+    # label overline, and edges between nodes; and text (geom_text) to write the node label.
+    plotPathImage = ggplot(data = pPDF,aes(x = x, y = y)) + 
+      geom_rect(data = textFrame, aes(xmin = x - strwidth(label, "inches")*1.2,
+                                      xmax = x + strwidth(label, "inches")*1.2, 
+                                      ymin = y-.1, ymax = y+.1), fill = "grey80") +
+      geom_segment(aes(x=x - strwidth(label, "inches")*1.2, y=y-.1,
+                       xend =  x + strwidth(label, "inches")*1.2, yend = y-.1)) +
+      geom_segment(aes(x=x - strwidth(label, "inches")*1.2, y=y+.1,
+                       xend =  x + strwidth(label, "inches")*1.2, yend = y+.1)) +
+      geom_segment(aes(x=xstart, y=ystart, xend=xend, yend=yend)) +
+      geom_text(data = textFrame,aes(x = x, y = y, label = label), size = 4) + 
+      xlab("Year") +
+      
+      theme(axis.text.y=element_blank(),axis.ticks.y=element_blank(),
+            axis.title.y=element_blank(),legend.position="none",
+            panel.grid.major.y=element_blank(),
+            panel.grid.minor=element_blank())
+  }
+  else{
+    plotPathImage = print("There is no path to display between the two inputted vertices.")
+    plotPathImage = NA
+  }
+  # Return the plotImage
+  plotPathImage
+}
+
+#' Build a data frame where the varieties are spread so they do not overlap
+#' 
+#' Constructs a data frame object so that varieties are spread such that they do not overlap, even
+#' though the x-axis position will represent years.
+#' @param t tree
+#' @param numBin number of bins to equally separate the vertices into groups of years
+#' @param binVector vector of length numBin that includes any combination of each integer exactly once between unity and numBin.
+#' This vector will determine the order that increasing y index positions are repeatedly assigned to. For instance, if the
+#' numBin = 12, and binVector = c(1,4,7,10,2,5,8,11,3,6,9,12), then y-axis position one will be assigned to a variety in the first
+#' bin of years, y-axis position two will be assigned to a variety in the fourth bin of years, ...., and y-axis position thirteen
+#' will be assigned again to a variety in the first bin of years. This vector can help minimize overlap of the labelling of varieties,
+#' without regard to how the layout affects the edges between varieties, as those edges will be colored faintly.
+#' @export
+buildSpreadTotalDF = function(t, numBin, binVector){
+  if (exists(as.character(substitute(t)))){
+      # The unique "children" in the "t"
+      uniqueChild = sort(unique(t$child))
+      # The unique "parents" in the "t"
+      uniqueParent = sort(unique(t$parent))
+      # The unique nodes in the "t"
+      uniqueNode = sort(union(uniqueChild,uniqueParent))  
+      
+      uniqueYears = c()
+      for (i in 1:length(uniqueNode)) {
+        uniqueYears = c(uniqueYears, getYear(uniqueNode[i], t))
+      }
+      totalDF = data.frame(uniqueNode = uniqueNode, uniqueYears = uniqueYears)
+      totalDF = totalDF[!is.na(totalDF$uniqueYears),]
+      totalDF = totalDF[order(totalDF$uniqueYears, decreasing=FALSE), ]
+      
+      numLabels = dim(totalDF)[1]
+      numPerBin = floor(numLabels/numBin)
+      d = split(totalDF, cut(seq(nrow(totalDF)), numBin))
+      
+      spreadTotalDF = data.frame()
+      for (i in 1:numPerBin){
+        for (j in 1:binVector){ #hcnage to 1:
+          spreadTotalDF = rbind(spreadTotalDF,d[[j]][i,])
+        }
+      }
+      for (j in binVector){
+        if (!is.na(d[[j]][i+1,][1])){
+          spreadTotalDF = rbind(spreadTotalDF,d[[j]][i+1,])
+        }
+      } 
+    }
+    else{
+      print("Warning: There was no inputted tree.")
+      spreadTotalDF = NA
+    }
+  # Return the data frame where labels are spread
+  spreadTotalDF
+}
+
+#' Process the tree graph
+#' 
+#' This function takes the spreadTotalDF object (from the buildSpreadTotalDF function) and the path object
+#' as inputs. From these objects, it creates a data frame object of the label, x, and y values of all nodes
+#' in the tree. However, the data frame object does not include the labels of the path varieties, as they
+#' will be treated differently.
+#' @param sTDF spreadTotalDF object (from the buildSpreadTotalDF function)
+#' @param p path
+#' @export
+buildMinusPathDF = function(sTDF, p){
+  if (exists(as.character(substitute(sTDF))) && exists(as.character(substitute(p))) && !is.na(sTDF) & !is.na(p)){
+    label=sTDF$uniqueNode
+    x=as.numeric(sTDF$uniqueYears)
+    y=seq(1, length(label), 1)
+    # If the label is part of the path, then we change the its value to NA
+    for (i in 1:length(label)){
+      if (label[i]%in%p$pathVertices){
+        label[i]=NA
+      }
+    }
+    plotMinusPathDF = data.frame(label,x,y)
+  }
+  else{
+    print("Warning: Either the spreadTotalDF or path object does not exist")
+    plotMinusPathDF = NA
+  }
+  # Return the data frame object of the total tree
+  plotMinusPathDF
+}
+
+#' Build the edges in the  total tree graph
+#' 
+#' This function takes the spreadTotalDF object (from the buildSpreadTotalDF function) and the treeGraph object
+#' as inputs. From these objects, it creates a data frame object of the edges between all parent-child
+#' relationships in the graph
+#' @param tG treeGraph
+#' @param sTDF spreadTotalDF object (from the buildSpreadTotalDF function)
+#' @export
+buildEdgeTotalDF = function(tG, sTDF){
+  if (exists(as.character(substitute(tG))) && exists(as.character(substitute(sTDF))) && !is.na(sTDF) && !is.na(tG)){
+    tG = tG[(tG$child %in% sTDF$uniqueNode & tG$parent %in% sTDF$uniqueNode),]
+    
+    # edgeTotalDF used in function generateTotalPlot()
+    numEdges = dim(tG)[1]
+    x=as.numeric(rep("",numEdges))
+    y=as.numeric(rep("",numEdges))
+    xend=as.numeric(rep("",numEdges))
+    yend=as.numeric(rep("",numEdges))
+    # For each edge in the graph
+    for (i in 1:numEdges){
+      xname = as.character(tG[i,]$child)
+      xendname = as.character(tG[i,]$parent)
+      x_i = getYear(xname, tree)
+      xend_i = getYear(xendname, tree)
+      y_i = which(sTDF$uniqueNode==xname)
+      yend_i = which(sTDF$uniqueNode==xendname)
+      x[i] = x_i
+      xend[i] = xend_i
+      y[i] = y_i
+      yend[i] = yend_i
+    }
+    # Create a dataframe containing the start and end positions of the x and y axes
+    edgeTotalDF = as.data.frame(cbind(x, y, xend, yend))
+  }
+  else{
+    print("Warning: Either the treeGraph or path object does not exist")
+    edgeTotalDF = NA
+  }
+  edgeTotalDF
+}
+
+#' Build all labels in the graph
+#' 
+#' This function takes the spreadTotalDF object (from the buildSpreadTotalDF function) and the path object
+#' as inputs. From these objects, it creates a data frame object of the text label positions for the
+#' varieties in the path, as well as the edges only in the varieties in the path.
+#' @param p path
+#' @param sTDF spreadTotalDF object (from the buildSpreadTotalDF function)
+#' @export
+buildPlotTotalDF = function(p, sTDF){
+  if (exists(as.character(substitute(p)))
+      && exists(as.character(substitute(sTDF))) && !is.na(sTDF) && !is.na(p)){
+      label=path$pathVertices
+      x=as.numeric(path$yearVertices)
+      xstart=x
+      xend=rep(0,length(label))
+      ystart=rep(0,length(label))
+      yend=rep(0,length(label))
+      for (i in 2:length(label)){
+        ystart[i-1] = which(spreadTotalDF$uniqueNode==label[i-1])
+        yend[i-1] = which(spreadTotalDF$uniqueNode==label[i])
+        xend[i-1] = xstart[i]
+      }
+      ystart[i] = yend[i-1]
+      yend[i] = ystart[i]
+      xend[i] = xstart[i]
+      y = ystart
+      plotTotalDF = data.frame(label,xstart,ystart,xend,yend,x,y)
+  }
+  plotTotalDF
+}
+
+
+#' Build the image object of the whole tree with the path superimposed onto it
+#' 
+#' This function takes four data frames as inputs, and outputs an ggplot2 object. The
+#' image will correctly position the node labels with x-axis representing the node
+#' year, and y-axis representing the node path index. Light grey edges between two nodes
+#' represent parent-child relationships between those nodes. To enhance the visual
+#' understanding of how the path-of-interest fits into the entire graph structure, the
+#' nodes within the path are labelled in boldface, and connected with light-green
+#' boldfaced edges.
+#' @param pMPDF plotMinusPathDF (built from the buildMinusPathDF function)
+#' @param eTDF edgeTotalDF (built from the buildEdgeTotalDF function)
+#' @param pTDF plotTotalDF (built from the buildPlotTotalDF function)
+#' @param pPDF plotPathDF (built from the buildPathDF function)
+#' @export
+generateTotalPlot = function(pMPDF, eTDF, pTDF){
+    textFrame = data.frame(x = pMPDF$x, y = pMPDF$y, label = pMPDF$label)
+    textFrame = transform(textFrame,
+                          w = strwidth(pMPDF$label, 'inches') + 0.25,
+                          h = strheight(pMPDF$label, 'inches') + 0.25
+    )
+    
+    # The plotTotalImage object creates two line segments (geom_segment), one to create grey
+    # edges for non-path connections between pairs of nodes, the other to create light-green
+    # edges for path connections between pairs of nodes; and two labels (geom_text), one to
+    # create labels of size 2 for non-path connections between pairs of nodes, the other to
+    # create labels of size 2.5 and boldfaced for path connections between pairs of nodes.
+    plotTotalImage = ggplot(data = pMPDF, aes(x = x, y = y)) +
+      geom_segment(data = eTDF, aes(x=x, y=y-.1, xend=xend, yend=yend+.1), colour = "gray84") +
+      geom_segment(data = pTDF, aes(x=xstart, y=ystart, xend=xend, yend=yend), colour = "seagreen2", size = 1) +
+      geom_text(data = textFrame,aes(x = x, y = y, label = label), size = 2) +
+      geom_text(data = pTDF,aes(x = x, y = y, label = label), size = 2.5,  fontface="bold") +
+      xlab("Year") +
+      
+      # Erase the y-axis, and only include grids from the x-axis
+      theme(axis.text.y=element_blank(),axis.ticks.y=element_blank(),
+            axis.title.y=element_blank(),legend.position="none",
+            panel.grid.major.y=element_blank(),
+            panel.grid.minor=element_blank())
+  # Return the plotTotalImage
+  plotTotalImage
+}
+
+#' Returns the parents of a particular variety (if they exist)
+#' 
+#' This function returns up to two values that indicate the parents of the inputted variety.
+#' 
+#' @param v1 the first variety
+#' @export
+#' @examples
+#' getparent("Tokyo")
+#' getParent("Essex")
+getparent = function(v1, tree){
+  subset(tree, child==v1)$parent
+}
+
+#' Returns the children of a particular variety (if they exist)
+#' 
+#' This function returns zero or more values that indicate the children of the inputted variety.
+#' 
+#' @param v1 the first variety
+#' @export
+#' @examples
+#' getchild("Tokyo")
+#' getchild("Essex")
+getchild = function(v1, tree){
+  subset(tree, parent==v1)$child
+}
+
+#' Returns the ancestors of a particular variety (if they exist)
+#' 
+#' This function returns a nested list of the ancestors of the inputted variety.
+#' 
+#' @param v1 the first variety
+#' @param gen generation
+#' @export
+getancestors = function(v1, gen=0){
+  if(is.na(v1)) return()
+  
+  temp = getparent(v1)
+  if(length(temp)==0) return()
+  
+  res = lapply(temp[!is.na(temp)], function(i){
+    # print(i)
+    temp2 = getancestors(i, gen=gen+1)
+    if(length(temp2)<1) return(list(label=i, root=v1, root.gen=gen, gen=gen+1, type="ancestor"))
+    return(c(label=i, root=v1, root.gen=gen, gen=gen+1, type="ancestor", temp2))
+  })
+  
+  if(gen==0){
+    return(c(label=v1, root=v1, root.gen=gen, gen=gen, type="ancestor", res))
+  } else{
+    return(res)
+  } 
+}
+
+#' Returns the descendants of a particular variety (if they exist)
+#' 
+#' This function returns a nested list of the descendants of the inputted variety.
+#' 
+#' @param v1 the first variety
+#' @param gen generation the first variety
+#' @export
+getdescendants = function(v1, gen=0){
+  if(is.na(v1)) return()
+  
+  temp = getchild(v1)
+  if(length(temp)==0) return()
+  
+  res = lapply(temp[!is.na(temp)], function(i){
+    # print(i)
+    temp2 = getdescendants(i, gen=gen+1)
+    if(length(temp2)<1) return(list(label=i, root=v1, root.gen=gen, gen=gen+1, type="descendant"))
+    return(c(label=i, root=v1, root.gen=gen, gen=gen+1, type="descendant", temp2))
+  })
+  
+  if(gen==0){
+    return(c(label=v1, root=v1, root.gen=gen, gen=gen, type="descendant", res))
+  } else{
+    return(res)
+  } 
+}
+
+#' Returns the data frame representation of all ancestors and descendants of a variety
+#' 
+#' Converts the list-style-tree to a data frame, where each variety has an id value 
+#' and references its' parent's id value. ID value ranges correspond to generation. 
+#' It is possible that with more complex trees the range of id values may need to 
+#' expand to reduce the probability of two varieties being assigned the same id value. 
+#' 
+#' @param tlist list of varieties
+#' @param branch of particular variety in tree
+#' @param par.id the id of the parent of the variety
+#' @param id.offset value to ensure labels are at unique locations
+#' @export
+node.to.data.frame = function(tlist, branch=0, par.id = NA,id.offset=1){
+  listidx = which(sapply(tlist, mode)=="list")
+  if(length(listidx)==0){
+    temp = as.data.frame(tlist)
+    if(nrow(temp)==0) return(data.frame())
+    # If gen (not followed by a number), then it does not exist
+    if(!"gen"%in%names(temp)){
+      id.offset <= id.offset+1
+      return(cbind(as.data.frame(tlist), branch=branch, par.id=par.id, id=sample(0:99, 1)*10+id.offset/10))
+    }
+    id.offset <= id.offset+1
+    return(cbind(as.data.frame(tlist), branch=branch, par.id=par.id, id=sign(temp$gen)*sample((abs(temp$gen)*100):((abs(temp$gen)+1)*100-1), 1)*10+id.offset/10))
+  } else {
+    # Grabs everything that does not have children.
+    temp = as.data.frame(tlist[-listidx])
+    # First time, branchidx = 1 2
+    branchidx = listidx-min(listidx)+1
+    if(length(branchidx)>1){
+      # First time, branchidx = -0.5 0.5
+      branchidx = seq(-.5, .5, length.out=length(branchidx)) 
+      # branchidx = equals either -.5 (if temp$gen is even) or .5 (if temp$gen is odd)
+    } else branchidx = c(-.5, .5)[temp$gen%%2+1]
+    id.offset <= id.offset+1
+    # Creates a unique id
+    id = sign(temp$gen)*sample((abs(temp$gen)*100):((abs(temp$gen)+1)*100-1), 1)*10+id.offset/10
+    return(rbind.fill(cbind(temp, branch=branch, id=id, par.id=par.id), 
+                      ldply(1:length(listidx), function(i) 
+                        node.to.data.frame(tlist[[listidx[i]]], branch=branchidx[i], par.id=id))))
+  }
+}
+
+#' Returns the coordinate positions of all ancestors and descendants of a variety
+#' 
+#' Calculates coordinates to plot each ancestors and descendant of a variety on a tree.
+#' The x and y values describe the coordinates of the label, while the xstart, ystart, xend,
+#' and yend values describe the edges of the label.
+#' 
+#' @param df data frame of the ancestors and descendants of a variety (from function buildGenDF)
+#' @export
+plotcoords = function(df){
+  # This gets rid of redundancy and creates a "center"
+  if(nrow(subset(df, root.gen==0 & gen==0))>1){
+    temp = subset(df, root.gen==0 & gen==0)
+    temp$type = "center"
+    old.ids = temp$id[-1]
+    df$par.id[which(df$par.id%in%old.ids)] = temp$id[1]
+    temp$id[-1] = temp$id[1]
+    temp = unique(temp)
+    df = rbind.fill(subset(df, !(root.gen==0 & gen==0)), temp)
+  }
+  # This adds a leaf boolean column
+  df$leaf = !df$id%in%df$par.id
+  # Initialize x, y coords, and genside
+  df$genside = df$gen*(df$type=="descendant")-df$gen*(df$type=="ancestor")
+  df$x = 0
+  df$y = 0
+  # Ensure y coords are spread among all branches
+  df$y[df$leaf & df$genside<0] = seq(1, sum(df$leaf), length.out=sum(df$leaf & df$genside<0))
+  # but later, 2 ancestors are taken off b/c too previous
+  df$y[df$leaf & df$genside>0] = seq(1, sum(df$leaf), length.out=sum(df$leaf & df$genside>0))
+  # Ensure a single branch on one side is centrally placed (what if only 2 or 3?)
+  if(sum(df$leaf & df$genside<0)==1) df$y[df$leaf & df$genside<0] = sum(df$leaf)/2
+  if(sum(df$leaf & df$genside>0)==1) df$y[df$leaf & df$genside>0] = sum(df$leaf)/2
+  
+  df$xstart = 0
+  df$ystart = 0
+  df$xend = 0
+  df$yend = 0
+  df$branchx = 0
+  df$branchy = 0
+  
+  # sort data frame
+  df = df[rev(order(df$type, df$root.gen, df$gen, df$par.id, df$branch)),]
+  # set y coordinates
+  #( Ex. -5 -4 -3  3 -2  2 -1  1  0 ) // start furthest away from center
+  for(i in unique(df$genside)[rev(order(abs(unique(df$genside))))]){
+    kids = subset(df, df$genside==i)
+    for(j in unique(kids$par.id)){
+      df$y[df$id==j] = mean(subset(kids, par.id==j)$y)
+    }    
+  }
+  
+  yfac = diff(range(df$y))  
+  df$ystart = df$y
+  df$yend = df$y
+
+  # Maximum character length of each generation
+  widths = ddply(df, .(genside), summarize, len=max(nchar(as.character(label))))
+  # Create a padding for label length
+  widths$len = widths$len*(1+yfac/(1+yfac))
+  gap = mean(widths$len)/2
+  
+  # For each generation
+  for(i in unique(df$genside)[order(abs(unique(df$genside)))]){
+    # j is the rows (varieties) in that generation
+    j = which(df$genside==i)
+    # Center of the two trees 
+    if(i == 0){   
+      df$x[j] = 0
+      df$xstart[j] = -widths$len[widths$genside==i]/2
+      df$xend[j] = widths$len[widths$genside==i]/2
+      df$branchx[j] = df$xend[j] # make the "branch" for this node nonexistent
+      df$branchy[j] = df$yend[j]
+      # If first descendent
+    } else if(i==1){
+      for(k in j){
+        par = df[which(df$label==as.character(df$root[k])),]
+        # Only the center node has no "parents"         
+        df$branchx[k] = par$xend
+        df$branchy[k] = par$yend
+        df$xend[k] = df$branchx[k]+gap*sign(i)
+        df$xstart[k] = df$xend[k]+widths$len[widths$genside==i]*sign(i)
+        df$x[k] = (df$xend[k]+df$xstart[k])/2
+      } 
+      # The positive side of tree ("reversed" branch)
+    } else if(i>1){
+      for(k in j){
+        par = df[which(df$id==df$par.id[k]),]
+        # Only the center node has no "parents" 
+        df$branchx[k] = par$xstart
+        df$branchy[k] = par$ystart
+        df$xend[k] = df$branchx[k]+gap*sign(i)
+        df$xstart[k] = df$xend[k]+widths$len[widths$genside==i]*sign(i)
+        df$x[k] = (df$xend[k]+df$xstart[k])/2
+      } 
+      # The negative side of tree
+    } else {
+      for(k in j){
+        par = df[which(df$id==df$par.id[k]),] # find parent
+        # Only the center node has no "parents" 
+        df$branchx[k] = par$xstart
+        df$branchy[k] = par$ystart
+        df$xend[k] = df$branchx[k]+gap*sign(i)
+        df$xstart[k] = df$xend[k]+widths$len[widths$genside==i]*sign(i)
+        df$x[k] = (df$xend[k]+df$xstart[k])/2
+      } 
+    }
+  }
+  
+  df$size = (1-(nrow(df))/412)*4+2
+  return(df)
+}
+
+#' Returns the data frame of labels and plot coordinates of all ancestors and descendants of a variety
+#' 
+#' Returns the data frame that includes labels and plot coordinates of all ancestors and descendants of
+#' a variety. Users can specify the maximum number of ancestors and descendants to display
+#' 
+#' @param v1 variety of interest
+#' @param mAnc maximum number of ancestors of v1 to be shown
+#' @param mDes maximum number of descendants of v1 to be shown
+#' @param tree the tree
+#' @export
+buildGenDF = function(v1, mAnc, mDes, tree){
+  vals = list()
+  # Set data frame that we will plot
+  gen.vars2 = v1$varieties
+  vals$gen.vars = gen.vars2
+  
+  if(length(v1$varieties)>0){
+    # This ldply statement is converting a list to a datatype. It takes the v1 variety and retunrs the
+    # plot coordinates of all its parents and children.
+    temp2 = ldply(vals$gen.vars, function(i){
+      if(i %in% tree$child | i %in% tree$parent){
+        # This appends the plot coordinates of the data frame constructed for all ancesteros and descendents of the variety
+        temp = cbind(variety=i, plotcoords(rbind(node.to.data.frame(getancestors(i)), node.to.data.frame(getdescendants(i)))))
+        # This create an empty data frame in the event that there are no ancestors nor descendents
+        temp$label2 = temp$label
+      } 
+      # If there is no genetic information, label2 will say "No Information Found" 
+      else {
+        temp = data.frame(variety=i, label=i, root=NA, root.gen=0, gen=0, type=0, branch=0, x=0, y=0, xstart=0, ystart=0, xend=0, yend=0, branchx=0, branchy=0, id=0, par.id=0, size=2, label2=paste(i, "-", "No Information Found", sep=""))
+      }
+      # We can remove the columns "id" and "Pair.id" because we do not need them in the actual plot.
+      # They were only used to ensure the coordinates were all unique.
+      unique(temp[,-which(names(temp)%in%c("id", "par.id"))])
+    })
+    
+    # This creates a unique color for the variety label of interest
+    cols = hcl(h=seq(0, 300, by=50), c=80, l=55, fixup=TRUE)
+    temp2$color = "#000000"
+    
+    # The number 7 was selected as it is the average working memory maximum
+    if(length(gen.vars2)<=7){
+      var.list = which(temp2$label%in%gen.vars2)
+      temp2$color[var.list] = cols[as.numeric(factor(temp2$label[var.list]))]
+    }
+    
+    # This is stored separately in case this will be extended to be used for Shiny reactive programming.
+    genDF = temp2
+    
+    temp = merge(data.frame(variety=v1$varieties,NewName=vals$gen.vars), ddply(genDF, .(label), summarize, gen=mean(gen*c(-1,1)[(type=="descendant")+1])), by.x=2, by.y=1)
+    vals$match = temp[order(temp$gen, temp$variety),]
+  } else {
+    genDF = data.frame()
+    vals$match = data.frame()
+    vals$gen.vars = v1$varieties
+  }
+  genDF = genDF[-which(genDF$gen > mAnc & genDF$type == "ancestor"),]
+  genDF = genDF[-which(genDF$gen > mDes & genDF$type == "descendant"),]
+  genDF
+}
+
+#' Returns the image object to show the ancestors and descendants of a variety
+#' 
+#' Returns the image object to show the ancestors (to the left) and descendants (to the right) of a
+#' variety, with the variety highlighted in orange
+#' 
+#' @param genDF data frame created from the buildGenDF function
+#' @export
+generateGenPlot = function(gDF){
+  # Plot the data frame, if it exists
+  if(nrow(gDF)>0){
+    plotGenImage = qplot(data=gDF, x=x, y=y, label=label2, geom="text", vjust=-.25, hjust=.5, 
+                         size=size, colour=color) +
+      geom_segment(aes(x=xstart, y=ystart, xend=xend, yend=yend),inherit.aes=F) + 
+      geom_segment(aes(x=xend, y=yend, xend=branchx, yend=branchy),inherit.aes=F) +
+      facet_wrap(~variety, scales="free", ncol=2) +
+      scale_size_continuous(range=c(3,3),guide="none") +
+      scale_colour_identity() +
+      theme_bw() +
+      theme(axis.title=element_blank(), 
+            axis.text=element_blank(), 
+            axis.ticks=element_blank()) + 
+      scale_x_continuous(expand = c(.1, 1.075)) + 
+      scale_y_continuous(expand = c(.1, 1.075))
+  } else {
+    plotGenImage = ggplot() + 
+      geom_text(aes(x=0, y=0, label="Please select varieties\n\n Note: It may take a minute to process the v1")) +         
+      theme_bw() + 
+      theme(axis.text=element_blank(), 
+            axis.ticks=element_blank(), 
+            axis.title=element_blank())
+  }
+  plotGenImage
+}
+
+#' Returns the image object to show the heat map of degrees between the inputted set of vertices
+#' 
+#' Returns the image object to show the heat map of degrees between the inputted set of vertices
+#' 
+#' @param varieties subset of varieties used to generate the heat map
+#' @export
+buildDegMatrix = function(varieties){
+  matVar = matrix(, nrow = length(varieties), ncol = length(varieties))
+  for (i in 1:length(varieties)){
+    for (j in 1:length(varieties)){
+      matVar[i,j]=getDegree(varieties[i],varieties[j],mygraph)
+    }
+  }
+  
+  tdm <- melt(matVar)
+  
+  heatMap = ggplot(tdm, aes(x = Var1, y = Var2, fill = value)) +
+    labs(x = "Variety", y = "Variety", fill = "Degree") +
+    geom_raster() +
+    scale_x_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
+    scale_y_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  heatMap
+}
+
+#' Returns the image object to show the heat map of years between the inputted set of vertices
+#' 
+#' Returns the image object to show the heat map of years between the inputted set of vertices
+#' 
+#' @param varieties subset of varieties used to generate the heat map
+#' @export
+buildYearMatrix = function(varieties){
+  matVar = matrix(, nrow = length(varieties), ncol = length(varieties))
+  for (i in 1:length(varieties)){
+    for (j in 1:length(varieties)){
+      matVar[i,j]=abs(getYear(varieties[i],tree)-getYear(varieties[j],tree))
+    }
+  }
+  
+  tdm <- melt(matVar)
+  
+  heatMap = ggplot(tdm, aes(x = Var1, y = Var2, fill = value)) +
+    labs(x = "Variety", y = "Variety", fill = "Difference in Years") +
+    geom_raster() +
+    scale_x_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
+    scale_y_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  heatMap
+}
+

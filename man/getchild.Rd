@@ -1,0 +1,17 @@
+\name{getchild}
+\alias{getchild}
+\title{Returns the children of a particular variety (if they exist)}
+\usage{
+getchild(v1, tree)
+}
+\arguments{
+  \item{v1}{the first variety}
+}
+\description{
+This function returns zero or more values that indicate the children of the inputted variety.
+}
+\examples{
+getchild("Tokyo")
+getchild("Essex")
+}
+
