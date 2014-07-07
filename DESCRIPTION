@@ -1,16 +1,15 @@
 Package: phyViz
 Type: Package
 Title: Phylogenetic Visualization
-Description: This package can be used to enhance visualization of phylogenetic
-    trees with multiple image options.
+Description: Enhances visualization of phylogenetic trees with multiple image options.
 Version: 0.1
-Author: Lindsay Rutter <lrutter@iastate.edu>, Susan Vander Plas <srvanderplas@gmail.com>, Di Cook <dicook@iastate.edu>
+Author: Lindsay Rutter <lrutter@iastate.edu>, Susan Vanderplas <srvanderplas@gmail.com>, Di Cook <dicook@iastate.edu>
 Maintainer: Di Cook <dicook@iastate.edu>
 License: GPL
-Collate: 'allFunctions.r'
+Collate: 'allFunctions.R'
 Depends:
-    R (>= 3.0.2)
-Roxygen: list(wrap = FALSE)
+    R (>= 3.0.2),
+    igraph (>= 0.7.0)
 Imports:
     igraph (>= 0.7.0),
     plyr,
@@ -21,3 +20,4 @@ VignetteBuilder: knitr
 Suggests:
     knitr,
     roxygen2 (>= 3.0.0)
+Roxygen: list(wrap = TRUE)
