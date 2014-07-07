@@ -246,7 +246,7 @@ buildPathDF = function(path){
 #' @param pPDF plotPathDF object created from function buildPathDF
 #' @export
 generatePathPlot = function(pPDF){
-  if (!is.na(pPDF)){
+  if (length(dim(pPDF))>1){ # check to make sure pPDF is a data frame
     # The textFrame object will be used to create a grey rectangle around each node label
     textFrame = data.frame(x = pPDF$x, y = pPDF$y, label = pPDF$label)
     textFrame = transform(textFrame,
