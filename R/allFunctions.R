@@ -132,6 +132,7 @@ getBasicStatistics = function(mygraph){
 #' getPath("Brim","Bedford",mygraph)
 #' getPath("Tokyo","Volstate",mygraph)
 getPath = function(v1, v2, isDirected, mygraph){
+  require(igraph)
   retPath = list()
   yearVertices = character()
   pathVertices = character()
