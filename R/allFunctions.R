@@ -425,8 +425,8 @@ buildPlotTotalDF = function(p, sTDF){
       ystart=rep(0,length(label))
       yend=rep(0,length(label))
       for (i in 2:length(label)){
-        ystart[i-1] = which(spreadTotalDF$uniqueNode==label[i-1])
-        yend[i-1] = which(spreadTotalDF$uniqueNode==label[i])
+        ystart[i-1] = match(label[i-1], spreadTotalDF$uniqueNode)
+        yend[i-1] = match(label[i], spreadTotalDF$uniqueNode)
         xend[i-1] = xstart[i]
       }
       ystart[i] = yend[i-1]
