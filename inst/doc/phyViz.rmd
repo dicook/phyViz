@@ -20,7 +20,7 @@ library(igraph)
 load(system.file("doc","example","tree.rda",package="phyViz"))
 ```
 
-Now that you have uploaded the raw tree.rda file, you can observe the first ten lines of it:
+Now that you have loaded the raw tree.rda file, you can observe the first ten lines of it:
 
 ```{r}
 head(tree)
