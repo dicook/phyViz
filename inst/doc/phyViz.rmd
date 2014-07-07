@@ -12,28 +12,29 @@ The very first thing to do is to load the necessary libraries and the example tr
 
 ```{r}
 library(phyViz)
-library(plyr)
-library(reshape2)
-library(ggplot2)
-library(stringr)
-library(igraph)
-load(system.file("doc","example","tree.rda",package="phyViz"))
+data(tree)
 ```
 
-Now that you have loaded the raw tree.rda file, you can observe the first ten lines of it:
+Now that you have loaded the raw tree.rda file, you can observe the first six lines to see the structure:
 
 ```{r}
 head(tree)
 ```
 
+Each line provides a relationship between a parent and a child; additional data fields (year, yield, etc.) generally refer to the child, with the exception of parent.type, which differentiates the male and female parents. 
+
 You can convert it to the treeGraph format that will be used in subsequent functions:
 
-#```{r}
-#treeGraph = processTreeGraph(tree)
-#head(treeGraph)
-#```
+```{r}
+treeGraph <- processTreeGraph(tree)
+head(treeGraph)
+```
 
-Convert the data frame object into an object that can be read by igraph package
+treeGraph format distills the tree dataset into essential components: the two nodes (parent, child) connected by an edge, and a weight for that edge (defaults to 1). 
 
-mygraph = graph.data.frame(treeGraph, directed= T)
+It is generally useful to then convert the data frame object into an object that can be read by igraph package: 
 
+```{r}
+library(igraph)
+mygraph <- graph.data.frame(treeGraph, directed= T)
+```
