@@ -7,7 +7,7 @@ Version: 0.1
 Author: Lindsay Rutter <lrutter@iastate.edu>, Susan Vander Plas <srvanderplas@gmail.com>, Di Cook <dicook@iastate.edu>
 Maintainer: Di Cook <dicook@iastate.edu>
 License: GPL
-Collage: 'allFunctions.r'
+Collate: 'allFunctions.r'
 Depends:
     R (>= 3.0.2)
 Roxygen: list(wrap = FALSE)
