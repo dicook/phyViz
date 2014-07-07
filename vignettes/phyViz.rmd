@@ -45,20 +45,18 @@ There is a preprocessing pipeline that you must use before visualizing your phyl
 
 ```{r}
 options(warn=-1)
-library(phyViz)
+# library(phyViz)
 library(plyr)
 library(reshape2)
 library(ggplot2)
 library(stringr)
 library(igraph)
-
-load(system.file("doc","example","tree.rda",package="phyViz"))
 ```
 
-In the **phyViz** package, there is an example file containing phylogenetic tree of soybean varieties called **tree.rda**. It may be helpful to load that example file so that you can follow along with the commands and options introduced in this vignette. To ensure that you have uploaded the correct, raw **tree.rda** file, you can observe the first ten lines of it:
+In the **phyViz** package, there is an example file containing phylogenetic tree of soybean varieties called **tree.rda**. It may be helpful to load that example file so that you can follow along with the commands and options introduced in this vignette. To ensure that you have uploaded the correct, raw **tree.rda** file, you can observe the first six lines of it:
 
 ```{r}
-load(system.file("doc","example","tree.rda",package="phyViz"))
+data(tree)
 head(tree)
 ```
 
@@ -73,10 +71,11 @@ dim(treeGraph)
 Next, the data frame object **treeGraph** must be convereted into an graph object that can be read by igraph package, using the following command:
 
 ```{r}
+library(igraph)
 mygraph = graph.data.frame(treeGraph, directed= T)
 ```
 
-As an side note, you could optionally write the **treeGraph** object into a .csv file that will be saved to your working directory, and could later be visualized in the software **Cytoscape**. However, we will not be covering this option in this vignette.
+As a side note, you could optionally write the **treeGraph** object into a .csv file that will be saved to your working directory, and could later be visualized in the software **Cytoscape**. However, we will not be covering this option in this vignette.
 
 ```{r}
 sbTreeGraph = write.csv(treeGraph, "sbTreeGraphTest.csv")
@@ -115,7 +114,7 @@ getYear("Young",tree)
 getYear("Essex",tree)
 ```
 
-Fortunately, these example results make consistent sense in that the "Young" variety is a child to the "Essex" variety by an age difference of six years.
+Fortunately, these example results make sense in that the "Young" variety is a child to the "Essex" variety by an age difference of six years.
 
 In some cases, you may wish to have a list of all the parents of a given variety. This can be achieved using the **getparent** function:
 
@@ -125,7 +124,7 @@ getparent("Tokyo",tree)
 getYear("Tokyo", tree)
 ```
 
-We learn from this that "Essex" is not the only parent of "Young". We also see that as "Tokyo" is a grandparent of the dataset (with a very early year, for this particular dataset, of 1902), it does not have any documented parents.
+We learn from this that "Essex" is not the only parent of "Young". We also see that as "Tokyo" is a grandparent of the dataset (with a very early year, for this particular dataset, of 1907), it does not have any documented parents.
 
 Likewise, in other cases, you may wish to have a list of all the children of a given variety. This can be achieved using the **getchild** function:
 
