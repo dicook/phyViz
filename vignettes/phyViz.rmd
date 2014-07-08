@@ -63,7 +63,6 @@ head(tree)
 Now that the tree file has been loaded, it must now be converted to its data frame object. The data frame should consist of only three columns, representing the two varieties connected by an edge weight of unity. We can see in this particular tree, there are 340 edges connecting the vertices. This **treeGraph** object will be needed in several of the subsequent graph theoretical functions derived from the **igraph** package:
 
 ```{r}
-data(tree)
 treeGraph = processTreeGraph(tree)
 head(treeGraph)
 dim(treeGraph)
