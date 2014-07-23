@@ -100,7 +100,7 @@ getYear = function(v1, tree){
 #' @examples
 #' getDegree("Brim","Bedford",mygraph)
 getDegree = function(v1, v2, mygraph){
-  path = getPath(v1, v2, F, mygraph)
+  path <- getPath(v1=v1, v2=v2, mygraph=mygraph, directed=F)
   # The degree between two vertices is equal to one less than the number of nodes in the shortest path
   return(length(path$pathVertices)-1)
 }
