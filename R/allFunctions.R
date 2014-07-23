@@ -1,17 +1,42 @@
 #' Process the tree graph
 #' 
 #' Processes the tree into a treeGraph object with appropriately labeled columns and format for analysis.
-#' @param t tree
+#' @param tree A data frame representing tree information, containing one row for each EDGE, with at least two columns named parent and child, respectively, representing vertices connected by an edge. Terminal nodes should have "NA" for parent in order to preserve vertex information. 
+#' @param vertexinfo (default NULL) either names of columns in t which should be added to the database as vertex information or a data frame with information for all vertices such that the first column contains vertex names.
+#' @param edgeweights (default 1) name of a column which contains edge weights
+#' @param directed (default FALSE) should the graph be a directed graph?
 #' @export
-processTreeGraph = function(t){
-  treeGraph = as.data.frame(cbind(t$child, t$parent))
-  # Remove any rows with "NA" relationship (340*2)
-  treeGraph = treeGraph[-which(is.na(t$parent)),]
-  # Add an edge weight to each pair of vertices (all of weight value equal to one)
-  treeGraph = cbind(treeGraph, rep(1, dim(treeGraph)[1]))
-  # Add column names the tree (treeGraph has dimensions 340*3)
-  colnames(treeGraph) = c("child","parent","edgeWt")
-  treeGraph
+processTreeGraph = function(tree, vertexinfo = NULL, edgeweights = 1, directed=FALSE){
+  require(igraph)
+  if(!is.data.frame(tree)){
+    stop("t must be a data frame")
+  }
+  
+  if(!("parent"%in%names(tree) & "child"%in%names(tree))){
+    stop("tree must contain columns named 'parent' and 'child'")
+  }
+  
+  if(is.null(vertexinfo)){
+    nodes <- unique(c(tree$child, tree$parent))
+    nodes <- nodes[!is.na(nodes)]
+  } else if(is.character(vertexinfo)){
+    nodes <- tree[,c("child", vertexinfo)]
+    # add in any parents who are not in the list of children, sans any vertex information
+    if(sum(!tree$parent%in%tree$child & !is.na(tree$parent))>0){
+      nodes <- rbind.fill(nodes, data.frame(child=unique(tree$parent[!tree$parent%in%tree$child & !is.na(tree$parent)]), stringsAsFactors = FALSE))
+    }
+    nodes <- unique(nodes)
+  } else if(is.data.frame(vertexinfo)) {
+    nodes <- unique(vertexinfo)
+  } else {
+    stop("vertexinfo should be either NULL, a character vector, or a data frame")
+  }
+  
+  edges <- subset(tree, !is.na(parent) & !is.na(child))[,c("child", "parent")]
+  edges$weight <- edgeweights
+
+  
+  graph.data.frame(d=edges, directed=directed, vertices=nodes)
 }
 
 #' Determine if a variety is a parent of another
