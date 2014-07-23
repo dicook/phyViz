@@ -9,7 +9,8 @@ License: GPL
 Collate: 'allFunctions.R'
 Depends:
     R (>= 3.0.2),
-    igraph (>= 0.7.0)
+    igraph (>= 0.7.0),
+    plyr
 Imports:
     igraph (>= 0.7.0),
     plyr,
