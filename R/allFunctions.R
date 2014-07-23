@@ -207,7 +207,6 @@ getPath = function(v1, v2, mygraph, isDirected=FALSE){
   }
   # If the tree is undirected
   if (!isDirected){
-    mygraph = graph.data.frame(treeGraph, directed= F)
     # The direction does not matter, any shortest path between the vertices will be listed
     pathVIndices = get.shortest.paths(mygraph, v1, v2, weights = NA, output="vpath")$vpath[[1]]
     if (length(pathVIndices) != 0){
