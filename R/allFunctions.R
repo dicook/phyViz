@@ -4,9 +4,9 @@
 #' @param tree A data frame representing tree information, containing one row for each EDGE, with at least two columns named parent and child, respectively, representing vertices connected by an edge. Terminal nodes should have "NA" for parent in order to preserve vertex information. 
 #' @param vertexinfo (default NULL) either names of columns in t which should be added to the database as vertex information or a data frame with information for all vertices such that the first column contains vertex names.
 #' @param edgeweights (default 1) name of a column which contains edge weights
-#' @param directed (default FALSE) should the graph be a directed graph?
+#' @param isDirected (default FALSE) should the graph be a directed graph?
 #' @export
-processTreeGraph = function(tree, vertexinfo = NULL, edgeweights = 1, directed=FALSE){
+processTreeGraph = function(tree, vertexinfo = NULL, edgeweights = 1, isDirected=FALSE){
   require(igraph)
   if(!is.data.frame(tree)){
     stop("t must be a data frame")
@@ -36,7 +36,7 @@ processTreeGraph = function(tree, vertexinfo = NULL, edgeweights = 1, directed=F
   edges$weight <- edgeweights
 
   
-  graph.data.frame(d=edges, directed=directed, vertices=nodes)
+  graph.data.frame(d=edges, directed=isDirected, vertices=nodes)
 }
 
 #' Determine if a variety is a parent of another
@@ -100,7 +100,7 @@ getYear = function(v1, tree){
 #' @examples
 #' getDegree("Brim","Bedford",mygraph)
 getDegree = function(v1, v2, mygraph){
-  path <- getPath(v1=v1, v2=v2, mygraph=mygraph, directed=F)
+  path <- getPath(v1=v1, v2=v2, mygraph=mygraph, isDirected=F)
   # The degree between two vertices is equal to one less than the number of nodes in the shortest path
   return(length(path$pathVertices)-1)
 }
