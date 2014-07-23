@@ -1,6 +1,6 @@
 #' Process the tree graph
 #' 
-#' Processes the tree into a treeGraph object with appropriately labeled columns and format for analysis.
+#' Processes the tree into a igraph graph with appropriate vertex information, graph type, and edge weights. 
 #' @param tree A data frame representing tree information, containing one row for each EDGE, with at least two columns named parent and child, respectively, representing vertices connected by an edge. Terminal nodes should have "NA" for parent in order to preserve vertex information. 
 #' @param vertexinfo (default NULL) either names of columns in t which should be added to the database as vertex information or a data frame with information for all vertices such that the first column contains vertex names.
 #' @param edgeweights (default 1) name of a column which contains edge weights
