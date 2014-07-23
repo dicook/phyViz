@@ -114,6 +114,9 @@ getDegree = function(v1, v2, mygraph){
 #' @examples
 #' getBasicStatistics(mygraph)
 getBasicStatistics = function(mygraph){
+  if(class(mygraph)!="igraph"){
+    stop("mygraph must be an igraph object.")
+  }
   retStats = list()
   # Get edge and node count from "structure.info" function of igraph
   numNodes = vcount(mygraph)
@@ -156,8 +159,26 @@ getBasicStatistics = function(mygraph){
 #' @examples
 #' getPath("Brim","Bedford",mygraph)
 #' getPath("Tokyo","Volstate",mygraph)
-getPath = function(v1, v2, isDirected, mygraph){
+getPath = function(v1, v2, mygraph, isDirected=FALSE){
   require(igraph)
+  if(!is.character(v1) & !is.character(v2)){
+    stop("First two arguments must be strings")
+  } else {
+    if(!v1%in%V(mygraph)$name){
+      warning("v1 is not a graph vertex")
+    }
+    if(!v2%in%V(mygraph)$name){
+      warning("v2 is not a graph vertex")
+    }
+  }
+  
+  if(is.directed(mygraph) != isDirected){
+    if(isDirected){
+      stop("Cannot compute directed path on an undirected graph")
+    }
+    warning("Graph type does not match isDirected specification")
+  }
+
   retPath = list()
   yearVertices = character()
   pathVertices = character()
