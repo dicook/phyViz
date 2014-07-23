@@ -60,40 +60,21 @@ data(tree)
 head(tree)
 ```
 
-Now that the tree file has been loaded, it must now be converted to its data frame object. The data frame should consist of only three columns, representing the two varieties connected by an edge weight of unity. We can see in this particular tree, there are 340 edges connecting the vertices. This **treeGraph** object will be needed in several of the subsequent graph theoretical functions derived from the **igraph** package:
+Now that the tree file has been loaded, it must now be converted into an **igraph** graph object.:The function **processTreeGraph** requires a data frame structured such that each line represents an edge, and takes optional arguments *vertexinfo* (a list of columns of the data frame which provide information for the starting "child" vertex, or a separate data frame containing information for each vertex with the first column as the vertex name), *edgeweights*, which default to 1 if not provided, and *isDirected*, which defaults to false and describes whether the graph is directed or undirected. In this example, we want an undirected graph because our goal is to determine whether two vertices (individuals) are related.
 
 ```{r}
-treeGraph <- processTreeGraph(tree)
-head(treeGraph)
-dim(treeGraph)
+myGraph <- processTreeGraph(tree)
 ```
 
-Next, the data frame object **treeGraph** must be convereted into an graph object that can be read by igraph package, using the following command:
-
-```{r}
-library(igraph)
-mygraph <- graph.data.frame(treeGraph, directed= T)
-```
-
-As a side note, you could optionally write the **treeGraph** object into a .csv file that will be saved to your working directory, and could later be visualized in the software **Cytoscape**. However, we will not be covering this option in this vignette.
-
-```{r}
-sbTreeGraph <- write.csv(treeGraph, "sbTreeGraphTest.csv")
-```
-
-At this point, you are complete with the preprocessing required to use the **phyViz** package. If you type in the command ls() into your terminal, you should see the tree object, treeGraph object, and mygraph object:
-
-```{r}
-ls()
-```
+At this point, you are complete with the preprocessing required to use the **phyViz** package. If you type in the command ls() into your terminal, you should see the tree data frame and the mygraph object.
 
 
 Functions for Individual Vertices:
 ----------------------------------------------------
 
-**phyViz** offers several back-of-the-envelope functions that you can use time-by-time on individual vertices. In this section, we will introduce them.
+**phyViz** offers several back-of-the-envelope functions that you can use to get information for individual vertices. 
 
-First, the function **isParent** can return a boolean variable to indicate whether or not the second variety is a parent of the first variety.
+First, the function **isParent** can return a logical indicator of whether the second variety is a parent of the first variety.
 
 ```{r}
 isParent("Young","Essex",tree)
@@ -187,7 +168,7 @@ We can derive from the empty list returned in the last two of the three commands
 As such, we save the path between these two varieties to a variable called **path**:
 
 ```{r}
-path <- getPath("Brim","Bedford",F, mygraph)
+path <- getPath("Brim","Bedford", mygraph, isDirected=F)
 ```
 
 Now that we have a **path** object that consists of two lists (the variety names and years), we can build a data frame object from it using the **buildPathDF** function, as shown below.
