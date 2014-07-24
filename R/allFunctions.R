@@ -87,7 +87,7 @@ isChild = function(child, parent, tree){
 #' getYear("Essex",tree)
 #' getYear("Tokyo",tree)
 getYear = function(v1, tree){
-  return(tree[which(tree$child == v1),]$year[1])
+  return(tree[which(tree[,1] == v1),]$year[1])
 }
 
 #' Determine the degree between two varieties
