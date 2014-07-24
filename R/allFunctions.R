@@ -155,8 +155,8 @@ getBasicStatistics = function(mygraph){
 #' and return the path if it exists.
 #' @param v1 the first variety
 #' @param v2 the second variety
-#' @param isDirected boolean whether or not the graph is directed
 #' @param mygraph mygraph
+#' @param isDirected boolean whether or not the graph is directed
 #' @export
 #' @examples
 #' getPath("Brim","Bedford",mygraph)
@@ -239,7 +239,6 @@ getPath = function(v1, v2, mygraph, isDirected=FALSE){
 #' to connect to the node at the next largest y-value), "yend" (the y-axis position
 #' of the outgoing edge (connected to the node at the next largest y-value))).
 #' @param path path object representing the path between two vertices
-#' @export
 buildPathDF = function(path){
   if(length(path) > 0){
     # The labels of the nodes are the names of the varieties in the path
@@ -400,6 +399,8 @@ buildSpreadTotalDF = function(t, numBin, binVector){
 #' @param p path
 #' @export
 buildMinusPathDF = function(sTDF, p){
+  ## TODO: replace this sequence with igraph functions which operate on mygraph...
+  
   if (exists(as.character(substitute(sTDF))) && exists(as.character(substitute(p))) && !is.na(sTDF) & !is.na(p)){
     label=sTDF$uniqueNode
     x=as.numeric(sTDF$uniqueYears)
@@ -429,6 +430,8 @@ buildMinusPathDF = function(sTDF, p){
 #' @param sTDF spreadTotalDF object (from the buildSpreadTotalDF function)
 #' @export
 buildEdgeTotalDF = function(tG, sTDF){
+  ## TODO: replace this sequence with igraph functions which operate on mygraph...
+  
   if (exists(as.character(substitute(tG))) && exists(as.character(substitute(sTDF))) && !is.na(sTDF) && !is.na(tG)){
     tG = tG[(tG$child %in% sTDF$uniqueNode & tG$parent %in% sTDF$uniqueNode),]
     
@@ -470,6 +473,7 @@ buildEdgeTotalDF = function(tG, sTDF){
 #' @param sTDF spreadTotalDF object (from the buildSpreadTotalDF function)
 #' @export
 buildPlotTotalDF = function(p, sTDF){
+  ## TODO: replace this sequence with igraph functions which operate on mygraph...
   if (exists(as.character(substitute(p)))
       && exists(as.character(substitute(sTDF))) && !is.na(sTDF) && !is.na(p)){
       label=path$pathVertices
