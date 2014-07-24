@@ -339,7 +339,7 @@ generatePathPlot = function(path){
 #' 
 #' Constructs a data frame object so that varieties are spread such that they do not overlap, even
 #' though the x-axis position will represent years.
-#' @param t tree
+#' @param tree tree
 #' @param numBin number of bins to equally separate the vertices into groups of years
 #' @param binVector vector of length numBin that includes any combination of each integer exactly once between unity and numBin.
 #' This vector will determine the order that increasing y index positions are repeatedly assigned to. For instance, if the
@@ -348,43 +348,46 @@ generatePathPlot = function(path){
 #' will be assigned again to a variety in the first bin of years. This vector can help minimize overlap of the labelling of varieties,
 #' without regard to how the layout affects the edges between varieties, as those edges will be colored faintly.
 #' @export
-buildSpreadTotalDF = function(t, numBin, binVector){
-  if (exists(as.character(substitute(t)))){
-      # The unique "children" in the "t"
-      uniqueChild = sort(unique(t$child))
-      # The unique "parents" in the "t"
-      uniqueParent = sort(unique(t$parent))
-      # The unique nodes in the "t"
-      uniqueNode = sort(union(uniqueChild,uniqueParent))  
-      
-      uniqueYears = c()
-      for (i in 1:length(uniqueNode)) {
-        uniqueYears = c(uniqueYears, getYear(uniqueNode[i], t))
-      }
-      totalDF = data.frame(uniqueNode = uniqueNode, uniqueYears = uniqueYears)
-      totalDF = totalDF[!is.na(totalDF$uniqueYears),]
-      totalDF = totalDF[order(totalDF$uniqueYears, decreasing=FALSE), ]
-      
-      numLabels = dim(totalDF)[1]
-      numPerBin = floor(numLabels/numBin)
-      d = split(totalDF, cut(seq(nrow(totalDF)), numBin))
-      
-      spreadTotalDF = data.frame()
-      for (i in 1:numPerBin){
-        for (j in 1:binVector){ #hcnage to 1:
-          spreadTotalDF = rbind(spreadTotalDF,d[[j]][i,])
-        }
-      }
-      for (j in binVector){
-        if (!is.na(d[[j]][i+1,][1])){
-          spreadTotalDF = rbind(spreadTotalDF,d[[j]][i+1,])
-        }
-      } 
+buildSpreadTotalDF = function(tree, numBin, binVector){
+  ## TODO: replace this sequence with igraph functions which operate on mygraph...
+  
+  if(!is.data.frame(tree)){
+    stop("tree should be a data frame")
+  }
+  if(sum(names(tree)%in%c("parent", "child"))!=2){
+    stop("tree needs to contain columns named 'parent' and 'child'")
+  }
+
+
+  # The unique "children" in the "t"
+  uniqueChild = sort(unique(tree$child))
+  # The unique "parents" in the "t"
+  uniqueParent = sort(unique(tree$parent))
+  # The unique nodes in the "t"
+  uniqueNode = sort(union(uniqueChild,uniqueParent))  
+  
+  uniqueYears <- sapply(uniqueNode, getYear, tree=tree)
+  
+  totalDF = data.frame(uniqueNode = uniqueNode, uniqueYears = uniqueYears)
+  totalDF = totalDF[!is.na(totalDF$uniqueYears),]
+  totalDF = totalDF[order(totalDF$uniqueYears, decreasing=FALSE), ]
+  
+  numLabels = dim(totalDF)[1]
+  numPerBin = floor(numLabels/numBin)
+  d = split(totalDF, cut(seq(nrow(totalDF)), numBin))
+  
+  spreadTotalDF = data.frame()
+  for (i in 1:numPerBin){
+    for (j in 1:binVector){ #hcnage to 1:
+      spreadTotalDF = rbind(spreadTotalDF,d[[j]][i,])
     }
-    else{
-      print("Warning: There was no inputted tree.")
-      spreadTotalDF = NA
+  }
+  for (j in binVector){
+    if (!is.na(d[[j]][i+1,][1])){
+      spreadTotalDF = rbind(spreadTotalDF,d[[j]][i+1,])
     }
+  } 
+
   # Return the data frame where labels are spread
   spreadTotalDF
 }
