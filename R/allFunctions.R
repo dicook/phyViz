@@ -8,6 +8,7 @@
 #' @export
 processTreeGraph = function(tree, vertexinfo = NULL, edgeweights = 1, isDirected=FALSE){
   require(igraph)
+  require(plyr)
   if(!is.data.frame(tree)){
     stop("t must be a data frame")
   }
@@ -114,6 +115,7 @@ getDegree = function(v1, v2, mygraph){
 #' @examples
 #' getBasicStatistics(mygraph)
 getBasicStatistics = function(mygraph){
+  require(igraph)
   if(class(mygraph)!="igraph"){
     stop("mygraph must be an igraph object.")
   }
@@ -283,14 +285,21 @@ buildPathDF = function(path){
 
 #' Construct the graphic object of the path
 #' 
-#' This function takes the path data frame as input, and outputs an ggplot2 object. The
+#' This function takes the path as input and outputs an ggplot2 object. The
 #' image will correctly position the node labels with x-axis representing the node
 #' year, and y-axis representing the node path index. Edges between two nodes represent
 #' parent-child relationships between those nodes. For visual appeal, there is a grey
 #' box that outlines the node label, as well as an underline and overline for each label.
-#' @param pPDF plotPathDF object created from function buildPathDF
+#' @param path object created from function getPath
 #' @export
-generatePathPlot = function(pPDF){
+generatePathPlot = function(path){
+  if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
+    stop("path does not appear to be a result of the getPath() function")
+  }
+  require(ggplot2)
+  
+  pPDF <- buildPathDF(path)
+  
   if (length(dim(pPDF))>1){ # check to make sure pPDF is a data frame
     # The textFrame object will be used to create a grey rectangle around each node label
     textFrame = data.frame(x = pPDF$x, y = pPDF$y, label = pPDF$label)
@@ -862,6 +871,7 @@ generateGenPlot = function(gDF){
 #' @param varieties subset of varieties used to generate the heat map
 #' @export
 buildDegMatrix = function(varieties){
+  require(reshape2)
   matVar = matrix(, nrow = length(varieties), ncol = length(varieties))
   for (i in 1:length(varieties)){
     for (j in 1:length(varieties)){
@@ -887,6 +897,7 @@ buildDegMatrix = function(varieties){
 #' @param varieties subset of varieties used to generate the heat map
 #' @export
 buildYearMatrix = function(varieties){
+  require(reshape2)
   matVar = matrix(, nrow = length(varieties), ncol = length(varieties))
   for (i in 1:length(varieties)){
     for (j in 1:length(varieties)){
