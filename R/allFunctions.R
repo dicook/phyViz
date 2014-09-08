@@ -1,17 +1,43 @@
 #' Process the tree graph
 #' 
-#' Processes the tree into a treeGraph object with appropriately labeled columns and format for analysis.
-#' @param t tree
+#' Processes the tree into a igraph graph with appropriate vertex information, graph type, and edge weights. 
+#' @param tree A data frame representing tree information, containing one row for each EDGE, with at least two columns named parent and child, respectively, representing vertices connected by an edge. Terminal nodes should have "NA" for parent in order to preserve vertex information. 
+#' @param vertexinfo (default NULL) either names of columns in t which should be added to the database as vertex information or a data frame with information for all vertices such that the first column contains vertex names.
+#' @param edgeweights (default 1) name of a column which contains edge weights
+#' @param isDirected (default FALSE) should the graph be a directed graph?
 #' @export
-processTreeGraph = function(t){
-  treeGraph = as.data.frame(cbind(t$child, t$parent))
-  # Remove any rows with "NA" relationship (340*2)
-  treeGraph = treeGraph[-which(is.na(t$parent)),]
-  # Add an edge weight to each pair of vertices (all of weight value equal to one)
-  treeGraph = cbind(treeGraph, rep(1, dim(treeGraph)[1]))
-  # Add column names the tree (treeGraph has dimensions 340*3)
-  colnames(treeGraph) = c("child","parent","edgeWt")
-  treeGraph
+processTreeGraph = function(tree, vertexinfo = NULL, edgeweights = 1, isDirected=FALSE){
+  require(igraph)
+  require(plyr)
+  if(!is.data.frame(tree)){
+    stop("t must be a data frame")
+  }
+  
+  if(!("parent"%in%names(tree) & "child"%in%names(tree))){
+    stop("tree must contain columns named 'parent' and 'child'")
+  }
+  
+  if(is.null(vertexinfo)){
+    nodes <- unique(c(tree$child, tree$parent))
+    nodes <- nodes[!is.na(nodes)]
+  } else if(is.character(vertexinfo)){
+    nodes <- tree[,c("child", vertexinfo)]
+    # add in any parents who are not in the list of children, sans any vertex information
+    if(sum(!tree$parent%in%tree$child & !is.na(tree$parent))>0){
+      nodes <- rbind.fill(nodes, data.frame(child=unique(tree$parent[!tree$parent%in%tree$child & !is.na(tree$parent)]), stringsAsFactors = FALSE))
+    }
+    nodes <- unique(nodes)
+  } else if(is.data.frame(vertexinfo)) {
+    nodes <- unique(vertexinfo)
+  } else {
+    stop("vertexinfo should be either NULL, a character vector, or a data frame")
+  }
+  
+  edges <- subset(tree, !is.na(parent) & !is.na(child))[,c("child", "parent")]
+  edges$weight <- edgeweights
+
+  
+  graph.data.frame(d=edges, directed=isDirected, vertices=nodes)
 }
 
 #' Determine if a variety is a parent of another
@@ -61,7 +87,7 @@ isChild = function(child, parent, tree){
 #' getYear("Essex",tree)
 #' getYear("Tokyo",tree)
 getYear = function(v1, tree){
-  return(tree[which(tree$child == v1),]$year[1])
+  return(tree[which(tree[,1] == v1),]$year[1])
 }
 
 #' Determine the degree between two varieties
@@ -75,7 +101,7 @@ getYear = function(v1, tree){
 #' @examples
 #' getDegree("Brim","Bedford",mygraph)
 getDegree = function(v1, v2, mygraph){
-  path = getPath(v1, v2, F, mygraph)
+  path <- getPath(v1=v1, v2=v2, mygraph=mygraph, isDirected=F)
   # The degree between two vertices is equal to one less than the number of nodes in the shortest path
   return(length(path$pathVertices)-1)
 }
@@ -89,6 +115,10 @@ getDegree = function(v1, v2, mygraph){
 #' @examples
 #' getBasicStatistics(mygraph)
 getBasicStatistics = function(mygraph){
+  require(igraph)
+  if(class(mygraph)!="igraph"){
+    stop("mygraph must be an igraph object.")
+  }
   retStats = list()
   # Get edge and node count from "structure.info" function of igraph
   numNodes = vcount(mygraph)
@@ -127,12 +157,31 @@ getBasicStatistics = function(mygraph){
 #' @param v2 the second variety
 #' @param mygraph mygraph
 #' @param silent Print output? Defaults to FALSE. 
+#' @param isDirected boolean whether or not the graph is directed, defaults to FALSE
 #' @export
 #' @examples
 #' getPath("Brim","Bedford",mygraph)
 #' getPath("Tokyo","Volstate",mygraph)
-getPath = function(v1, v2, mygraph, silent=FALSE){
+getPath = function(v1, v2, mygraph, silent=FALSE, isDirected=FALSE){
   require(igraph)
+  if(!is.character(v1) & !is.character(v2)){
+    stop("First two arguments must be strings")
+  } else {
+    if(!v1%in%V(mygraph)$name){
+      warning("v1 is not a graph vertex")
+    }
+    if(!v2%in%V(mygraph)$name){
+      warning("v2 is not a graph vertex")
+    }
+  }
+  
+  if(is.directed(mygraph) != isDirected){
+    if(isDirected){
+      stop("Cannot compute directed path on an undirected graph")
+    }
+    warning("Graph type does not match isDirected specification")
+  }
+
   retPath = list()
   yearVertices = character()
   pathVertices = character()
@@ -189,7 +238,6 @@ getPath = function(v1, v2, mygraph, silent=FALSE){
 #' to connect to the node at the next largest y-value), "yend" (the y-axis position
 #' of the outgoing edge (connected to the node at the next largest y-value))).
 #' @param path path object representing the path between two vertices
-#' @export
 buildPathDF = function(path){
   if(length(path) > 0){
     # The labels of the nodes are the names of the varieties in the path
@@ -235,14 +283,21 @@ buildPathDF = function(path){
 
 #' Construct the graphic object of the path
 #' 
-#' This function takes the path data frame as input, and outputs an ggplot2 object. The
+#' This function takes the path as input and outputs an ggplot2 object. The
 #' image will correctly position the node labels with x-axis representing the node
 #' year, and y-axis representing the node path index. Edges between two nodes represent
 #' parent-child relationships between those nodes. For visual appeal, there is a grey
 #' box that outlines the node label, as well as an underline and overline for each label.
-#' @param pPDF plotPathDF object created from function buildPathDF
+#' @param path object created from function getPath
 #' @export
-generatePathPlot = function(pPDF){
+generatePathPlot = function(path){
+  if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
+    stop("path does not appear to be a result of the getPath() function")
+  }
+  require(ggplot2)
+  
+  pPDF <- buildPathDF(path)
+  
   if (length(dim(pPDF))>1){ # check to make sure pPDF is a data frame
     # The textFrame object will be used to create a grey rectangle around each node label
     textFrame = data.frame(x = pPDF$x, y = pPDF$y, label = pPDF$label)
@@ -283,53 +338,35 @@ generatePathPlot = function(pPDF){
 #' 
 #' Constructs a data frame object so that varieties are spread such that they do not overlap, even
 #' though the x-axis position will represent years.
-#' @param t tree
-#' @param numBin number of bins to equally separate the vertices into groups of years
-#' @param binVector vector of length numBin that includes any combination of each integer exactly once between unity and numBin.
-#' This vector will determine the order that increasing y index positions are repeatedly assigned to. For instance, if the
-#' numBin = 12, and binVector = c(1,4,7,10,2,5,8,11,3,6,9,12), then y-axis position one will be assigned to a variety in the first
+#' @param mygraph mygraph object
+#' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
+#' This vector will determine the order that increasing y index positions are repeatedly assigned to. For instance, if binVector = c(1,4,7,10,2,5,8,11,3,6,9,12), then y-axis position one will be assigned to a variety in the first
 #' bin of years, y-axis position two will be assigned to a variety in the fourth bin of years, ...., and y-axis position thirteen
 #' will be assigned again to a variety in the first bin of years. This vector can help minimize overlap of the labelling of varieties,
 #' without regard to how the layout affects the edges between varieties, as those edges will be colored faintly.
 #' @export
-buildSpreadTotalDF = function(t, numBin, binVector){
-  if (exists(as.character(substitute(t)))){
-      # The unique "children" in the "t"
-      uniqueChild = sort(unique(t$child))
-      # The unique "parents" in the "t"
-      uniqueParent = sort(unique(t$parent))
-      # The unique nodes in the "t"
-      uniqueNode = sort(union(uniqueChild,uniqueParent))  
-      
-      uniqueYears = c()
-      for (i in 1:length(uniqueNode)) {
-        uniqueYears = c(uniqueYears, getYear(uniqueNode[i], t))
-      }
-      totalDF = data.frame(uniqueNode = uniqueNode, uniqueYears = uniqueYears)
-      totalDF = totalDF[!is.na(totalDF$uniqueYears),]
-      totalDF = totalDF[order(totalDF$uniqueYears, decreasing=FALSE), ]
-      
-      numLabels = dim(totalDF)[1]
-      numPerBin = floor(numLabels/numBin)
-      d = split(totalDF, cut(seq(nrow(totalDF)), numBin))
-      
-      spreadTotalDF = data.frame()
-      for (i in 1:numPerBin){
-        for (j in 1:binVector){ #hcnage to 1:
-          spreadTotalDF = rbind(spreadTotalDF,d[[j]][i,])
-        }
-      }
-      for (j in binVector){
-        if (!is.na(d[[j]][i+1,][1])){
-          spreadTotalDF = rbind(spreadTotalDF,d[[j]][i+1,])
-        }
-      } 
-    }
-    else{
-      print("Warning: There was no inputted tree.")
-      spreadTotalDF = NA
-    }
-  # Return the data frame where labels are spread
+buildSpreadTotalDF = function(mygraph, binVector=1:12){
+  if(class(mygraph)!="igraph"){
+    stop("mygraph must be an igraph object.")
+  }
+  
+  if(sum(1:length(binVector)%in%binVector)!=length(binVector)){
+    stop("binVector must contain all numbers 1:length(binVector)")
+  }
+  
+  totalDF = get.data.frame(mygraph, "vertices")
+  totalDF = totalDF[!is.na(totalDF$name),]
+  totalDF = totalDF[order(totalDF$year, decreasing=FALSE), ]
+  
+  numrows <- ceiling(nrow(totalDF)/length(binVector))
+
+  idx <- matrix(1:(numrows*length(binVector)), ncol=length(binVector), nrow=numrows, byrow=TRUE)
+  idx <- idx[, binVector]
+  idx <- as.numeric(t(idx))[1:nrow(totalDF)]
+
+  spreadTotalDF <- totalDF
+  spreadTotalDF$y <- jitter(rep(1:numrows, length.out=nrow(totalDF)), amount=.5)[idx]
+
   spreadTotalDF
 }
 
@@ -339,68 +376,96 @@ buildSpreadTotalDF = function(t, numBin, binVector){
 #' as inputs. From these objects, it creates a data frame object of the label, x, and y values of all nodes
 #' in the tree. However, the data frame object does not include the labels of the path varieties, as they
 #' will be treated differently.
-#' @param sTDF spreadTotalDF object (from the buildSpreadTotalDF function)
-#' @param p path
+#' @param path path as returned from getPath() or a vector of two variety names which exist in mygraph
+#' @param mygraph mygraph object
+#' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
 #' @export
-buildMinusPathDF = function(sTDF, p){
-  if (exists(as.character(substitute(sTDF))) && exists(as.character(substitute(p))) && !is.na(sTDF) & !is.na(p)){
-    label=sTDF$uniqueNode
-    x=as.numeric(sTDF$uniqueYears)
-    y=seq(1, length(label), 1)
-    # If the label is part of the path, then we change the its value to NA
-    for (i in 1:length(label)){
-      if (label[i]%in%p$pathVertices){
-        label[i]=NA
-      }
+buildMinusPathDF = function(path, mygraph, binVector=1:12){
+  
+  if(class(mygraph)!="igraph"){
+    stop("mygraph must be an igraph object")
+  }
+  
+  if(sum(1:length(binVector)%in%binVector)!=length(binVector)){
+    stop("binVector must contain all numbers 1:length(binVector)")
+  }
+  
+  if(mode(path)=="character"){
+    if(length(path)!=2){
+      stop("path needs to contain two variety names")
     }
-    plotMinusPathDF = data.frame(label,x,y)
+    varieties <- path
+    path <- getPath(varieties[1], varieties[2], mygraph)
+  } else if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
+    stop("path does not appear to be a result of the getPath() function")
+  } 
+  
+  tG <- buildSpreadTotalDF(mygraph, binVector)
+  eG <- get.data.frame(mygraph, "edges")
+  
+  label=tG$name
+  x=tG$year
+  y=tG$y
+  # If the label is part of the path, then we change the its value to NA
+  for (i in 1:length(label)){
+    if (label[i]%in%path$pathVertices){
+      label[i]=NA
+    }
   }
-  else{
-    print("Warning: Either the spreadTotalDF or path object does not exist")
-    plotMinusPathDF = NA
-  }
+  plotMinusPathDF = data.frame(label,x,y)
+  
   # Return the data frame object of the total tree
   plotMinusPathDF
 }
 
 #' Build the edges in the  total tree graph
 #' 
-#' This function takes the spreadTotalDF object (from the buildSpreadTotalDF function) and the treeGraph object
-#' as inputs. From these objects, it creates a data frame object of the edges between all parent-child
+#' This function takes the a mygraph object and creates a data frame object of the edges between all parent-child
 #' relationships in the graph
-#' @param tG treeGraph
-#' @param sTDF spreadTotalDF object (from the buildSpreadTotalDF function)
+#' @param mygraph mygraph object from processTreeGraph
+#' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
 #' @export
-buildEdgeTotalDF = function(tG, sTDF){
-  if (exists(as.character(substitute(tG))) && exists(as.character(substitute(sTDF))) && !is.na(sTDF) && !is.na(tG)){
-    tG = tG[(tG$child %in% sTDF$uniqueNode & tG$parent %in% sTDF$uniqueNode),]
-    
-    # edgeTotalDF used in function generateTotalPlot()
-    numEdges = dim(tG)[1]
-    x=as.numeric(rep("",numEdges))
-    y=as.numeric(rep("",numEdges))
-    xend=as.numeric(rep("",numEdges))
-    yend=as.numeric(rep("",numEdges))
-    # For each edge in the graph
-    for (i in 1:numEdges){
-      xname = as.character(tG[i,]$child)
-      xendname = as.character(tG[i,]$parent)
-      x_i = getYear(xname, tree)
-      xend_i = getYear(xendname, tree)
-      y_i = which(sTDF$uniqueNode==xname)
-      yend_i = which(sTDF$uniqueNode==xendname)
-      x[i] = x_i
-      xend[i] = xend_i
-      y[i] = y_i
-      yend[i] = yend_i
+buildEdgeTotalDF = function(mygraph, binVector=1:12){
+
+  if(class(mygraph)!="igraph"){
+    stop("mygraph must be an igraph object")
+  }
+  
+  if(sum(1:length(binVector)%in%binVector)!=length(binVector)){
+    stop("binVector must contain all numbers 1:length(binVector)")
+  }
+  
+  tG <- buildSpreadTotalDF(mygraph, binVector)
+  eG <- get.data.frame(mygraph, "edges")
+
+  # edgeTotalDF used in function generateTotalPlot()
+  numEdges = length(E(mygraph))
+  x=as.numeric(rep("",numEdges))
+  y=as.numeric(rep("",numEdges))
+  xend=as.numeric(rep("",numEdges))
+  yend=as.numeric(rep("",numEdges))
+  # For each edge in the graph
+  for (i in 1:numEdges){
+    xname = as.character(eG[i,]$from)
+    xendname = as.character(eG[i,]$to)
+    x_i = getYear(xname, tG)
+    xend_i = getYear(xendname, tG)
+    if(!xname%in%tG$name) {
+      stop(paste(xname, "cannot be found in mygraph vertices"))
     }
-    # Create a dataframe containing the start and end positions of the x and y axes
-    edgeTotalDF = as.data.frame(cbind(x, y, xend, yend))
+    if(!xendname%in%tG$name) {
+      stop(paste(xendname, "cannot be found in mygraph vertices"))
+    }
+    y_i = tG$y[which(tG$name==xname)]
+    yend_i = tG$y[which(tG$name==xendname)]
+    x[i] = x_i
+    xend[i] = xend_i
+    y[i] = y_i
+    yend[i] = yend_i
   }
-  else{
-    print("Warning: Either the treeGraph or path object does not exist")
-    edgeTotalDF = NA
-  }
+  # Create a dataframe containing the start and end positions of the x and y axes
+  edgeTotalDF = as.data.frame(cbind(x, y, xend, yend))
+
   edgeTotalDF
 }
 
@@ -409,71 +474,109 @@ buildEdgeTotalDF = function(tG, sTDF){
 #' This function takes the spreadTotalDF object (from the buildSpreadTotalDF function) and the path object
 #' as inputs. From these objects, it creates a data frame object of the text label positions for the
 #' varieties in the path, as well as the edges only in the varieties in the path.
-#' @param p path
-#' @param sTDF spreadTotalDF object (from the buildSpreadTotalDF function)
+#' @param path path as returned from getPath() or a vector of two variety names which exist in mygraph
+#' @param mygraph mygraph object
+#' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
 #' @export
-buildPlotTotalDF = function(p, sTDF){
-  if (exists(as.character(substitute(p)))
-      && exists(as.character(substitute(sTDF))) && !is.na(sTDF) && !is.na(p)){
-      label=path$pathVertices
-      x=as.numeric(path$yearVertices)
-      xstart=x
-      xend=rep(0,length(label))
-      ystart=rep(0,length(label))
-      yend=rep(0,length(label))
-      for (i in 2:length(label)){
-        ystart[i-1] = match(label[i-1], spreadTotalDF$uniqueNode)
-        yend[i-1] = match(label[i], spreadTotalDF$uniqueNode)
-        xend[i-1] = xstart[i]
-      }
-      ystart[i] = yend[i-1]
-      yend[i] = ystart[i]
-      xend[i] = xstart[i]
-      y = ystart
-      plotTotalDF = data.frame(label,xstart,ystart,xend,yend,x,y)
+buildPlotTotalDF = function(path, mygraph, binVector=1:12){
+  if(class(mygraph)!="igraph"){
+    stop("mygraph must be an igraph object")
   }
+  
+  if(mode(path)=="character"){
+    if(length(path)!=2){
+      stop("path needs to contain two variety names")
+    }
+    varieties <- path
+    path <- getPath(varieties[1], varieties[2], mygraph)
+  } else if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
+    stop("path does not appear to be a result of the getPath() function")
+  } 
+  
+  
+  if(sum(1:length(binVector)%in%binVector)!=length(binVector)){
+    stop("binVector must contain all numbers 1:length(binVector)")
+  }
+  
+  tG <- buildSpreadTotalDF(mygraph, binVector)
+
+  label=path$pathVertices
+  x=as.numeric(path$yearVertices)
+  xstart=x
+  xend=rep(0,length(label))
+  ystart=rep(0,length(label))
+  yend=rep(0,length(label))
+  for (i in 2:length(label)){
+    ystart[i-1] = tG$y[match(label[i-1], tG$name)]
+    yend[i-1] = tG$y[match(label[i], tG$name)]
+    xend[i-1] = xstart[i]
+  }
+  ystart[i] = yend[i-1]
+  yend[i] = ystart[i]
+  xend[i] = xstart[i]
+  y = ystart
+  plotTotalDF = data.frame(label,xstart,ystart,xend,yend,x,y)
+
   plotTotalDF
 }
 
 
 #' Build the image object of the whole tree with the path superimposed onto it
 #' 
-#' This function takes four data frames as inputs, and outputs an ggplot2 object. The
-#' image will correctly position the node labels with x-axis representing the node
+#' This function requires a path and the mygraph object, and plots the entire tree 
+#' with the path highlighted.
+#' The image will correctly position the node labels with x-axis representing the node
 #' year, and y-axis representing the node path index. Light grey edges between two nodes
 #' represent parent-child relationships between those nodes. To enhance the visual
 #' understanding of how the path-of-interest fits into the entire graph structure, the
 #' nodes within the path are labelled in boldface, and connected with light-green
 #' boldfaced edges.
-#' @param pMPDF plotMinusPathDF (built from the buildMinusPathDF function)
-#' @param eTDF edgeTotalDF (built from the buildEdgeTotalDF function)
-#' @param pTDF plotTotalDF (built from the buildPlotTotalDF function)
-#' @param pPDF plotPathDF (built from the buildPathDF function)
+#' @param path path as returned from getPath() or a vector of two variety names which exist in mygraph
+#' @param mygraph mygraph object
+#' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
 #' @export
-generateTotalPlot = function(pMPDF, eTDF, pTDF){
-    textFrame = data.frame(x = pMPDF$x, y = pMPDF$y, label = pMPDF$label)
-    textFrame = transform(textFrame,
-                          w = strwidth(pMPDF$label, 'inches') + 0.25,
-                          h = strheight(pMPDF$label, 'inches') + 0.25
-    )
+generateTotalPlot = function(path, mygraph, binVector=sample(1:12, 12)){
+  if(class(mygraph)!="igraph"){
+    stop("mygraph must be an igraph object")
+  }
+  
+  if(mode(path)=="character"){
+    if(length(path)!=2){
+      stop("path needs to contain two variety names")
+    }
+    varieties <- path
+    path <- getPath(varieties[1], varieties[2], mygraph)
+  } else if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
+    stop("path does not appear to be a result of the getPath() function")
+  } 
+  
+  pMPDF <- buildMinusPathDF(path, mygraph, binVector)
+  eTDF <- buildEdgeTotalDF(mygraph, binVector)
+  pTDF <- buildPlotTotalDF(path, mygraph, binVector)
+  
+  textFrame = data.frame(x = pMPDF$x, y = pMPDF$y, label = pMPDF$label)
+  textFrame = transform(textFrame,
+                        w = strwidth(pMPDF$label, 'inches') + 0.25,
+                        h = strheight(pMPDF$label, 'inches') + 0.25
+  )
     
-    # The plotTotalImage object creates two line segments (geom_segment), one to create grey
-    # edges for non-path connections between pairs of nodes, the other to create light-green
-    # edges for path connections between pairs of nodes; and two labels (geom_text), one to
-    # create labels of size 2 for non-path connections between pairs of nodes, the other to
-    # create labels of size 2.5 and boldfaced for path connections between pairs of nodes.
-    plotTotalImage = ggplot(data = pMPDF, aes(x = x, y = y)) +
-      geom_segment(data = eTDF, aes(x=x, y=y-.1, xend=xend, yend=yend+.1), colour = "gray84") +
-      geom_segment(data = pTDF, aes(x=xstart, y=ystart, xend=xend, yend=yend), colour = "seagreen2", size = 1) +
-      geom_text(data = textFrame,aes(x = x, y = y, label = label), size = 2) +
-      geom_text(data = pTDF,aes(x = x, y = y, label = label), size = 2.5,  fontface="bold") +
-      xlab("Year") +
-      
-      # Erase the y-axis, and only include grids from the x-axis
-      theme(axis.text.y=element_blank(),axis.ticks.y=element_blank(),
-            axis.title.y=element_blank(),legend.position="none",
-            panel.grid.major.y=element_blank(),
-            panel.grid.minor=element_blank())
+  # The plotTotalImage object creates two line segments (geom_segment), one to create grey
+  # edges for non-path connections between pairs of nodes, the other to create light-green
+  # edges for path connections between pairs of nodes; and two labels (geom_text), one to
+  # create labels of size 2 for non-path connections between pairs of nodes, the other to
+  # create labels of size 2.5 and boldfaced for path connections between pairs of nodes.
+  plotTotalImage = ggplot(data = pMPDF, aes(x = x, y = y)) +
+    geom_segment(data = eTDF, aes(x=x, y=y-.1, xend=xend, yend=yend+.1), colour = "gray84") +
+    geom_segment(data = pTDF, aes(x=xstart, y=ystart, xend=xend, yend=yend), colour = "seagreen2", size = 1) +
+    geom_text(data = textFrame,aes(x = x, y = y, label = label), size = 2) +
+    geom_text(data = pTDF,aes(x = x, y = y, label = label), size = 2.5,  fontface="bold") +
+    xlab("Year") +
+    
+    # Erase the y-axis, and only include grids from the x-axis
+    theme(axis.text.y=element_blank(),axis.ticks.y=element_blank(),
+          axis.title.y=element_blank(),legend.position="none",
+          panel.grid.major.y=element_blank(),
+          panel.grid.minor=element_blank())
   # Return the plotTotalImage
   plotTotalImage
 }
@@ -814,6 +917,7 @@ generateGenPlot = function(gDF){
 #' @param varieties subset of varieties used to generate the heat map
 #' @export
 buildDegMatrix = function(varieties){
+  require(reshape2)
   matVar = matrix(, nrow = length(varieties), ncol = length(varieties))
   for (i in 1:length(varieties)){
     for (j in 1:length(varieties)){
@@ -839,6 +943,7 @@ buildDegMatrix = function(varieties){
 #' @param varieties subset of varieties used to generate the heat map
 #' @export
 buildYearMatrix = function(varieties){
+  require(reshape2)
   matVar = matrix(, nrow = length(varieties), ncol = length(varieties))
   for (i in 1:length(varieties)){
     for (j in 1:length(varieties)){

@@ -11,7 +11,7 @@ How to use the package phyViz
 The very first thing to do is to load the necessary libraries and the example tree (tree.rda). 
 
 ```{r}
-# library(phyViz)
+library(phyViz)
 data(tree)
 ```
 
