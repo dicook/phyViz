@@ -125,19 +125,19 @@ getBasicStatistics = function(mygraph){
 #' and return the path if it exists.
 #' @param v1 the first variety
 #' @param v2 the second variety
-#' @param isDirected boolean whether or not the graph is directed
 #' @param mygraph mygraph
+#' @param silent Print output? Defaults to FALSE. 
 #' @export
 #' @examples
 #' getPath("Brim","Bedford",mygraph)
 #' getPath("Tokyo","Volstate",mygraph)
-getPath = function(v1, v2, isDirected, mygraph){
+getPath = function(v1, v2, mygraph, silent=FALSE){
   require(igraph)
   retPath = list()
   yearVertices = character()
   pathVertices = character()
   # If the tree is directed
-  if (isDirected){
+  if (is.directed(mygraph)){
     # We need to look at both forward and reverse cases of directions, because the user may not know
     # the potential direction of a path between the two vertices
     pathVIndicesForward = get.shortest.paths(mygraph, v1, v2, weights = NA, output="vpath")$vpath[[1]]
@@ -158,10 +158,7 @@ getPath = function(v1, v2, isDirected, mygraph){
       }
       retPath = list(pathVertices = pathVertices, yearVertices = yearVertices)
     }
-  }
-  # If the tree is undirected
-  if (!isDirected){
-    mygraph = graph.data.frame(treeGraph, directed= F)
+  } else {
     # The direction does not matter, any shortest path between the vertices will be listed
     pathVIndices = get.shortest.paths(mygraph, v1, v2, weights = NA, output="vpath")$vpath[[1]]
     if (length(pathVIndices) != 0){
@@ -172,8 +169,8 @@ getPath = function(v1, v2, isDirected, mygraph){
       retPath = list(pathVertices = pathVertices, yearVertices = yearVertices)
     }
   }
-  if(length(retPath)==0){
-    print("Warning: There is no path between those two vertices")
+  if(length(retPath)==0 & !silent){
+    message("Warning: There is no path between those two vertices")
   }
   # Return the shortest path, if it exists
   retPath
