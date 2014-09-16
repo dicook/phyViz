@@ -10,7 +10,7 @@ How to use the package **phyViz**
 <!---
 **Author:** Lindsay Rutter (lrutter@iastate.edu), Susan Vanderplas (skoons@iastate.edu)
 
-**Date:** April 25, 2014
+**Date:** Sep 16, 2014
 -->
 **Description:** The **phyViz** package allows phylogeneticists to visualize and interpret their trees in multiple ways, which each come with their pros and cons. This vignette is intended to walk you through the different options available to you with this package.
 
