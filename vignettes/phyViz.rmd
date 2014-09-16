@@ -8,7 +8,7 @@
 How to use the package **phyViz**
 ========================================================
 <!---
-**Author:** Lindsay Rutter (lrutter@iastate.edu)
+**Author:** Lindsay Rutter (lrutter@iastate.edu), Susan Vanderplas (skoons@iastate.edu)
 
 **Date:** April 25, 2014
 -->
