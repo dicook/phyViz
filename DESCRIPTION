@@ -1,12 +1,13 @@
 Package: phyViz
 Type: Package
 Title: Phylogenetic Visualization
-Description: Enhances visualization of phylogenetic trees with multiple image options.
+Description: Enhances visualization of phylogenetic trees with multiple image
+    options.
 Version: 0.1
-Author: Lindsay Rutter <lrutter@iastate.edu>, Susan Vanderplas <srvanderplas@gmail.com>, Di Cook <dicook@iastate.edu>
+Author: Lindsay Rutter <lrutter@iastate.edu>, Susan Vanderplas
+    <srvanderplas@gmail.com>, Di Cook <dicook@iastate.edu>
 Maintainer: Lindsay Rutter <lrutter@iastate.edu>
 License: GPL
-Collate: 'allFunctions.R'
 Depends:
     R (>= 3.0.2),
     igraph (>= 0.7.0),
