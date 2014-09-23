@@ -10,9 +10,9 @@ How to use the package **phyViz**
 <!---
 **Author:** Lindsay Rutter (lrutter@iastate.edu), Susan Vanderplas (skoons@iastate.edu)
 
-**Date:** Sep 16, 2014
+**Date:** Sep 23, 2014
 -->
-**Description:** The **phyViz** package allows phylogeneticists to visualize and interpret their trees in multiple ways, which each come with their pros and cons. This vignette is intended to walk you through the different options available to you with this package.
+**Description:** The **phyViz** package allows phylogeneticists to visualize and interpret their trees in multiple ways, each which come with their pros and cons. This vignette is intended to walk you through the different options available to you with this package.
 
 **Caution:** igraph must be used with version 0.7.0
 
@@ -51,45 +51,46 @@ library(reshape2)
 library(ggplot2)
 library(stringr)
 library(igraph)
+library(knitr)
 ```
 
-In the **phyViz** package, there is an example file containing phylogenetic tree of soybean varieties called **tree.rda**. It may be helpful to load that example file so that you can follow along with the commands and options introduced in this vignette. To ensure that you have uploaded the correct, raw **tree.rda** file, you can observe the first six lines of it:
+In the **phyViz** package, there is an example file containing phylogenetic tree of soybean varieties called **sbTree.rda**. It may be helpful to load that example file so that you can follow along with the commands and options introduced in this vignette. To ensure that you have uploaded the correct, raw **sbTree.rda** file, you can observe the first six lines of it:
 
 ```{r}
-data(tree)
-head(tree)
+data(sbTree)
+head(sbTree)
 ```
 
-Now that the tree file has been loaded, it must now be converted into an **igraph** graph object.:The function **processTreeGraph** requires a data frame structured such that each line represents an edge, and takes optional arguments *vertexinfo* (a list of columns of the data frame which provide information for the starting "child" vertex, or a separate data frame containing information for each vertex with the first column as the vertex name), *edgeweights*, which default to 1 if not provided, and *isDirected*, which defaults to false and describes whether the graph is directed or undirected. In this example, we want an undirected graph because our goal is to determine whether two vertices (individuals) are related.
+Now that the sbTree file has been loaded, it must now be converted into an **igraph** graph object. The function **processTreeGraph** requires a data frame structured such that each line represents an edge, and takes optional arguments *vertexinfo* (a list of columns of the data frame which provide information for the starting "child" vertex, or a separate data frame containing information for each vertex with the first column as the vertex name), *edgeweights*, which default to 1 if not provided, and *isDirected*, which defaults to false and describes whether the graph is directed or undirected. In this example, we want an undirected graph because our goal is to determine whether two vertices (individuals) are related.
 
 ```{r}
-mygraph <- processTreeGraph(tree)
+ig <- processTreeGraph(sbTree)
 ```
 
-We can add the other data we have about each of the nodes in mygraph in several ways. The tree dataset contains informatino about each child; to add that data as is to the tree, we can use the following command: 
+We can add the other data we have about each of the nodes in ig in several ways. The sbTree dataset contains information about each child; to add that data as is to the tree, we can use the following command: 
 
 ```{r}
-mygraph <- processTreeGraph(tree, vertexinfo=c("year", "yield", "year.imputed", "min.repro.year"))
+ig <- processTreeGraph(sbTree, vertexinfo=c("year", "yield", "year.imputed", "min.repro.year"))
 ```
 
 If we have separate data sets with node information, we can use that instead. For the example dataset, we must first obtain the node information: 
 
 ```{r}
 library(plyr)
-nodes <- unique(tree[,1:5])
+nodes <- unique(sbTree[,1:5])
 
 # get a data frame of all parents whose parents are not known (i.e. parents who are not listed as children as well)
-extra.nodes <- unique(data.frame(child=tree$parent[!tree$parent%in%tree$child & !is.na(tree$parent)], stringsAsFactors=FALSE))
+extra.nodes <- unique(data.frame(child=sbTree$parent[!sbTree$parent%in%sbTree$child & !is.na(sbTree$parent)], stringsAsFactors=FALSE))
 
 # We may not have information for these extra nodes, but they still need to be included in the dataset
 nodes <- rbind.fill(nodes, extra.nodes)
 rm(extra.nodes)
 
 # We can now specify our vertex information using the data frame nodes: 
-mygraph <- processTreeGraph(tree, vertexinfo=nodes)
+ig <- processTreeGraph(sbTree, vertexinfo=nodes)
 ```
 
-The mygraph object is used in many of the other functions included with this package. 
+The ig object is used in many of the other functions included with this package. 
 
 
 Functions for Individual Vertices:
@@ -100,22 +101,22 @@ Functions for Individual Vertices:
 First, the function **isParent** can return a logical indicator of whether the second variety is a parent of the first variety.
 
 ```{r}
-isParent("Young","Essex",tree)
-isParent("Essex","Young",tree)
+isParent("Young","Essex",sbTree)
+isParent("Essex","Young",sbTree)
 ```
 
 Similarly, the function **isChild** can return a boolean variable to indicate whether or not the first variety is a child of the second variety.
 
 ```{r}
-isChild("Young","Essex",tree)
-isChild("Essex","Young",tree)
+isChild("Young","Essex",sbTree)
+isChild("Essex","Young",sbTree)
 ```
 
 It is also possible to quickly derive the year of a given variety using the **getYear** function:
 
 ```{r}
-getYear("Young",tree)
-getYear("Essex",tree)
+getYear("Young",sbTree)
+getYear("Essex",sbTree)
 ```
 
 Fortunately, these example results make sense in that the "Young" variety is a child to the "Essex" variety by an age difference of six years.
@@ -123,9 +124,9 @@ Fortunately, these example results make sense in that the "Young" variety is a c
 In some cases, you may wish to have a list of all the parents of a given variety. This can be achieved using the **getparent** function:
 
 ```{r}
-getparent("Young",tree)
-getparent("Tokyo",tree)
-getYear("Tokyo", tree)
+getparent("Young",sbTree)
+getparent("Tokyo",sbTree)
+getYear("Tokyo", sbTree)
 ```
 
 We learn from this that "Essex" is not the only parent of "Young". We also see that as "Tokyo" is a grandparent of the dataset (with a very early year, for this particular dataset, of 1907), it does not have any documented parents.
@@ -133,8 +134,8 @@ We learn from this that "Essex" is not the only parent of "Young". We also see t
 Likewise, in other cases, you may wish to have a list of all the children of a given variety. This can be achieved using the **getchild** function:
 
 ```{r}
-getchild("Tokyo",tree)
-getchild("Ogden",tree)
+getchild("Tokyo",sbTree)
+getchild("Ogden",sbTree)
 ```
 
 We find that even though the "Tokyo" variety is a grandparent of the dataset, it only had two children. However, one of its children, "Ogden", produced twelve children.
@@ -146,8 +147,8 @@ Functions for Pairs of Vertices:
 Say you have a pair of vertices, and you wish to determine the degree of separation of the shortest path between them, where edges represent parent-child relationships. You can accomplish that with the **getDegree** function.
 
 ```{r}
-getDegree("Tokyo", "Ogden", mygraph)
-getDegree("Tokyo", "Holladay", mygraph)
+getDegree("Tokyo", "Ogden", ig)
+getDegree("Tokyo", "Holladay", ig)
 ```
 
 As expected, the shortest path between the "Tokyo" and "Ogden" varieties has a value of one, as they are a direct parent-child relationship. However, the shortest path between "Tokyo" and one of its great-reat-great-etc-granchildren, "Holladay" has a much higher degree. Note that degree calculations in this case are not limited to one linear string of parent-child relationships; cousins and siblings and products thereof will also have computatable degrees via nonlinear strings of parent-child relationships.
@@ -158,10 +159,10 @@ Functions for the Whole Tree:
 There are many parameters about the tree that you may wish to know that cannot easily be obtained through images and tables. With the use of the **igraph** package, the below function **getBasicStatistics** can be used to return a list of information about typical graph theoretical measurements of the whole tree. For instance, is the whole tree connected? If not, how many separated components does it contain? In addition to these parameters, the **getBasicStatistics** function will also return the number of nodes, the number of edges, the average path length, the graph diameter, etc.:
 
 ```{r}
-getBasicStatistics(mygraph)
+getBasicStatistics(ig)
 ```
 
-In this case, we learn that our tree is actually not all connected by parent-child edges, and that instead, it is composed of four separate components. We see that the average path length of the tree is `{r} getBasicStatistics(mygraph)$avePathLength`, that the graph diameter is `{r} getBasicStatistics(mygraph)graphDiameter`, and that the logN value is `{r} getBasicStatistics(mygraph)logN`. We also see that the number of nodes in the tree is `{r} getBasicStatistics(mygraph)$numNodes` that are connected by `{r} getBasicStatistics(mygraph)$numEdges` edges.
+In this case, we learn that our tree is actually not all connected by parent-child edges, and that instead, it is composed of four separate components. We see that the average path length of the tree is `{r} getBasicStatistics(ig)$avePathLength`, that the graph diameter is `{r} getBasicStatistics(ig)graphDiameter`, and that the logN value is `{r} getBasicStatistics(ig)logN`. We also see that the number of nodes in the tree is `{r} getBasicStatistics(ig)$numNodes` that are connected by `{r} getBasicStatistics(ig)$numEdges` edges.
 
 Visualization of Pathway between Two Vertices:
 ------------------------------------------------------
@@ -170,19 +171,17 @@ As this data set deals with soy bean lineages, it may be useful for agronomists 
 
 The **phyViz** software can allow you to select two varieties of interest, and view the shortest pathway between them. You can produce a neat visual that informs you of all the varieties involved in the path between the two varieties of interest, as well as the years of all varieties involved in the path.
 
-To produce and view this plot, three functions must be called in the order presented below (**getPath**, **buildPathDF**, and **generatePathPlot**). We next introduce each of these three functions.
+To produce and view this plot, two functions must be called in the order presented below (**getPath** and **plotPath**). We next introduce each of these two functions.
 
 The **getPath** function determines the shortest path between the two inputted vertices, and takes into account whether or not the graph is directed. If there is a path, the list of vertices of the path (and their associated years) will be returned. For a directed graph, the direction matters. However, **getPath** will check both directions and return the path if it exists. The third parameter indicates the logical boolean of whether or not the graph is directed. Below, we look at all three possibilities (undirected and directed in reverse orders) between two varieties:
 
 ```{r}
-getPath("Brim","Bedford", mygraph, isDirected=FALSE)
+getPath("Brim","Bedford", ig, isDirected=FALSE)
 ```
 
 To compute paths where direction matters, we must have a directed graph
 ```{r}
-dirgraph <- processTreeGraph(tree, vertexinfo=nodes, isDirected = TRUE)
-
-
+dirgraph <- processTreeGraph(sbTree, vertexinfo=nodes, isDirected = TRUE)
 getPath("Brim", "Bedford", dirgraph, isDirected=TRUE)
 ```
 
@@ -195,13 +194,13 @@ We can derive from the empty list returned in the last two of the three commands
 As such, we save the path between these two varieties to a variable called **path**:
 
 ```{r}
-(path <- getPath("Brim","Bedford", mygraph, isDirected=F))
+(path <- getPath("Brim","Bedford", ig, isDirected=F))
 ```
 
-Now that we have a **path** object that consists of two lists (the variety names and years), we can plot the relationship between the two using generatePathPlot(path)
+Now that we have a **path** object that consists of two lists (the variety names and years), we can plot the relationship between the two using plotPath(path)
 
 ```{r}
-(plotPathDF <- generatePathPlot(path))
+(plotPathDF <- plotPath(path))
 ```
 
 Indeed, as predicted above, the image verifies that the two varieties "Brim" and "Bedford" are cousin-like relationships, and are not connected by a linear string of parent-child relationships. Also, as mentioned above, in this plot, the x-axis represents the years, meaning that the center of the text box for each variety represents its corresponding year.
@@ -209,16 +208,16 @@ Indeed, as predicted above, the image verifies that the two varieties "Brim" and
 If, for some reason, you are looking at *directed* phylogenetic trees, you will need to use the true logical condition for the third parameter of the function **getPath**. The example below will hopefully reassure you that if you use this condition on a pathway composed of linear parent-child relationships, then either ordering of the first two parameters will work:
 
 ```{r}
-dirgraph <- processTreeGraph(tree, vertexinfo=nodes, isDirected = TRUE)
+dirgraph <- processTreeGraph(sbTree, vertexinfo=nodes, isDirected = TRUE)
 
 path <- getPath("Narow", "Tokyo", dirgraph, isDirected=TRUE)
-(plotPathImage <- generatePathPlot(path))
+(plotPathImage <- plotPath(path))
 plotPathImage
 ```
 
 Visualization of Pathway between Two Vertices Superimposed on Tree:
 ------------------------------------------------------
-If you are curious to see the above-demonstrated shortest pathway between two vertices of interest, only now superimposed over all the varieties and edges in the whole tree, **phyViz** has a function (**generateTotalPlot**) that can achieve just that. 
+If you are curious to see the above-demonstrated shortest pathway between two vertices of interest, only now superimposed over all the varieties and edges in the whole tree, **phyViz** has a function (**plotPathOnTree**) that can achieve just that. 
 
 <!--
 The internal process is as follows: 
@@ -226,38 +225,38 @@ First, the **buildSpreadTotalDF** function creates a dataframe where the varieti
 
 ```{r}
 binVector <- c(1,4,7,10,2,5,8,11,3,6,9,12)
-spreadTotalDF <- buildSpreadTotalDF(mygraph, binVector)
+spreadTotalDF <- buildSpreadTotalDF(ig, binVector)
 head(spreadTotalDF)
 ```
 
-Next, the **buildMinusPathDF** function takes the **mygraph** object and the **path** object (from the **getPath** function) as inputs. From these objects, it creates a data frame object of the label, x, and y values of all nodes in the tree. However, the data frame object does not include the labels of the path varieties, as they will be treated differently.
+Next, the **buildMinusPathDF** function takes the **ig** object and the **path** object (from the **getPath** function) as inputs. From these objects, it creates a data frame object of the label, x, and y values of all nodes in the tree. However, the data frame object does not include the labels of the path varieties, as they will be treated differently.
 
 ```{r}
-plotMinusPathDF <- buildMinusPathDF(path, mygraph)
+plotMinusPathDF <- buildMinusPathDF(path, ig)
 head(plotMinusPathDF)
 ```
 
-Third, the **buildEdgeTotalDF** function takes the **mygraph** object and creates a data frame object of the edges between all parent-child relationships in the graph.
+Third, the **buildEdgeTotalDF** function takes the **ig** object and creates a data frame object of the edges between all parent-child relationships in the graph.
 
 ```{r}
-edgeTotalDF <- buildEdgeTotalDF(mygraph)
+edgeTotalDF <- buildEdgeTotalDF(ig)
 head(edgeTotalDF)
 ```
 
-Fourth, the **buildPlotTotalDF** function takes the **mygraph** object and the **path** object to create a data frame object of the text label positions for the varieties in the path, as well as the edges only in the varieties in the path.
+Fourth, the **buildPlotTotalDF** function takes the **ig** object and the **path** object to create a data frame object of the text label positions for the varieties in the path, as well as the edges only in the varieties in the path.
 
 ```{r}
-plotTotalDF <- buildPlotTotalDF(path, mygraph)
+plotTotalDF <- buildPlotTotalDF(path, ig)
 head(plotTotalDF)
 ```
 
-Now that we have generated the data frames needed to construct this type of visual object, we use them as input parameters to the **generateTotalPlot** function. 
+Now that we have generated the data frames needed to construct this type of visual object, we use them as input parameters to the **plotPathOnTree** function. 
 
 -->
 The outputted image will correctly position the node labels with x-axis representing the node year, and y-axis representing the node path index. Light grey edges between two nodes represent parent-child relationships between those nodes. To enhance the visual understanding of how the path-of-interest fits into the entire graph structure, the nodes within the path are labelled in boldface, and connected with light-green boldfaced edges.
 
 ```{r}
-plotTotalImage <- generateTotalPlot(path=path, mygraph=mygraph)
+plotTotalImage <- plotPathOnTree(path=path, ig=ig)
 plotTotalImage
 ```
 
@@ -272,13 +271,13 @@ The **binVector** will determine the order that increasing y index positions are
 The two examples below will show the importance of selecting an appropriate number of bins and order of bins to minimize overlap: 
 
 ```{r}
-(plotTotalImage <- generateTotalPlot(path=path, mygraph=mygraph, binVector=1:12))
+(plotTotalImage <- plotPathOnTree(path=path, ig=ig, binVector=1:12))
 ```
 
 In this case, even though the number of bins is as large as the clearer-labelled image above, the order of the bins is such that varieties of consecutive x-values (years) will also have consecutive y-values (indices), and hence will be likely to overlap for years with many varieties.
 
 ```{r}
-(plotTotalImage <- generateTotalPlot(path=path, mygraph=mygraph, binVector=1:2))
+(plotTotalImage <- plotPathOnTree(path=path, ig=ig, binVector=1:2))
 ```
 
 In this example, we see that with such a small number of bins chosen, the y-axis position designation will be similar to its original random state, and there is again much overlap in text variety labels in the year ranges where varieties occur the most.
@@ -289,20 +288,20 @@ Generating Pairwise Distance Matrix between Set of Vertices:
 
 It may also be of interest to scientists studying phylogenetics to generate heat maps where the color of each index of the map indicates the distance or years between two vertices.
 
-The package **phyViz** also provides functions for that purpose. Specifically, for a given set of vertices, a heat map of the distance (degree of the shortest path) between all pairs of vertices can be constructed with the **buildDegMatrix** function:
+The package **phyViz** also provides functions for that purpose. Specifically, for a given set of vertices, a heat map of the distance (degree of the shortest path) between all pairs of vertices can be constructed with the **plotDegMatrix** function:
 
 
 ```{r}
 varieties <- c("Beeson", "Brim", "Dillon", "Narow", "Zane", "Hood", "York", "Calland", "Columbus", "Crawford", "Kershaw", "Kent","Bragg", "Davis","Tokyo","Hagood","Young","Essex","Holladay","Cook","Century","Pella","Forrest","Gasoy","Cutler")
-heatMapDegreeImage <- buildDegMatrix(varieties)
+heatMapDegreeImage <- plotDegMatrix(varieties)
 heatMapDegreeImage
 ```
 
-In a similar function, **buildYearMatrix**, the difference in years between all pairwise combinations of vertices can be constructed and viewed:
+In a similar function, **plotYearMatrix**, the difference in years between all pairwise combinations of vertices can be constructed and viewed:
 
 ```{r}
 varieties <- c("Beeson", "Brim", "Dillon", "Narow", "Zane", "Hood", "York", "Calland", "Columbus", "Crawford", "Kershaw", "Kent","Bragg", "Davis","Tokyo","Hagood","Young","Essex","Holladay","Cook","Century","Pella","Forrest","Gasoy","Cutler")
-heatMapYearImage <- buildYearMatrix(varieties)
+heatMapYearImage <- plotYearMatrix(varieties)
 heatMapYearImage
 ```
 

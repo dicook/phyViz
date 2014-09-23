@@ -96,12 +96,12 @@ getYear = function(v1, tree){
 #' represents a parent-child relationship
 #' @param v1 the first variety
 #' @param v2 the second variety
-#' @param mygraph mygraph
+#' @param ig the igraph object
 #' @export
 #' @examples
-#' getDegree("Brim","Bedford",mygraph)
-getDegree = function(v1, v2, mygraph){
-  path <- getPath(v1=v1, v2=v2, mygraph=mygraph, isDirected=F)
+#' getDegree("Brim","Bedford",ig)
+getDegree = function(v1, v2, ig){
+  path <- getPath(v1=v1, v2=v2, ig=ig, isDirected=F)
   # The degree between two vertices is equal to one less than the number of nodes in the shortest path
   return(length(path$pathVertices)-1)
 }
@@ -110,35 +110,35 @@ getDegree = function(v1, v2, mygraph){
 #' 
 #' Returns basic statistics of the graph object (number of nodes, number of edges, whether or not the
 #' whole graph is connected, number of components, average path length, graph diameter, etc.)
-#' @param mygraph graph representation of the tree
+#' @param ig the igraph representation of the tree
 #' @export
 #' @examples
-#' getBasicStatistics(mygraph)
-getBasicStatistics = function(mygraph){
+#' getBasicStatistics(ig)
+getBasicStatistics = function(ig){
   require(igraph)
-  if(class(mygraph)!="igraph"){
-    stop("mygraph must be an igraph object.")
+  if(class(ig)!="igraph"){
+    stop("ig must be an igraph object.")
   }
   retStats = list()
   # Get edge and node count from "structure.info" function of igraph
-  numNodes = vcount(mygraph)
-  numEdges = ecount(mygraph)
+  numNodes = vcount(ig)
+  numEdges = ecount(ig)
   # Determine if the graph is connected or not from "clusters" function of igraph
-  isConnected = is.connected(mygraph)
+  isConnected = is.connected(ig)
   # Determine the number of connected components in the graph from "clusters"
   # function of igraph
-  numComponents = no.clusters(mygraph)
+  numComponents = no.clusters(ig)
   # Compute the average path length of the graph
   connected = FALSE
   if(isConnected)
   {
     connected = TRUE
   }
-  avePathLength = average.path.length(mygraph, directed=F, unconnected= !isConnected)
+  avePathLength = average.path.length(ig, directed=F, unconnected= !isConnected)
   # Determine the log(N) value of the graph
   logN = log(numNodes)
   # Determine the network diameter
-  graphDiameter = diameter(mygraph, directed = F, unconnected = !isConnected, weights = NULL)
+  graphDiameter = diameter(ig, directed = F, unconnected = !isConnected, weights = NULL)
   # Create a list of statistics
   retStats = list(isConnected = isConnected, numComponents = numComponents, avePathLength = avePathLength,
                  graphDiameter = graphDiameter, numNodes = numNodes, numEdges = numEdges, logN = logN)
@@ -155,27 +155,27 @@ getBasicStatistics = function(mygraph){
 #' and return the path if it exists.
 #' @param v1 the first variety
 #' @param v2 the second variety
-#' @param mygraph mygraph
+#' @param ig the igraph representation of the tree
 #' @param silent Print output? Defaults to FALSE. 
 #' @param isDirected boolean whether or not the graph is directed, defaults to FALSE
 #' @export
 #' @examples
-#' getPath("Brim","Bedford",mygraph)
-#' getPath("Tokyo","Volstate",mygraph)
-getPath = function(v1, v2, mygraph, silent=FALSE, isDirected=FALSE){
+#' getPath("Brim","Bedford",ig)
+#' getPath("Tokyo","Volstate",ig)
+getPath = function(v1, v2, ig, silent=FALSE, isDirected=FALSE){
   require(igraph)
   if(!is.character(v1) & !is.character(v2)){
     stop("First two arguments must be strings")
   } else {
-    if(!v1%in%V(mygraph)$name){
+    if(!v1%in%V(ig)$name){
       warning("v1 is not a graph vertex")
     }
-    if(!v2%in%V(mygraph)$name){
+    if(!v2%in%V(ig)$name){
       warning("v2 is not a graph vertex")
     }
   }
   
-  if(is.directed(mygraph) != isDirected){
+  if(is.directed(ig) != isDirected){
     if(isDirected){
       stop("Cannot compute directed path on an undirected graph")
     }
@@ -186,15 +186,15 @@ getPath = function(v1, v2, mygraph, silent=FALSE, isDirected=FALSE){
   yearVertices = character()
   pathVertices = character()
   # If the tree is directed
-  if (is.directed(mygraph)){
+  if (is.directed(ig)){
     # We need to look at both forward and reverse cases of directions, because the user may not know
     # the potential direction of a path between the two vertices
-    pathVIndicesForward = get.shortest.paths(mygraph, v1, v2, weights = NA, output="vpath")$vpath[[1]]
-    pathVIndicesReverse = get.shortest.paths(mygraph, v2, v1, weights = NA, output="vpath")$vpath[[1]]
+    pathVIndicesForward = get.shortest.paths(ig, v1, v2, weights = NA, output="vpath")$vpath[[1]]
+    pathVIndicesReverse = get.shortest.paths(ig, v2, v1, weights = NA, output="vpath")$vpath[[1]]
     # If there is a path in the forward direction, then we save the names of the vertices in that order
     if (length(pathVIndicesForward) != 0){
       for (i in 1:length(pathVIndicesForward)){
-        pathVertices = c(pathVertices, get.vertex.attribute(mygraph, "name", index=pathVIndicesForward[i]))
+        pathVertices = c(pathVertices, get.vertex.attribute(ig, "name", index=pathVIndicesForward[i]))
         yearVertices = c(yearVertices, getYear(pathVertices[i], tree))
       }
       retPath = list(pathVertices = pathVertices, yearVertices = yearVertices)
@@ -202,17 +202,17 @@ getPath = function(v1, v2, mygraph, silent=FALSE, isDirected=FALSE){
     # If there is a path in the reverse direction, then we save the names of the vertices in that order
     if (length(pathVIndicesReverse) != 0){
       for (i in 1:length(pathVIndicesReverse)){
-        pathVertices = c(pathVertices, get.vertex.attribute(mygraph, "name", index=pathVIndicesReverse[i]))
+        pathVertices = c(pathVertices, get.vertex.attribute(ig, "name", index=pathVIndicesReverse[i]))
         yearVertices = c(yearVertices, getYear(pathVertices[i], tree))
       }
       retPath = list(pathVertices = pathVertices, yearVertices = yearVertices)
     }
   } else {
     # The direction does not matter, any shortest path between the vertices will be listed
-    pathVIndices = get.shortest.paths(mygraph, v1, v2, weights = NA, output="vpath")$vpath[[1]]
+    pathVIndices = get.shortest.paths(ig, v1, v2, weights = NA, output="vpath")$vpath[[1]]
     if (length(pathVIndices) != 0){
       for (i in 1:length(pathVIndices)){
-        pathVertices = c(pathVertices, get.vertex.attribute(mygraph, "name", index=pathVIndices[i]))
+        pathVertices = c(pathVertices, get.vertex.attribute(ig, "name", index=pathVIndices[i]))
         yearVertices = c(yearVertices, getYear(pathVertices[i], tree))
       }
       retPath = list(pathVertices = pathVertices, yearVertices = yearVertices)
@@ -290,7 +290,7 @@ buildPathDF = function(path){
 #' box that outlines the node label, as well as an underline and overline for each label.
 #' @param path object created from function getPath
 #' @export
-generatePathPlot = function(path){
+plotPath = function(path){
   if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
     stop("path does not appear to be a result of the getPath() function")
   }
@@ -338,23 +338,23 @@ generatePathPlot = function(path){
 #' 
 #' Constructs a data frame object so that varieties are spread such that they do not overlap, even
 #' though the x-axis position will represent years.
-#' @param mygraph mygraph object
+#' @param ig the igraph representation of the tree
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
 #' This vector will determine the order that increasing y index positions are repeatedly assigned to. For instance, if binVector = c(1,4,7,10,2,5,8,11,3,6,9,12), then y-axis position one will be assigned to a variety in the first
 #' bin of years, y-axis position two will be assigned to a variety in the fourth bin of years, ...., and y-axis position thirteen
 #' will be assigned again to a variety in the first bin of years. This vector can help minimize overlap of the labelling of varieties,
 #' without regard to how the layout affects the edges between varieties, as those edges will be colored faintly.
 #' @export
-buildSpreadTotalDF = function(mygraph, binVector=1:12){
-  if(class(mygraph)!="igraph"){
-    stop("mygraph must be an igraph object.")
+buildSpreadTotalDF = function(ig, binVector=1:12){
+  if(class(ig)!="igraph"){
+    stop("ig must be an igraph object.")
   }
   
   if(sum(1:length(binVector)%in%binVector)!=length(binVector)){
     stop("binVector must contain all numbers 1:length(binVector)")
   }
   
-  totalDF = get.data.frame(mygraph, "vertices")
+  totalDF = get.data.frame(ig, "vertices")
   totalDF = totalDF[!is.na(totalDF$name),]
   totalDF = totalDF[order(totalDF$year, decreasing=FALSE), ]
   
@@ -376,14 +376,14 @@ buildSpreadTotalDF = function(mygraph, binVector=1:12){
 #' as inputs. From these objects, it creates a data frame object of the label, x, and y values of all nodes
 #' in the tree. However, the data frame object does not include the labels of the path varieties, as they
 #' will be treated differently.
-#' @param path path as returned from getPath() or a vector of two variety names which exist in mygraph
-#' @param mygraph mygraph object
+#' @param path path as returned from getPath() or a vector of two variety names which exist in the ig object
+#' @param ig the igraph representation of the tree
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
 #' @export
-buildMinusPathDF = function(path, mygraph, binVector=1:12){
+buildMinusPathDF = function(path, ig, binVector=1:12){
   
-  if(class(mygraph)!="igraph"){
-    stop("mygraph must be an igraph object")
+  if(class(ig)!="igraph"){
+    stop("ig must be an igraph object")
   }
   
   if(sum(1:length(binVector)%in%binVector)!=length(binVector)){
@@ -395,13 +395,13 @@ buildMinusPathDF = function(path, mygraph, binVector=1:12){
       stop("path needs to contain two variety names")
     }
     varieties <- path
-    path <- getPath(varieties[1], varieties[2], mygraph)
+    path <- getPath(varieties[1], varieties[2], ig)
   } else if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
     stop("path does not appear to be a result of the getPath() function")
   } 
   
-  tG <- buildSpreadTotalDF(mygraph, binVector)
-  eG <- get.data.frame(mygraph, "edges")
+  tG <- buildSpreadTotalDF(ig, binVector)
+  eG <- get.data.frame(ig, "edges")
   
   label=tG$name
   x=tG$year
@@ -420,26 +420,26 @@ buildMinusPathDF = function(path, mygraph, binVector=1:12){
 
 #' Build the edges in the  total tree graph
 #' 
-#' This function takes the a mygraph object and creates a data frame object of the edges between all parent-child
+#' This function takes the ig object and creates a data frame object of the edges between all parent-child
 #' relationships in the graph
-#' @param mygraph mygraph object from processTreeGraph
+#' @param ig igraph object from processTreeGraph
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
 #' @export
-buildEdgeTotalDF = function(mygraph, binVector=1:12){
+buildEdgeTotalDF = function(ig, binVector=1:12){
 
-  if(class(mygraph)!="igraph"){
-    stop("mygraph must be an igraph object")
+  if(class(ig)!="igraph"){
+    stop("ig must be an igraph object")
   }
   
   if(sum(1:length(binVector)%in%binVector)!=length(binVector)){
     stop("binVector must contain all numbers 1:length(binVector)")
   }
   
-  tG <- buildSpreadTotalDF(mygraph, binVector)
-  eG <- get.data.frame(mygraph, "edges")
+  tG <- buildSpreadTotalDF(ig, binVector)
+  eG <- get.data.frame(ig, "edges")
 
-  # edgeTotalDF used in function generateTotalPlot()
-  numEdges = length(E(mygraph))
+  # edgeTotalDF used in function plotPathOnTree()
+  numEdges = length(E(ig))
   x=as.numeric(rep("",numEdges))
   y=as.numeric(rep("",numEdges))
   xend=as.numeric(rep("",numEdges))
@@ -451,10 +451,10 @@ buildEdgeTotalDF = function(mygraph, binVector=1:12){
     x_i = getYear(xname, tG)
     xend_i = getYear(xendname, tG)
     if(!xname%in%tG$name) {
-      stop(paste(xname, "cannot be found in mygraph vertices"))
+      stop(paste(xname, "cannot be found in ig vertices"))
     }
     if(!xendname%in%tG$name) {
-      stop(paste(xendname, "cannot be found in mygraph vertices"))
+      stop(paste(xendname, "cannot be found in ig vertices"))
     }
     y_i = tG$y[which(tG$name==xname)]
     yend_i = tG$y[which(tG$name==xendname)]
@@ -474,13 +474,13 @@ buildEdgeTotalDF = function(mygraph, binVector=1:12){
 #' This function takes the spreadTotalDF object (from the buildSpreadTotalDF function) and the path object
 #' as inputs. From these objects, it creates a data frame object of the text label positions for the
 #' varieties in the path, as well as the edges only in the varieties in the path.
-#' @param path path as returned from getPath() or a vector of two variety names which exist in mygraph
-#' @param mygraph mygraph object
+#' @param path path as returned from getPath() or a vector of two variety names which exist in ig
+#' @param ig igraph object
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
 #' @export
-buildPlotTotalDF = function(path, mygraph, binVector=1:12){
-  if(class(mygraph)!="igraph"){
-    stop("mygraph must be an igraph object")
+buildPlotTotalDF = function(path, ig, binVector=1:12){
+  if(class(ig)!="igraph"){
+    stop("ig must be an igraph object")
   }
   
   if(mode(path)=="character"){
@@ -488,7 +488,7 @@ buildPlotTotalDF = function(path, mygraph, binVector=1:12){
       stop("path needs to contain two variety names")
     }
     varieties <- path
-    path <- getPath(varieties[1], varieties[2], mygraph)
+    path <- getPath(varieties[1], varieties[2], ig)
   } else if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
     stop("path does not appear to be a result of the getPath() function")
   } 
@@ -498,7 +498,7 @@ buildPlotTotalDF = function(path, mygraph, binVector=1:12){
     stop("binVector must contain all numbers 1:length(binVector)")
   }
   
-  tG <- buildSpreadTotalDF(mygraph, binVector)
+  tG <- buildSpreadTotalDF(ig, binVector)
 
   label=path$pathVertices
   x=as.numeric(path$yearVertices)
@@ -523,7 +523,7 @@ buildPlotTotalDF = function(path, mygraph, binVector=1:12){
 
 #' Build the image object of the whole tree with the path superimposed onto it
 #' 
-#' This function requires a path and the mygraph object, and plots the entire tree 
+#' This function requires a path and the ig object, and plots the entire tree 
 #' with the path highlighted.
 #' The image will correctly position the node labels with x-axis representing the node
 #' year, and y-axis representing the node path index. Light grey edges between two nodes
@@ -531,13 +531,13 @@ buildPlotTotalDF = function(path, mygraph, binVector=1:12){
 #' understanding of how the path-of-interest fits into the entire graph structure, the
 #' nodes within the path are labelled in boldface, and connected with light-green
 #' boldfaced edges.
-#' @param path path as returned from getPath() or a vector of two variety names which exist in mygraph
-#' @param mygraph mygraph object
+#' @param path path as returned from getPath() or a vector of two variety names which exist in ig
+#' @param ig igraph representation of the tree
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
 #' @export
-generateTotalPlot = function(path, mygraph, binVector=sample(1:12, 12)){
-  if(class(mygraph)!="igraph"){
-    stop("mygraph must be an igraph object")
+plotPathOnTree = function(path, ig, binVector=sample(1:12, 12)){
+  if(class(ig)!="igraph"){
+    stop("ig must be an igraph object")
   }
   
   if(mode(path)=="character"){
@@ -545,14 +545,14 @@ generateTotalPlot = function(path, mygraph, binVector=sample(1:12, 12)){
       stop("path needs to contain two variety names")
     }
     varieties <- path
-    path <- getPath(varieties[1], varieties[2], mygraph)
+    path <- getPath(varieties[1], varieties[2], ig)
   } else if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
     stop("path does not appear to be a result of the getPath() function")
   } 
   
-  pMPDF <- buildMinusPathDF(path, mygraph, binVector)
-  eTDF <- buildEdgeTotalDF(mygraph, binVector)
-  pTDF <- buildPlotTotalDF(path, mygraph, binVector)
+  pMPDF <- buildMinusPathDF(path, ig, binVector)
+  eTDF <- buildEdgeTotalDF(ig, binVector)
+  pTDF <- buildPlotTotalDF(path, ig, binVector)
   
   textFrame = data.frame(x = pMPDF$x, y = pMPDF$y, label = pMPDF$label)
   textFrame = transform(textFrame,
@@ -916,12 +916,12 @@ generateGenPlot = function(gDF){
 #' 
 #' @param varieties subset of varieties used to generate the heat map
 #' @export
-buildDegMatrix = function(varieties){
+plotDegMatrix = function(varieties){
   require(reshape2)
   matVar = matrix(, nrow = length(varieties), ncol = length(varieties))
   for (i in 1:length(varieties)){
     for (j in 1:length(varieties)){
-      matVar[i,j]=getDegree(varieties[i],varieties[j],mygraph)
+      matVar[i,j]=getDegree(varieties[i],varieties[j],ig)
     }
   }
   
@@ -942,7 +942,7 @@ buildDegMatrix = function(varieties){
 #' 
 #' @param varieties subset of varieties used to generate the heat map
 #' @export
-buildYearMatrix = function(varieties){
+plotYearMatrix = function(varieties){
   require(reshape2)
   matVar = matrix(, nrow = length(varieties), ncol = length(varieties))
   for (i in 1:length(varieties)){
