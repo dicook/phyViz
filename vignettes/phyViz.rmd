@@ -46,11 +46,8 @@ There is a preprocessing pipeline that you must use before visualizing your phyl
 ```{r}
 options(warn=-1)
 library(phyViz)
-library(plyr)
-library(reshape2)
 library(ggplot2)
 library(stringr)
-library(igraph)
 library(knitr)
 ```
 
@@ -67,7 +64,7 @@ Now that the sbTree file has been loaded, it must now be converted into an **igr
 ig <- processTreeGraph(sbTree)
 ```
 
-We can add the other data we have about each of the nodes in ig in several ways. The sbTree dataset contains information about each child; to add that data as is to the tree, we can use the following command: 
+We can add the other data we have about each of the nodes in ig in several ways. The sbTree dataset contains information about each child; to add that data as is to the tree, we can use the same command as before, but specify the vertexinfo parameter as follows: 
 
 ```{r}
 ig <- processTreeGraph(sbTree, vertexinfo=c("year", "yield", "year.imputed", "min.repro.year"))
@@ -176,7 +173,7 @@ To produce and view this plot, two functions must be called in the order present
 The **getPath** function determines the shortest path between the two inputted vertices, and takes into account whether or not the graph is directed. If there is a path, the list of vertices of the path (and their associated years) will be returned. For a directed graph, the direction matters. However, **getPath** will check both directions and return the path if it exists. The third parameter indicates the logical boolean of whether or not the graph is directed. Below, we look at all three possibilities (undirected and directed in reverse orders) between two varieties:
 
 ```{r}
-getPath("Brim","Bedford", ig, isDirected=FALSE)
+getPath("Brim","Bedford", ig, sbTree, isDirected=FALSE)
 ```
 
 To compute paths where direction matters, we must have a directed graph
