@@ -41,7 +41,7 @@ Conclusion
 Preprocessing Pipeline:
 ------------------------
 
-There is a preprocessing pipeline that you must use before visualizing your phylogentic tree. First, you must load the necessary libraries: 
+There is a preprocessing pipeline that you must use before visualizing your phylogentic tree. First, you must load the necessary libraries. Note that loading the phyViz library should automatically load three required libraries (plyr, reshape2, igraph): 
 
 ```{r}
 options(warn=-1)
