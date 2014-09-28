@@ -12,7 +12,7 @@ How to use the package **phyViz**
 
 **Date:** Sep 23, 2014
 -->
-**Description:** The **phyViz** package allows phylogeneticists to visualize and interpret their trees in multiple ways, each which come with their pros and cons. This vignette is intended to walk you through the different options available to you with this package.
+**Description:** The **phyViz** package allows phylogeneticists to visualize and interpret their trees in multiple ways, each which come with their pros and cons. This vignette is intended to walk readers through the different options available with the package.
 
 **Caution:** igraph must be used with version 0.7.0
 
@@ -61,7 +61,7 @@ data(sbTree)
 head(sbTree)
 ```
 
-Now that the sbTree file has been loaded, it must now be converted into an **igraph** graph object. The function **processTreeGraph** requires a data frame structured such that each line represents an edge, and takes optional arguments *vertexinfo* (a list of columns of the data frame which provide information for the starting "child" vertex, or a separate data frame containing information for each vertex with the first column as the vertex name), *edgeweights*, which default to 1 if not provided, and *isDirected*, which defaults to false and describes whether the graph is directed or undirected. In this example, we want an undirected graph because our goal is to determine whether two vertices (individuals) are related.
+Now that the sbTree file has been loaded, it must now be converted into an **igraph** graph object. The function **processTreeGraph** requires a data frame structured such that each line represents an edge, and takes optional arguments *vertexinfo* (a list of columns of the data frame which provide information for the starting "child" vertex, or a separate data frame containing information for each vertex with the first column as the vertex name), *edgeweights*, which default to 1 if not provided, and *isDirected*, which describes whether the graph is directed (true) or undirected (false); the default is false. In this example, we want a graph with edge weights of 1 and an undirected graph because our goal is to determine whether two vertices (individuals) are related. Hence, we use the default conditions:
 
 ```{r}
 ig <- processTreeGraph(sbTree)
