@@ -144,8 +144,8 @@ Functions for Pairs of Vertices:
 Say you have a pair of vertices, and you wish to determine the degree of separation of the shortest path between them, where edges represent parent-child relationships. You can accomplish that with the **getDegree** function.
 
 ```{r}
-getDegree("Tokyo", "Ogden", ig)
-getDegree("Tokyo", "Holladay", ig)
+getDegree("Tokyo", "Ogden", ig, sbTree)
+getDegree("Tokyo", "Holladay", ig, sbTree)
 ```
 
 As expected, the shortest path between the "Tokyo" and "Ogden" varieties has a value of one, as they are a direct parent-child relationship. However, the shortest path between "Tokyo" and one of its great-reat-great-etc-granchildren, "Holladay" has a much higher degree. Note that degree calculations in this case are not limited to one linear string of parent-child relationships; cousins and siblings and products thereof will also have computatable degrees via nonlinear strings of parent-child relationships.
@@ -191,13 +191,13 @@ We can derive from the empty list returned in the last two of the three commands
 As such, we save the path between these two varieties to a variable called **path**:
 
 ```{r}
-(path <- getPath("Brim","Bedford", ig, isDirected=F))
+path <- getPath("Brim","Bedford", ig, sbTree, isDirected=F)
 ```
 
 Now that we have a **path** object that consists of two lists (the variety names and years), we can plot the relationship between the two using plotPath(path)
 
 ```{r}
-(plotPathDF <- plotPath(path))
+plotPathDF <- plotPath(path)
 ```
 
 Indeed, as predicted above, the image verifies that the two varieties "Brim" and "Bedford" are cousin-like relationships, and are not connected by a linear string of parent-child relationships. Also, as mentioned above, in this plot, the x-axis represents the years, meaning that the center of the text box for each variety represents its corresponding year.
@@ -207,8 +207,8 @@ If, for some reason, you are looking at *directed* phylogenetic trees, you will 
 ```{r}
 dirgraph <- processTreeGraph(sbTree, vertexinfo=nodes, isDirected = TRUE)
 
-path <- getPath("Narow", "Tokyo", dirgraph, isDirected=TRUE)
-(plotPathImage <- plotPath(path))
+path <- getPath("Narow", "Tokyo", dirgraph, sbTree, isDirected=TRUE)
+plotPathImage <- plotPath(path)
 plotPathImage
 ```
 
@@ -268,13 +268,13 @@ The **binVector** will determine the order that increasing y index positions are
 The two examples below will show the importance of selecting an appropriate number of bins and order of bins to minimize overlap: 
 
 ```{r}
-(plotTotalImage <- plotPathOnTree(path=path, ig=ig, binVector=1:12))
+plotTotalImage <- plotPathOnTree(path=path, ig=ig, binVector=1:12)
 ```
 
 In this case, even though the number of bins is as large as the clearer-labelled image above, the order of the bins is such that varieties of consecutive x-values (years) will also have consecutive y-values (indices), and hence will be likely to overlap for years with many varieties.
 
 ```{r}
-(plotTotalImage <- plotPathOnTree(path=path, ig=ig, binVector=1:2))
+plotTotalImage <- plotPathOnTree(path=path, ig=ig, binVector=1:2)
 ```
 
 In this example, we see that with such a small number of bins chosen, the y-axis position designation will be similar to its original random state, and there is again much overlap in text variety labels in the year ranges where varieties occur the most.
@@ -290,7 +290,7 @@ The package **phyViz** also provides functions for that purpose. Specifically, f
 
 ```{r}
 varieties <- c("Beeson", "Brim", "Dillon", "Narow", "Zane", "Hood", "York", "Calland", "Columbus", "Crawford", "Kershaw", "Kent","Bragg", "Davis","Tokyo","Hagood","Young","Essex","Holladay","Cook","Century","Pella","Forrest","Gasoy","Cutler")
-heatMapDegreeImage <- plotDegMatrix(varieties)
+heatMapDegreeImage <- plotDegMatrix(varieties,ig,sbTree)
 heatMapDegreeImage
 ```
 
@@ -298,7 +298,7 @@ In a similar function, **plotYearMatrix**, the difference in years between all p
 
 ```{r}
 varieties <- c("Beeson", "Brim", "Dillon", "Narow", "Zane", "Hood", "York", "Calland", "Columbus", "Crawford", "Kershaw", "Kent","Bragg", "Davis","Tokyo","Hagood","Young","Essex","Holladay","Cook","Century","Pella","Forrest","Gasoy","Cutler")
-heatMapYearImage <- plotYearMatrix(varieties)
+heatMapYearImage <- plotYearMatrix(varieties,sbTree)
 heatMapYearImage
 ```
 

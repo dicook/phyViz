@@ -1,8 +1,8 @@
 #' Process the tree graph
 #' 
-#' Processes the tree into a igraph graph with appropriate vertex information, graph type, and edge weights. 
+#' Processes the tree into an igraph object with appropriate vertex information, graph type, and edge weights. 
 #' @param tree A data frame representing tree information, containing one row for each EDGE, with at least two columns named parent and child, respectively, representing vertices connected by an edge. Terminal nodes should have "NA" for parent in order to preserve vertex information. 
-#' @param vertexinfo (default NULL) either names of columns in t which should be added to the database as vertex information or a data frame with information for all vertices such that the first column contains vertex names.
+#' @param vertexinfo (default NULL) either names of columns in the tree which should be added to the database as vertex information or a data frame with information for all vertices such that the first column contains vertex names.
 #' @param edgeweights (default 1) name of a column which contains edge weights
 #' @param isDirected (default FALSE) should the graph be a directed graph?
 #' @export
@@ -97,11 +97,12 @@ getYear = function(v1, tree){
 #' @param v1 the first variety
 #' @param v2 the second variety
 #' @param ig the igraph object
+#' @param tree the tree
 #' @export
 #' @examples
 #' getDegree("Brim","Bedford",ig)
-getDegree = function(v1, v2, ig){
-  path <- getPath(v1=v1, v2=v2, ig=ig, isDirected=F)
+getDegree = function(v1, v2, ig, tree){
+  path <- getPath(v1=v1, v2=v2, ig=ig, tree = tree, isDirected=F)
   # The degree between two vertices is equal to one less than the number of nodes in the shortest path
   return(length(path$pathVertices)-1)
 }
@@ -156,13 +157,14 @@ getBasicStatistics = function(ig){
 #' @param v1 the first variety
 #' @param v2 the second variety
 #' @param ig the igraph representation of the tree
+#' @param tree the tree
 #' @param silent Print output? Defaults to FALSE. 
 #' @param isDirected boolean whether or not the graph is directed, defaults to FALSE
 #' @export
 #' @examples
 #' getPath("Brim","Bedford",ig)
 #' getPath("Tokyo","Volstate",ig)
-getPath = function(v1, v2, ig, silent=FALSE, isDirected=FALSE){
+getPath = function(v1, v2, ig, tree, silent=FALSE, isDirected=FALSE){
   require(igraph)
   if(!is.character(v1) & !is.character(v2)){
     stop("First two arguments must be strings")
@@ -586,6 +588,7 @@ plotPathOnTree = function(path, ig, binVector=sample(1:12, 12)){
 #' This function returns up to two values that indicate the parents of the inputted variety.
 #' 
 #' @param v1 the first variety
+#' @param tree the tree
 #' @export
 #' @examples
 #' getparent("Tokyo")
@@ -599,6 +602,7 @@ getparent = function(v1, tree){
 #' This function returns zero or more values that indicate the children of the inputted variety.
 #' 
 #' @param v1 the first variety
+#' @param tree the tree
 #' @export
 #' @examples
 #' getchild("Tokyo")
@@ -915,13 +919,15 @@ generateGenPlot = function(gDF){
 #' Returns the image object to show the heat map of degrees between the inputted set of vertices
 #' 
 #' @param varieties subset of varieties used to generate the heat map
+#' @param ig igraph
+#' @param tree tree
 #' @export
-plotDegMatrix = function(varieties){
+plotDegMatrix = function(varieties,ig,tree){
   require(reshape2)
   matVar = matrix(, nrow = length(varieties), ncol = length(varieties))
   for (i in 1:length(varieties)){
     for (j in 1:length(varieties)){
-      matVar[i,j]=getDegree(varieties[i],varieties[j],ig)
+      matVar[i,j]=getDegree(varieties[i],varieties[j],ig,tree)
     }
   }
   
@@ -941,8 +947,9 @@ plotDegMatrix = function(varieties){
 #' Returns the image object to show the heat map of years between the inputted set of vertices
 #' 
 #' @param varieties subset of varieties used to generate the heat map
+#' @param tree tree
 #' @export
-plotYearMatrix = function(varieties){
+plotYearMatrix = function(varieties, tree){
   require(reshape2)
   matVar = matrix(, nrow = length(varieties), ncol = length(varieties))
   for (i in 1:length(varieties)){
