@@ -591,8 +591,8 @@ plotPathOnTree = function(path, ig, binVector=sample(1:12, 12)){
 #' @param tree the tree
 #' @export
 #' @examples
-#' getparent("Tokyo")
-#' getParent("Essex")
+#' getparent("Tokyo", tree)
+#' getParent("Essex", tree)
 getparent = function(v1, tree){
   subset(tree, child==v1)$parent
 }
@@ -605,8 +605,8 @@ getparent = function(v1, tree){
 #' @param tree the tree
 #' @export
 #' @examples
-#' getchild("Tokyo")
-#' getchild("Essex")
+#' getchild("Tokyo", tree)
+#' getchild("Essex", tree)
 getchild = function(v1, tree){
   subset(tree, parent==v1)$child
 }
