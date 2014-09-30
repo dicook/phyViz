@@ -830,7 +830,7 @@ plotcoords = function(df){
 #' @param mDes maximum number of descendants of v1 to be shown
 #' @param tree the tree
 #' @export
-buildGenDF = function(v1, mAnc, mDes, tree){
+buildGenDF = function(v1, mAnc=3, mDes=3, tree){
   vals = list()
   # Set data frame that we will plot
   gen.vars2 = v1$varieties
