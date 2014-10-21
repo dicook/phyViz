@@ -14,4 +14,8 @@ getancestors(v1, gen = 0)
 This function returns a nested list of the ancestors of the
 inputted variety.
 }
+\seealso{
+\code{\link{getparent}} for information on determining
+parents
+}
 

@@ -16,4 +16,7 @@ This function takes the ig object and creates a data frame
 object of the edges between all parent-child relationships
 in the graph
 }
+\seealso{
+\url{http://www.r-project.org} for iGraph information
+}
 

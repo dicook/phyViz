@@ -15,9 +15,9 @@ processTreeGraph(tree, vertexinfo = NULL, edgeweights = 1,
   vertex information.}
 
   \item{vertexinfo}{(default NULL) either names of columns
-  in t which should be added to the database as vertex
-  information or a data frame with information for all
-  vertices such that the first column contains vertex
+  in the tree which should be added to the database as
+  vertex information or a data frame with information for
+  all vertices such that the first column contains vertex
   names.}
 
   \item{edgeweights}{(default 1) name of a column which
@@ -27,7 +27,10 @@ processTreeGraph(tree, vertexinfo = NULL, edgeweights = 1,
   directed graph?}
 }
 \description{
-Processes the tree into a igraph graph with appropriate
+Processes the tree into an igraph object with appropriate
 vertex information, graph type, and edge weights.
+}
+\seealso{
+\url{http://www.r-project.org} for iGraph information
 }
 

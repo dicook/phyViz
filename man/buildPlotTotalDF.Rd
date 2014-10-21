@@ -21,4 +21,12 @@ From these objects, it creates a data frame object of the
 text label positions for the varieties in the path, as well
 as the edges only in the varieties in the path.
 }
+\seealso{
+\url{http://www.r-project.org} for iGraph information
+
+\url{http://www.r-project.org} for iGraph information
+
+\code{\link{getPath}} for information on input path
+building
+}
 

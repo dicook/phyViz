@@ -3,7 +3,7 @@
 \alias{getPath}
 \title{Determine the degree between two varieties}
 \usage{
-getPath(v1, v2, ig, silent = FALSE, isDirected = FALSE)
+getPath(v1, v2, ig, tree, silent = FALSE, isDirected = FALSE)
 }
 \arguments{
   \item{v1}{the first variety}
@@ -11,6 +11,8 @@ getPath(v1, v2, ig, silent = FALSE, isDirected = FALSE)
   \item{v2}{the second variety}
 
   \item{ig}{the igraph representation of the tree}
+
+  \item{tree}{the tree}
 
   \item{silent}{Print output? Defaults to FALSE.}
 

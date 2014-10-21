@@ -22,4 +22,10 @@ label, x, and y values of all nodes in the tree. However,
 the data frame object does not include the labels of the
 path varieties, as they will be treated differently.
 }
+\seealso{
+\url{http://www.r-project.org} for iGraph information
+
+\code{\link{getPath}} for information on input path
+building
+}
 

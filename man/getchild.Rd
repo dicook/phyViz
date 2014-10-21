@@ -7,13 +7,15 @@ getchild(v1, tree)
 }
 \arguments{
   \item{v1}{the first variety}
+
+  \item{tree}{the tree}
 }
 \description{
 This function returns zero or more values that indicate the
 children of the inputted variety.
 }
 \examples{
-getchild("Tokyo")
-getchild("Essex")
+getchild("Tokyo", tree)
+getchild("Essex", tree)
 }
 

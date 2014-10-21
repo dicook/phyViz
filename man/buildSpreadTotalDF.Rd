@@ -27,4 +27,7 @@ Constructs a data frame object so that varieties are spread
 such that they do not overlap, even though the x-axis
 position will represent years.
 }
+\seealso{
+\url{http://www.r-project.org} for iGraph information
+}
 

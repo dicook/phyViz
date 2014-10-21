@@ -16,4 +16,11 @@ describe the coordinates of the label, while the xstart,
 ystart, xend, and yend values describe the edges of the
 label.
 }
+\seealso{
+\code{\link{getancestors}} for information on determining
+ancestors
+
+\code{\link{getdescendants}} for information on determining
+descendants
+}
 

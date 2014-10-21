@@ -3,7 +3,7 @@
 \alias{getDegree}
 \title{Determine the degree between two varieties}
 \usage{
-getDegree(v1, v2, ig)
+getDegree(v1, v2, ig, tree)
 }
 \arguments{
   \item{v1}{the first variety}
@@ -11,6 +11,8 @@ getDegree(v1, v2, ig)
   \item{v2}{the second variety}
 
   \item{ig}{the igraph object}
+
+  \item{tree}{the tree}
 }
 \description{
 Returns the degree (distance between unweighted edges)

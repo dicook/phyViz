@@ -14,4 +14,11 @@ Returns the image object to show the ancestors (to the
 left) and descendants (to the right) of a variety, with the
 variety highlighted in orange
 }
+\seealso{
+\code{\link{getancestors}} for information on determining
+ancestors
+
+\code{\link{getdescendants}} for information on determining
+descendants
+}
 

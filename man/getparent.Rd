@@ -7,13 +7,15 @@ getparent(v1, tree)
 }
 \arguments{
   \item{v1}{the first variety}
+
+  \item{tree}{the tree}
 }
 \description{
 This function returns up to two values that indicate the
 parents of the inputted variety.
 }
 \examples{
-getparent("Tokyo")
-getParent("Essex")
+getparent("Tokyo", tree)
+getParent("Essex", tree)
 }
 

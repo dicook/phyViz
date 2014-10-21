@@ -14,4 +14,8 @@ getdescendants(v1, gen = 0)
 This function returns a nested list of the descendants of
 the inputted variety.
 }
+\seealso{
+\code{\link{getchild}} for information on determining
+parents
+}
 

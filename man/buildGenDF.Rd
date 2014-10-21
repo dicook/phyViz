@@ -3,7 +3,7 @@
 \alias{buildGenDF}
 \title{Returns the data frame of labels and plot coordinates of all ancestors and descendants of a variety}
 \usage{
-buildGenDF(v1, mAnc, mDes, tree)
+buildGenDF(v1, mAnc = 3, mDes = 3, tree)
 }
 \arguments{
   \item{v1}{variety of interest}
@@ -21,5 +21,12 @@ Returns the data frame that includes labels and plot
 coordinates of all ancestors and descendants of a variety.
 Users can specify the maximum number of ancestors and
 descendants to display
+}
+\seealso{
+\code{\link{getancestors}} for information on determining
+ancestors
+
+\code{\link{getdescendants}} for information on determining
+descendants
 }
 

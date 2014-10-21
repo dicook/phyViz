@@ -5,7 +5,7 @@
 #' @param vertexinfo (default NULL) either names of columns in the tree which should be added to the database as vertex information or a data frame with information for all vertices such that the first column contains vertex names.
 #' @param edgeweights (default 1) name of a column which contains edge weights
 #' @param isDirected (default FALSE) should the graph be a directed graph?
-#' @export
+#' @seealso \url{http://www.r-project.org} for iGraph information
 processTreeGraph = function(tree, vertexinfo = NULL, edgeweights = 1, isDirected=FALSE){
   require(igraph)
   require(plyr)
@@ -46,7 +46,6 @@ processTreeGraph = function(tree, vertexinfo = NULL, edgeweights = 1, isDirected
 #' @param child possible child variety
 #' @param parent possible parent variety
 #' @param tree tree
-#' @export
 #' @examples
 #' isParent("Essex","Young",tree)
 #' isParent("Young","Essex",tree)
@@ -61,7 +60,6 @@ isParent = function(child, parent, tree){
 #' @param child possible child variety
 #' @param parent possible parent variety
 #' @param tree tree
-#' @export
 #' @examples
 #' isChild("Essex","Young",tree)
 #' isChild("Young","Essex",tree)
@@ -82,7 +80,6 @@ isChild = function(child, parent, tree){
 #' Returns the documented year of the inputted variety
 #' @param v1 the variety
 #' @param tree tree
-#' @export
 #' @examples
 #' getYear("Essex",tree)
 #' getYear("Tokyo",tree)
@@ -98,7 +95,6 @@ getYear = function(v1, tree){
 #' @param v2 the second variety
 #' @param ig the igraph object
 #' @param tree the tree
-#' @export
 #' @examples
 #' getDegree("Brim","Bedford",ig)
 getDegree = function(v1, v2, ig, tree){
@@ -112,7 +108,6 @@ getDegree = function(v1, v2, ig, tree){
 #' Returns basic statistics of the graph object (number of nodes, number of edges, whether or not the
 #' whole graph is connected, number of components, average path length, graph diameter, etc.)
 #' @param ig the igraph representation of the tree
-#' @export
 #' @examples
 #' getBasicStatistics(ig)
 getBasicStatistics = function(ig){
@@ -160,7 +155,6 @@ getBasicStatistics = function(ig){
 #' @param tree the tree
 #' @param silent Print output? Defaults to FALSE. 
 #' @param isDirected boolean whether or not the graph is directed, defaults to FALSE
-#' @export
 #' @examples
 #' getPath("Brim","Bedford",ig)
 #' getPath("Tokyo","Volstate",ig)
@@ -291,7 +285,7 @@ buildPathDF = function(path){
 #' parent-child relationships between those nodes. For visual appeal, there is a grey
 #' box that outlines the node label, as well as an underline and overline for each label.
 #' @param path object created from function getPath
-#' @export
+#' @seealso \code{\link{getPath}} for information on input path building
 plotPath = function(path){
   if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
     stop("path does not appear to be a result of the getPath() function")
@@ -346,7 +340,7 @@ plotPath = function(path){
 #' bin of years, y-axis position two will be assigned to a variety in the fourth bin of years, ...., and y-axis position thirteen
 #' will be assigned again to a variety in the first bin of years. This vector can help minimize overlap of the labelling of varieties,
 #' without regard to how the layout affects the edges between varieties, as those edges will be colored faintly.
-#' @export
+#' @seealso \url{http://www.r-project.org} for iGraph information
 buildSpreadTotalDF = function(ig, binVector=1:12){
   if(class(ig)!="igraph"){
     stop("ig must be an igraph object.")
@@ -381,7 +375,8 @@ buildSpreadTotalDF = function(ig, binVector=1:12){
 #' @param path path as returned from getPath() or a vector of two variety names which exist in the ig object
 #' @param ig the igraph representation of the tree
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
-#' @export
+#' @seealso \url{http://www.r-project.org} for iGraph information
+#' @seealso \code{\link{getPath}} for information on input path building
 buildMinusPathDF = function(path, ig, binVector=1:12){
   
   if(class(ig)!="igraph"){
@@ -426,7 +421,7 @@ buildMinusPathDF = function(path, ig, binVector=1:12){
 #' relationships in the graph
 #' @param ig igraph object from processTreeGraph
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
-#' @export
+#' @seealso \url{http://www.r-project.org} for iGraph information
 buildEdgeTotalDF = function(ig, binVector=1:12){
 
   if(class(ig)!="igraph"){
@@ -479,7 +474,9 @@ buildEdgeTotalDF = function(ig, binVector=1:12){
 #' @param path path as returned from getPath() or a vector of two variety names which exist in ig
 #' @param ig igraph object
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
-#' @export
+#' @seealso \url{http://www.r-project.org} for iGraph information
+#' @seealso \url{http://www.r-project.org} for iGraph information
+#' @seealso \code{\link{getPath}} for information on input path building
 buildPlotTotalDF = function(path, ig, binVector=1:12){
   if(class(ig)!="igraph"){
     stop("ig must be an igraph object")
@@ -522,7 +519,6 @@ buildPlotTotalDF = function(path, ig, binVector=1:12){
   plotTotalDF
 }
 
-
 #' Build the image object of the whole tree with the path superimposed onto it
 #' 
 #' This function requires a path and the ig object, and plots the entire tree 
@@ -536,7 +532,8 @@ buildPlotTotalDF = function(path, ig, binVector=1:12){
 #' @param path path as returned from getPath() or a vector of two variety names which exist in ig
 #' @param ig igraph representation of the tree
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
-#' @export
+#' @seealso \url{http://www.r-project.org} for iGraph information
+#' @seealso \code{\link{getPath}} for information on input path building
 plotPathOnTree = function(path, ig, binVector=sample(1:12, 12)){
   if(class(ig)!="igraph"){
     stop("ig must be an igraph object")
@@ -589,7 +586,6 @@ plotPathOnTree = function(path, ig, binVector=sample(1:12, 12)){
 #' 
 #' @param v1 the first variety
 #' @param tree the tree
-#' @export
 #' @examples
 #' getparent("Tokyo", tree)
 #' getParent("Essex", tree)
@@ -603,7 +599,6 @@ getparent = function(v1, tree){
 #' 
 #' @param v1 the first variety
 #' @param tree the tree
-#' @export
 #' @examples
 #' getchild("Tokyo", tree)
 #' getchild("Essex", tree)
@@ -617,7 +612,7 @@ getchild = function(v1, tree){
 #' 
 #' @param v1 the first variety
 #' @param gen generation
-#' @export
+#' @seealso \code{\link{getparent}} for information on determining parents
 getancestors = function(v1, gen=0){
   if(is.na(v1)) return()
   
@@ -644,7 +639,7 @@ getancestors = function(v1, gen=0){
 #' 
 #' @param v1 the first variety
 #' @param gen generation the first variety
-#' @export
+#' @seealso \code{\link{getchild}} for information on determining parents
 getdescendants = function(v1, gen=0){
   if(is.na(v1)) return()
   
@@ -676,7 +671,6 @@ getdescendants = function(v1, gen=0){
 #' @param branch of particular variety in tree
 #' @param par.id the id of the parent of the variety
 #' @param id.offset value to ensure labels are at unique locations
-#' @export
 node.to.data.frame = function(tlist, branch=0, par.id = NA,id.offset=1){
   listidx = which(sapply(tlist, mode)=="list")
   if(length(listidx)==0){
@@ -715,7 +709,8 @@ node.to.data.frame = function(tlist, branch=0, par.id = NA,id.offset=1){
 #' and yend values describe the edges of the label.
 #' 
 #' @param df data frame of the ancestors and descendants of a variety (from function buildGenDF)
-#' @export
+#' @seealso \code{\link{getancestors}} for information on determining ancestors
+#' @seealso \code{\link{getdescendants}} for information on determining descendants
 plotcoords = function(df){
   # This gets rid of redundancy and creates a "center"
   if(nrow(subset(df, root.gen==0 & gen==0))>1){
@@ -829,7 +824,8 @@ plotcoords = function(df){
 #' @param mAnc maximum number of ancestors of v1 to be shown
 #' @param mDes maximum number of descendants of v1 to be shown
 #' @param tree the tree
-#' @export
+#' @seealso \code{\link{getancestors}} for information on determining ancestors
+#' @seealso \code{\link{getdescendants}} for information on determining descendants
 buildGenDF = function(v1, mAnc=3, mDes=3, tree){
   vals = list()
   # Set data frame that we will plot
@@ -886,7 +882,8 @@ buildGenDF = function(v1, mAnc=3, mDes=3, tree){
 #' variety, with the variety highlighted in orange
 #' 
 #' @param genDF data frame created from the buildGenDF function
-#' @export
+#' @seealso \code{\link{getancestors}} for information on determining ancestors
+#' @seealso \code{\link{getdescendants}} for information on determining descendants
 generateGenPlot = function(gDF){
   # Plot the data frame, if it exists
   if(nrow(gDF)>0){
@@ -921,7 +918,7 @@ generateGenPlot = function(gDF){
 #' @param varieties subset of varieties used to generate the heat map
 #' @param ig igraph
 #' @param tree tree
-#' @export
+#' @seealso \url{http://www.r-project.org} for iGraph information
 plotDegMatrix = function(varieties,ig,tree){
   require(reshape2)
   matVar = matrix(, nrow = length(varieties), ncol = length(varieties))
@@ -948,7 +945,6 @@ plotDegMatrix = function(varieties,ig,tree){
 #' 
 #' @param varieties subset of varieties used to generate the heat map
 #' @param tree tree
-#' @export
 plotYearMatrix = function(varieties, tree){
   require(reshape2)
   matVar = matrix(, nrow = length(varieties), ncol = length(varieties))
