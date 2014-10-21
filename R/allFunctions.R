@@ -98,6 +98,12 @@ getYear = function(v1, tree){
 #' @examples
 #' getDegree("Brim","Bedford",ig)
 getDegree = function(v1, v2, ig, tree){
+  if(is.null(tree)){
+    stop("Please input a tree data frame where the first two columns are nodes at least one other column is labeled `Year`")
+  }
+  if(is.null(ig)){
+    stop("Please input an igraph object formatted by processTreeGraph()")
+  }
   path <- getPath(v1=v1, v2=v2, ig=ig, tree = tree, isDirected=F)
   # The degree between two vertices is equal to one less than the number of nodes in the shortest path
   return(length(path$pathVertices)-1)
@@ -169,6 +175,12 @@ getPath = function(v1, v2, ig, tree, silent=FALSE, isDirected=FALSE){
     if(!v2%in%V(ig)$name){
       warning("v2 is not a graph vertex")
     }
+  }
+  if(is.null(tree)){
+    stop("Please input a tree data frame where the first two columns are nodes at least one other column is labeled `Year`")
+  }
+  if(is.null(ig)){
+    stop("Please input an igraph object formatted by processTreeGraph()")
   }
   
   if(is.directed(ig) != isDirected){
