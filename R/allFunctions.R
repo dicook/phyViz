@@ -47,8 +47,9 @@ processTreeGraph = function(tree, vertexinfo = NULL, edgeweights = 1, isDirected
 #' @param parent possible parent variety
 #' @param tree tree
 #' @examples
-#' isParent("Essex","Young",tree)
-#' isParent("Young","Essex",tree)
+#' data(sbTree)
+#' isParent("Essex","Young",sbTree)
+#' isParent("Young","Essex",sbTree)
 isParent = function(child, parent, tree){
   return (tree[which(tree$child==child),]$parent[1] == parent
   || tree[which(tree$child==child),]$parent[2] == parent)
@@ -61,8 +62,9 @@ isParent = function(child, parent, tree){
 #' @param parent possible parent variety
 #' @param tree tree
 #' @examples
-#' isChild("Essex","Young",tree)
-#' isChild("Young","Essex",tree)
+#' data(sbTree)
+#' isChild("Essex","Young",sbTree)
+#' isChild("Young","Essex",sbTree)
 isChild = function(child, parent, tree){
   for (i in 1:length(which(tree$parent==parent))){
     # Only consider if the parent is indicated in the tree
@@ -81,8 +83,9 @@ isChild = function(child, parent, tree){
 #' @param v1 the variety
 #' @param tree tree
 #' @examples
-#' getYear("Essex",tree)
-#' getYear("Tokyo",tree)
+#' data(sbTree)
+#' getYear("Essex",sbTree)
+#' getYear("Tokyo",sbTree)
 getYear = function(v1, tree){
   return(tree[which(tree[,1] == v1),]$year[1])
 }
@@ -96,7 +99,9 @@ getYear = function(v1, tree){
 #' @param ig the igraph object
 #' @param tree the tree
 #' @examples
-#' getDegree("Brim","Bedford",ig)
+#' data(sbTree)
+#' ig = processTreeGraph(sbTree)
+#' getDegree("Brim","Bedford",ig,sbTree)
 getDegree = function(v1, v2, ig, tree){
   if(is.null(tree)){
     stop("Please input a tree data frame where the first two columns are nodes at least one other column is labeled `Year`")
@@ -115,6 +120,9 @@ getDegree = function(v1, v2, ig, tree){
 #' whole graph is connected, number of components, average path length, graph diameter, etc.)
 #' @param ig the igraph representation of the tree
 #' @examples
+#' 
+#' data(sbTree)
+#' ig = processTreeGraph(sbTree)
 #' getBasicStatistics(ig)
 getBasicStatistics = function(ig){
   require(igraph)
@@ -162,8 +170,10 @@ getBasicStatistics = function(ig){
 #' @param silent Print output? Defaults to FALSE. 
 #' @param isDirected boolean whether or not the graph is directed, defaults to FALSE
 #' @examples
-#' getPath("Brim","Bedford",ig)
-#' getPath("Tokyo","Volstate",ig)
+#' data(sbTree)
+#' ig = processTreeGraph(sbTree)
+#' getPath("Brim","Bedford",ig,sbTree)
+#' getPath("Tokyo","Volstate",ig,sbTree)
 getPath = function(v1, v2, ig, tree, silent=FALSE, isDirected=FALSE){
   require(igraph)
   if(!is.character(v1) & !is.character(v2)){
@@ -544,6 +554,11 @@ buildPlotTotalDF = function(path, ig, binVector=1:12){
 #' @param path path as returned from getPath() or a vector of two variety names which exist in ig
 #' @param ig igraph representation of the tree
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
+#' @examples
+#' data(sbTree)
+#' ig = processTreeGraph(sbTree)
+#' path = getPath("Brim","Bedford",ig,sbTree)
+#' plotPathOnTree(path,ig,binVector=sample(1:12, 12)) #Error
 #' @seealso \url{http://www.r-project.org} for iGraph information
 #' @seealso \code{\link{getPath}} for information on input path building
 plotPathOnTree = function(path, ig, binVector=sample(1:12, 12)){
@@ -599,9 +614,10 @@ plotPathOnTree = function(path, ig, binVector=sample(1:12, 12)){
 #' @param v1 the first variety
 #' @param tree the tree
 #' @examples
-#' getparent("Tokyo", tree)
-#' getParent("Essex", tree)
-getparent = function(v1, tree){
+#' data(sbTree)
+#' getParent("Tokyo", sbTree)
+#' getParent("Essex", sbTree)
+getParent = function(v1, tree){
   subset(tree, child==v1)$parent
 }
 
@@ -612,9 +628,10 @@ getparent = function(v1, tree){
 #' @param v1 the first variety
 #' @param tree the tree
 #' @examples
-#' getchild("Tokyo", tree)
-#' getchild("Essex", tree)
-getchild = function(v1, tree){
+#' data(sbTree)
+#' getChild("Tokyo", sbTree)
+#' getChild("Essex", sbTree)
+getChild = function(v1, tree){
   subset(tree, parent==v1)$child
 }
 
@@ -624,11 +641,11 @@ getchild = function(v1, tree){
 #' 
 #' @param v1 the first variety
 #' @param gen generation
-#' @seealso \code{\link{getparent}} for information on determining parents
+#' @seealso \code{\link{getParent}} for information on determining parents
 getancestors = function(v1, gen=0){
   if(is.na(v1)) return()
   
-  temp = getparent(v1)
+  temp = getParent(v1)
   if(length(temp)==0) return()
   
   res = lapply(temp[!is.na(temp)], function(i){
@@ -651,11 +668,11 @@ getancestors = function(v1, gen=0){
 #' 
 #' @param v1 the first variety
 #' @param gen generation the first variety
-#' @seealso \code{\link{getchild}} for information on determining parents
+#' @seealso \code{\link{getChild}} for information on determining parents
 getdescendants = function(v1, gen=0){
   if(is.na(v1)) return()
   
-  temp = getchild(v1)
+  temp = getChild(v1)
   if(length(temp)==0) return()
   
   res = lapply(temp[!is.na(temp)], function(i){
