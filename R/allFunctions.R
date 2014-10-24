@@ -1,736 +1,3 @@
-#' Process the tree graph
-#' 
-#' Processes the tree into an igraph object with appropriate vertex information, graph type, and edge weights. 
-#' @param tree A data frame representing tree information, containing one row for each EDGE, with at least two columns named parent and child, respectively, representing vertices connected by an edge. Terminal nodes should have "NA" for parent in order to preserve vertex information. 
-#' @param vertexinfo (default NULL) either names of columns in the tree which should be added to the database as vertex information or a data frame with information for all vertices such that the first column contains vertex names.
-#' @param edgeweights (default 1) name of a column which contains edge weights
-#' @param isDirected (default FALSE) should the graph be a directed graph?
-#' @seealso \url{http://www.r-project.org} for iGraph information
-treeToIG = function(tree, vertexinfo = NULL, edgeweights = 1, isDirected=FALSE){
-  require(igraph)
-  require(plyr)
-  if(!is.data.frame(tree)){
-    stop("t must be a data frame")
-  }
-  
-  if(!("parent"%in%names(tree) & "child"%in%names(tree))){
-    stop("tree must contain columns named 'parent' and 'child'")
-  }
-  
-  if(is.null(vertexinfo)){
-    nodes <- unique(c(tree$child, tree$parent))
-    nodes <- nodes[!is.na(nodes)]
-  } else if(is.character(vertexinfo)){
-    nodes <- tree[,c("child", vertexinfo)]
-    # add in any parents who are not in the list of children, sans any vertex information
-    if(sum(!tree$parent%in%tree$child & !is.na(tree$parent))>0){
-      nodes <- rbind.fill(nodes, data.frame(child=unique(tree$parent[!tree$parent%in%tree$child & !is.na(tree$parent)]), stringsAsFactors = FALSE))
-    }
-    nodes <- unique(nodes)
-  } else if(is.data.frame(vertexinfo)) {
-    nodes <- unique(vertexinfo)
-  } else {
-    stop("vertexinfo should be either NULL, a character vector, or a data frame")
-  }
-  
-  edges <- subset(tree, !is.na(parent) & !is.na(child))[,c("child", "parent")]
-  edges$weight <- edgeweights
-
-  
-  graph.data.frame(d=edges, directed=isDirected, vertices=nodes)
-}
-
-#' Determine if a variety is a parent of another
-#' 
-#' Returns a boolean variable for whether the second variety is a parent of the first variety
-#' @param child possible child variety
-#' @param parent possible parent variety
-#' @param tree tree
-#' @examples
-#' data(sbTree)
-#' isParent("Essex","Young",sbTree)
-#' isParent("Young","Essex",sbTree)
-isParent = function(child, parent, tree){
-  return (tree[which(tree$child==child),]$parent[1] == parent
-  || tree[which(tree$child==child),]$parent[2] == parent)
-}
-
-#' Determine if a variety is a child of another
-#' 
-#' Returns a boolean variable for whether the first variety is a child of the second variety
-#' @param child possible child variety
-#' @param parent possible parent variety
-#' @param tree tree
-#' @examples
-#' data(sbTree)
-#' isChild("Essex","Young",sbTree)
-#' isChild("Young","Essex",sbTree)
-isChild = function(child, parent, tree){
-  for (i in 1:length(which(tree$parent==parent))){
-    # Only consider if the parent is indicated in the tree
-    if (sum(which(tree$parent==parent))!=0){
-      if (tree[which(tree$parent==parent),]$child[i] == child){
-        return (TRUE)
-      }      
-    }
-  }
-  return (FALSE)
-}
-
-#' Determine the year of a variety
-#' 
-#' Returns the documented year of the inputted variety
-#' @param v1 the variety
-#' @param tree tree
-#' @examples
-#' data(sbTree)
-#' getYear("Essex",sbTree)
-#' getYear("Tokyo",sbTree)
-getYear = function(v1, tree){
-  return(tree[which(tree[,1] == v1),]$year[1])
-}
-
-#' Determine the degree between two varieties
-#' 
-#' Returns the degree (distance between unweighted edges) between two varieties, where an edge
-#' represents a parent-child relationship
-#' @param v1 the first variety
-#' @param v2 the second variety
-#' @param ig the igraph object
-#' @param tree the tree
-#' @examples
-#' data(sbTree)
-#' ig = treeToIG(sbTree)
-#' getDegree("Brim","Bedford",ig,sbTree)
-getDegree = function(v1, v2, ig, tree){
-  if(is.null(tree)){
-    stop("Please input a tree data frame where the first two columns are nodes at least one other column is labeled `Year`")
-  }
-  if(is.null(ig)){
-    stop("Please input an igraph object formatted by treeToIG()")
-  }
-  path <- getPath(v1=v1, v2=v2, ig=ig, tree = tree, isDirected=F)
-  # The degree between two vertices is equal to one less than the number of nodes in the shortest path
-  return(length(path$pathVertices)-1)
-}
-
-#' Determine basic statistics of the graph object
-#' 
-#' Returns basic statistics of the graph object (number of nodes, number of edges, whether or not the
-#' whole graph is connected, number of components, average path length, graph diameter, etc.)
-#' @param ig the igraph representation of the tree
-#' @examples
-#' 
-#' data(sbTree)
-#' ig = treeToIG(sbTree)
-#' getBasicStatistics(ig)
-getBasicStatistics = function(ig){
-  require(igraph)
-  if(class(ig)!="igraph"){
-    stop("ig must be an igraph object.")
-  }
-  retStats = list()
-  # Get edge and node count from "structure.info" function of igraph
-  numNodes = vcount(ig)
-  numEdges = ecount(ig)
-  # Determine if the graph is connected or not from "clusters" function of igraph
-  isConnected = is.connected(ig)
-  # Determine the number of connected components in the graph from "clusters"
-  # function of igraph
-  numComponents = no.clusters(ig)
-  # Compute the average path length of the graph
-  connected = FALSE
-  if(isConnected)
-  {
-    connected = TRUE
-  }
-  avePathLength = average.path.length(ig, directed=F, unconnected= !isConnected)
-  # Determine the log(N) value of the graph
-  logN = log(numNodes)
-  # Determine the network diameter
-  graphDiameter = diameter(ig, directed = F, unconnected = !isConnected, weights = NULL)
-  # Create a list of statistics
-  retStats = list(isConnected = isConnected, numComponents = numComponents, avePathLength = avePathLength,
-                 graphDiameter = graphDiameter, numNodes = numNodes, numEdges = numEdges, logN = logN)
-  # Return the list of statistis
-  retStats
-}
-
-#' Determine the path between two varieties
-#' 
-#' Determines the shortest path between the two inputted vertices, and takes into
-#' account whether or not the graph is directed. If there is a path, the list of vertices of the
-#' path will be returned. If there is not a path, a list of character(0) will be returned. Note:
-#' For a directed graph, the direction matters. However, this function will check both directions
-#' and return the path if it exists.
-#' @param v1 the first variety
-#' @param v2 the second variety
-#' @param ig the igraph representation of the tree
-#' @param tree the tree
-#' @param silent Print output? Defaults to FALSE. 
-#' @param isDirected boolean whether or not the graph is directed, defaults to FALSE
-#' @examples
-#' data(sbTree)
-#' ig = treeToIG(sbTree)
-#' getPath("Brim","Bedford",ig,sbTree)
-#' getPath("Tokyo","Volstate",ig,sbTree)
-getPath = function(v1, v2, ig, tree, silent=FALSE, isDirected=FALSE){
-  require(igraph)
-  if(!is.character(v1) & !is.character(v2)){
-    stop("First two arguments must be strings")
-  } else {
-    if(!v1%in%V(ig)$name){
-      warning("v1 is not a graph vertex")
-    }
-    if(!v2%in%V(ig)$name){
-      warning("v2 is not a graph vertex")
-    }
-  }
-  if(is.null(tree)){
-    stop("Please input a tree data frame where the first two columns are nodes at least one other column is labeled `Year`")
-  }
-  if(is.null(ig)){
-    stop("Please input an igraph object formatted by treeToIG()")
-  }
-  
-  if(is.directed(ig) != isDirected){
-    if(isDirected){
-      stop("Cannot compute directed path on an undirected graph")
-    }
-    warning("Graph type does not match isDirected specification")
-  }
-
-  retPath = list()
-  yearVertices = character()
-  pathVertices = character()
-  # If the tree is directed
-  if (is.directed(ig)){
-    # We need to look at both forward and reverse cases of directions, because the user may not know
-    # the potential direction of a path between the two vertices
-    pathVIndicesForward = get.shortest.paths(ig, v1, v2, weights = NA, output="vpath")$vpath[[1]]
-    pathVIndicesReverse = get.shortest.paths(ig, v2, v1, weights = NA, output="vpath")$vpath[[1]]
-    # If there is a path in the forward direction, then we save the names of the vertices in that order
-    if (length(pathVIndicesForward) != 0){
-      for (i in 1:length(pathVIndicesForward)){
-        pathVertices = c(pathVertices, get.vertex.attribute(ig, "name", index=pathVIndicesForward[i]))
-        yearVertices = c(yearVertices, getYear(pathVertices[i], tree))
-      }
-      retPath = list(pathVertices = pathVertices, yearVertices = yearVertices)
-    }
-    # If there is a path in the reverse direction, then we save the names of the vertices in that order
-    if (length(pathVIndicesReverse) != 0){
-      for (i in 1:length(pathVIndicesReverse)){
-        pathVertices = c(pathVertices, get.vertex.attribute(ig, "name", index=pathVIndicesReverse[i]))
-        yearVertices = c(yearVertices, getYear(pathVertices[i], tree))
-      }
-      retPath = list(pathVertices = pathVertices, yearVertices = yearVertices)
-    }
-  } else {
-    # The direction does not matter, any shortest path between the vertices will be listed
-    pathVIndices = get.shortest.paths(ig, v1, v2, weights = NA, output="vpath")$vpath[[1]]
-    if (length(pathVIndices) != 0){
-      for (i in 1:length(pathVIndices)){
-        pathVertices = c(pathVertices, get.vertex.attribute(ig, "name", index=pathVIndices[i]))
-        yearVertices = c(yearVertices, getYear(pathVertices[i], tree))
-      }
-      retPath = list(pathVertices = pathVertices, yearVertices = yearVertices)
-    }
-  }
-  if(length(retPath)==0 & !silent){
-    message("Warning: There is no path between those two vertices")
-  }
-  # Return the shortest path, if it exists
-  retPath
-}
-
-#' Build data frame for path representation
-#' 
-#' This function builds a dataframe of information about the path object that can later be used
-#' for visualization. The dataframe includes "label" (name of each variety) of each node,
-#' "x" (the year of the variety, the x-axis value for which the label and
-#' incoming/outgoing edges are centered), "y" (the y-axis value, which is the index
-#' of the path, incremented by unity), "xstart" (the x-axis position of the 
-#' outgoing edge (leaving to connect to the node at the next largest y-value)),
-#' "xend" (the x-axis position of the outgoing edge (connected to the node at the
-#' next largest y-value)), "ystart" (the y-axis position of the outgoing edge (leaving
-#' to connect to the node at the next largest y-value), "yend" (the y-axis position
-#' of the outgoing edge (connected to the node at the next largest y-value))).
-#' @param path path object representing the path between two vertices
-buildPathDF = function(path){
-  if(length(path) > 0){
-    # The labels of the nodes are the names of the varieties in the path
-    label=path$pathVertices
-    # The x-axis position of the node labels are the years of the varieties in the path
-    x=as.numeric(path$yearVertices)
-    # The y-axis position of the node labels are incremented by unity for each new connected
-    # node in the path
-    y=seq(1, length(label), 1)
-    # The starting x-axis position of the edge between two nodes will be the x-axis position
-    # of the label of the first node
-    xstart=x
-    xend=rep(0,length(label))
-    yend=rep(0,length(label))
-    for (i in 1:length(label)){
-      y[i] = i
-      xend[i] = xstart[i]
-      if (i < length(label)){
-        # The ending x-axis position of the edge between two nodes will be the x-axis position
-        # of the label of the second node
-        xend[i] = xstart[i+1]
-        # The ending y-axis position of the edge between two nodes will be 0.1 below the y-axis
-        # of the label of the second node
-        yend[i] = y[i+1]-.1
-      }
-    }
-    # The starting y-axis position of the edge between two nodes will be 0.1 above the y-axis of
-    # the label of the first node
-    ystart = y+.1
-    # The last edge should have equal y-axis values of the ends of its segment because it should
-    # not be drawn (as there are n-1 edges for n nodes of a graph)
-    yend[length(label)] = ystart[length(label)]
-    # Create the dataframe about the path that includes the 7 necessary parameters
-    plotPathDF = data.frame(label,xstart,ystart,xend,yend,x,y)
-    # Return the dataframe about the path
-  }
-  else{
-    print("Warning: There was no plotPathDF object created")
-    plotPathDF = NA
-  }
-  plotPathDF
-}
-
-#' Construct the graphic object of the path
-#' 
-#' This function takes the path as input and outputs an ggplot2 object. The
-#' image will correctly position the node labels with x-axis representing the node
-#' year, and y-axis representing the node path index. Edges between two nodes represent
-#' parent-child relationships between those nodes. For visual appeal, there is a grey
-#' box that outlines the node label, as well as an underline and overline for each label.
-#' @param path object created from function getPath
-#' @seealso \code{\link{getPath}} for information on input path building
-plotPath = function(path){
-  if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
-    stop("path does not appear to be a result of the getPath() function")
-  }
-  require(ggplot2)
-  
-  pPDF <- buildPathDF(path)
-  
-  if (length(dim(pPDF))>1){ # check to make sure pPDF is a data frame
-    # The textFrame object will be used to create a grey rectangle around each node label
-    textFrame = data.frame(x = pPDF$x, y = pPDF$y, label = pPDF$label)
-    textFrame = transform(textFrame,
-                          w = strwidth(pPDF$label, 'inches') + 0.25,
-                          h = strheight(pPDF$label, 'inches') + 0.25
-    )
-    
-    # The plotImage object creates a grey rectangle (geom_rect) to highlight the node
-    # label; three line segments (geom_segment) to create node label underline, node
-    # label overline, and edges between nodes; and text (geom_text) to write the node label.
-    plotPathImage = ggplot(data = pPDF,aes(x = x, y = y)) + 
-      geom_rect(data = textFrame, aes(xmin = x - strwidth(label, "inches")*1.2,
-                                      xmax = x + strwidth(label, "inches")*1.2, 
-                                      ymin = y-.1, ymax = y+.1), fill = "grey80") +
-      geom_segment(aes(x=x - strwidth(label, "inches")*1.2, y=y-.1,
-                       xend =  x + strwidth(label, "inches")*1.2, yend = y-.1)) +
-      geom_segment(aes(x=x - strwidth(label, "inches")*1.2, y=y+.1,
-                       xend =  x + strwidth(label, "inches")*1.2, yend = y+.1)) +
-      geom_segment(aes(x=xstart, y=ystart, xend=xend, yend=yend)) +
-      geom_text(data = textFrame,aes(x = x, y = y, label = label), size = 4) + 
-      xlab("Year") +
-      
-      theme(axis.text.y=element_blank(),axis.ticks.y=element_blank(),
-            axis.title.y=element_blank(),legend.position="none",
-            panel.grid.major.y=element_blank(),
-            panel.grid.minor=element_blank())
-  }
-  else{
-    plotPathImage = print("There is no path to display between the two inputted vertices.")
-    plotPathImage = NA
-  }
-  # Return the plotImage
-  plotPathImage
-}
-
-#' Build a data frame where the varieties are spread so they do not overlap
-#' 
-#' Constructs a data frame object so that varieties are spread such that they do not overlap, even
-#' though the x-axis position will represent years.
-#' @param ig the igraph representation of the tree
-#' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
-#' This vector will determine the order that increasing y index positions are repeatedly assigned to. For instance, if binVector = c(1,4,7,10,2,5,8,11,3,6,9,12), then y-axis position one will be assigned to a variety in the first
-#' bin of years, y-axis position two will be assigned to a variety in the fourth bin of years, ...., and y-axis position thirteen
-#' will be assigned again to a variety in the first bin of years. This vector can help minimize overlap of the labelling of varieties,
-#' without regard to how the layout affects the edges between varieties, as those edges will be colored faintly.
-#' @seealso \url{http://www.r-project.org} for iGraph information
-buildSpreadTotalDF = function(ig, binVector=1:12){
-  if(class(ig)!="igraph"){
-    stop("ig must be an igraph object.")
-  }
-  
-  if(sum(1:length(binVector)%in%binVector)!=length(binVector)){
-    stop("binVector must contain all numbers 1:length(binVector)")
-  }
-  
-  totalDF = get.data.frame(ig, "vertices")
-  totalDF = totalDF[!is.na(totalDF$name),]
-  totalDF = totalDF[order(totalDF$year, decreasing=FALSE), ]
-  
-  numrows <- ceiling(nrow(totalDF)/length(binVector))
-
-  idx <- matrix(1:(numrows*length(binVector)), ncol=length(binVector), nrow=numrows, byrow=TRUE)
-  idx <- idx[, binVector]
-  idx <- as.numeric(t(idx))[1:nrow(totalDF)]
-
-  spreadTotalDF <- totalDF
-  spreadTotalDF$y <- jitter(rep(1:numrows, length.out=nrow(totalDF)), amount=.5)[idx]
-
-  spreadTotalDF
-}
-
-#' Process the tree graph
-#' 
-#' This function takes the spreadTotalDF object (from the buildSpreadTotalDF function) and the path object
-#' as inputs. From these objects, it creates a data frame object of the label, x, and y values of all nodes
-#' in the tree. However, the data frame object does not include the labels of the path varieties, as they
-#' will be treated differently.
-#' @param path path as returned from getPath() or a vector of two variety names which exist in the ig object
-#' @param ig the igraph representation of the tree
-#' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
-#' @seealso \url{http://www.r-project.org} for iGraph information
-#' @seealso \code{\link{getPath}} for information on input path building
-buildMinusPathDF = function(path, ig, binVector=1:12){
-  
-  if(class(ig)!="igraph"){
-    stop("ig must be an igraph object")
-  }
-  
-  if(sum(1:length(binVector)%in%binVector)!=length(binVector)){
-    stop("binVector must contain all numbers 1:length(binVector)")
-  }
-  
-  if(mode(path)=="character"){
-    if(length(path)!=2){
-      stop("path needs to contain two variety names")
-    }
-    varieties <- path
-    path <- getPath(varieties[1], varieties[2], ig)
-  } else if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
-    stop("path does not appear to be a result of the getPath() function")
-  } 
-  
-  tG <- buildSpreadTotalDF(ig, binVector)
-  eG <- get.data.frame(ig, "edges")
-  
-  label=tG$name
-  x=tG$year
-  y=tG$y
-  # If the label is part of the path, then we change the its value to NA
-  for (i in 1:length(label)){
-    if (label[i]%in%path$pathVertices){
-      label[i]=NA
-    }
-  }
-  plotMinusPathDF = data.frame(label,x,y)
-  
-  # Return the data frame object of the total tree
-  plotMinusPathDF
-}
-
-#' Build the edges in the  total tree graph
-#' 
-#' This function takes the ig object and creates a data frame object of the edges between all parent-child
-#' relationships in the graph
-#' @param ig igraph object from treeToIG
-#' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
-#' @seealso \url{http://www.r-project.org} for iGraph information
-buildEdgeTotalDF = function(ig, binVector=1:12){
-
-  if(class(ig)!="igraph"){
-    stop("ig must be an igraph object")
-  }
-  
-  if(sum(1:length(binVector)%in%binVector)!=length(binVector)){
-    stop("binVector must contain all numbers 1:length(binVector)")
-  }
-  
-  tG <- buildSpreadTotalDF(ig, binVector)
-  eG <- get.data.frame(ig, "edges")
-
-  # edgeTotalDF used in function plotPathOnTree()
-  numEdges = length(E(ig))
-  x=as.numeric(rep("",numEdges))
-  y=as.numeric(rep("",numEdges))
-  xend=as.numeric(rep("",numEdges))
-  yend=as.numeric(rep("",numEdges))
-  # For each edge in the graph
-  for (i in 1:numEdges){
-    xname = as.character(eG[i,]$from)
-    xendname = as.character(eG[i,]$to)
-    x_i = getYear(xname, tG)
-    xend_i = getYear(xendname, tG)
-    if(!xname%in%tG$name) {
-      stop(paste(xname, "cannot be found in ig vertices"))
-    }
-    if(!xendname%in%tG$name) {
-      stop(paste(xendname, "cannot be found in ig vertices"))
-    }
-    y_i = tG$y[which(tG$name==xname)]
-    yend_i = tG$y[which(tG$name==xendname)]
-    x[i] = x_i
-    xend[i] = xend_i
-    y[i] = y_i
-    yend[i] = yend_i
-  }
-  # Create a dataframe containing the start and end positions of the x and y axes
-  edgeTotalDF = as.data.frame(cbind(x, y, xend, yend))
-
-  edgeTotalDF
-}
-
-#' Build all labels in the graph
-#' 
-#' This function takes the spreadTotalDF object (from the buildSpreadTotalDF function) and the path object
-#' as inputs. From these objects, it creates a data frame object of the text label positions for the
-#' varieties in the path, as well as the edges only in the varieties in the path.
-#' @param path path as returned from getPath() or a vector of two variety names which exist in ig
-#' @param ig igraph object
-#' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
-#' @seealso \url{http://www.r-project.org} for iGraph information
-#' @seealso \url{http://www.r-project.org} for iGraph information
-#' @seealso \code{\link{getPath}} for information on input path building
-buildPlotTotalDF = function(path, ig, binVector=1:12){
-  if(class(ig)!="igraph"){
-    stop("ig must be an igraph object")
-  }
-  
-  if(mode(path)=="character"){
-    if(length(path)!=2){
-      stop("path needs to contain two variety names")
-    }
-    varieties <- path
-    path <- getPath(varieties[1], varieties[2], ig)
-  } else if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
-    stop("path does not appear to be a result of the getPath() function")
-  } 
-  
-  
-  if(sum(1:length(binVector)%in%binVector)!=length(binVector)){
-    stop("binVector must contain all numbers 1:length(binVector)")
-  }
-  
-  tG <- buildSpreadTotalDF(ig, binVector)
-
-  label=path$pathVertices
-  x=as.numeric(path$yearVertices)
-  xstart=x
-  xend=rep(0,length(label))
-  ystart=rep(0,length(label))
-  yend=rep(0,length(label))
-  for (i in 2:length(label)){
-    ystart[i-1] = tG$y[match(label[i-1], tG$name)]
-    yend[i-1] = tG$y[match(label[i], tG$name)]
-    xend[i-1] = xstart[i]
-  }
-  ystart[i] = yend[i-1]
-  yend[i] = ystart[i]
-  xend[i] = xstart[i]
-  y = ystart
-  plotTotalDF = data.frame(label,xstart,ystart,xend,yend,x,y)
-
-  plotTotalDF
-}
-
-#' Build the image object of the whole tree with the path superimposed onto it
-#' 
-#' This function requires a path and the ig object, and plots the entire tree 
-#' with the path highlighted.
-#' The image will correctly position the node labels with x-axis representing the node
-#' year, and y-axis representing the node path index. Light grey edges between two nodes
-#' represent parent-child relationships between those nodes. To enhance the visual
-#' understanding of how the path-of-interest fits into the entire graph structure, the
-#' nodes within the path are labelled in boldface, and connected with light-green
-#' boldfaced edges.
-#' @param path path as returned from getPath() or a vector of two variety names which exist in ig
-#' @param ig igraph representation of the tree
-#' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
-#' @examples
-#' data(sbTree)
-#' ig = treeToIG(sbTree)
-#' path = getPath("Brim","Bedford",ig,sbTree)
-#' plotPathOnTree(path,ig,binVector=sample(1:12, 12)) #Error
-#' @seealso \url{http://www.r-project.org} for iGraph information
-#' @seealso \code{\link{getPath}} for information on input path building
-plotPathOnTree = function(path, ig, binVector=sample(1:12, 12)){
-  if(class(ig)!="igraph"){
-    stop("ig must be an igraph object")
-  }
-  
-  if(mode(path)=="character"){
-    if(length(path)!=2){
-      stop("path needs to contain two variety names")
-    }
-    varieties <- path
-    path <- getPath(varieties[1], varieties[2], ig)
-  } else if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
-    stop("path does not appear to be a result of the getPath() function")
-  } 
-  
-  pMPDF <- buildMinusPathDF(path, ig, binVector)
-  eTDF <- buildEdgeTotalDF(ig, binVector)
-  pTDF <- buildPlotTotalDF(path, ig, binVector)
-  
-  textFrame = data.frame(x = pMPDF$x, y = pMPDF$y, label = pMPDF$label)
-  textFrame = transform(textFrame,
-                        w = strwidth(pMPDF$label, 'inches') + 0.25,
-                        h = strheight(pMPDF$label, 'inches') + 0.25
-  )
-    
-  # The plotTotalImage object creates two line segments (geom_segment), one to create grey
-  # edges for non-path connections between pairs of nodes, the other to create light-green
-  # edges for path connections between pairs of nodes; and two labels (geom_text), one to
-  # create labels of size 2 for non-path connections between pairs of nodes, the other to
-  # create labels of size 2.5 and boldfaced for path connections between pairs of nodes.
-  plotTotalImage = ggplot(data = pMPDF, aes(x = x, y = y)) +
-    geom_segment(data = eTDF, aes(x=x, y=y-.1, xend=xend, yend=yend+.1), colour = "gray84") +
-    geom_segment(data = pTDF, aes(x=xstart, y=ystart, xend=xend, yend=yend), colour = "seagreen2", size = 1) +
-    geom_text(data = textFrame,aes(x = x, y = y, label = label), size = 2) +
-    geom_text(data = pTDF,aes(x = x, y = y, label = label), size = 2.5,  fontface="bold") +
-    xlab("Year") +
-    
-    # Erase the y-axis, and only include grids from the x-axis
-    theme(axis.text.y=element_blank(),axis.ticks.y=element_blank(),
-          axis.title.y=element_blank(),legend.position="none",
-          panel.grid.major.y=element_blank(),
-          panel.grid.minor=element_blank())
-  # Return the plotTotalImage
-  plotTotalImage
-}
-
-#' Returns the parents of a particular variety (if they exist)
-#' 
-#' This function returns up to two values that indicate the parents of the inputted variety.
-#' 
-#' @param v1 the first variety
-#' @param tree the tree
-#' @examples
-#' data(sbTree)
-#' getParent("Tokyo", sbTree)
-#' getParent("Essex", sbTree)
-getParent = function(v1, tree){
-  subset(tree, child==v1)$parent
-}
-
-#' Returns the children of a particular variety (if they exist)
-#' 
-#' This function returns zero or more values that indicate the children of the inputted variety.
-#' 
-#' @param v1 the first variety
-#' @param tree the tree
-#' @examples
-#' data(sbTree)
-#' getChild("Tokyo", sbTree)
-#' getChild("Essex", sbTree)
-getChild = function(v1, tree){
-  subset(tree, parent==v1)$child
-}
-
-#' Returns the ancestors of a particular variety (if they exist)
-#' 
-#' This function returns a nested list of the ancestors of the inputted variety.
-#' 
-#' @param v1 the first variety
-#' @param gen generation
-#' @seealso \code{\link{getParent}} for information on determining parents
-getAncestors = function(v1, gen=0){
-  if(is.na(v1)) return()
-  
-  temp = getParent(v1)
-  if(length(temp)==0) return()
-  
-  res = lapply(temp[!is.na(temp)], function(i){
-    # print(i)
-    temp2 = getAncestors(i, gen=gen+1)
-    if(length(temp2)<1) return(list(label=i, root=v1, root.gen=gen, gen=gen+1, type="ancestor"))
-    return(c(label=i, root=v1, root.gen=gen, gen=gen+1, type="ancestor", temp2))
-  })
-  
-  if(gen==0){
-    return(c(label=v1, root=v1, root.gen=gen, gen=gen, type="ancestor", res))
-  } else{
-    return(res)
-  } 
-}
-
-#' Returns the descendants of a particular variety (if they exist)
-#' 
-#' This function returns a nested list of the descendants of the inputted variety.
-#' 
-#' @param v1 the first variety
-#' @param gen generation the first variety
-#' @seealso \code{\link{getChild}} for information on determining parents
-getDescendants = function(v1, gen=0){
-  if(is.na(v1)) return()
-  
-  temp = getChild(v1)
-  if(length(temp)==0) return()
-  
-  res = lapply(temp[!is.na(temp)], function(i){
-    # print(i)
-    temp2 = getDescendants(i, gen=gen+1)
-    if(length(temp2)<1) return(list(label=i, root=v1, root.gen=gen, gen=gen+1, type="descendant"))
-    return(c(label=i, root=v1, root.gen=gen, gen=gen+1, type="descendant", temp2))
-  })
-  
-  if(gen==0){
-    return(c(label=v1, root=v1, root.gen=gen, gen=gen, type="descendant", res))
-  } else{
-    return(res)
-  } 
-}
-
-#' Returns the data frame representation of all ancestors and descendants of a variety
-#' 
-#' Converts the list-style-tree to a data frame, where each variety has an id value 
-#' and references its' parent's id value. ID value ranges correspond to generation. 
-#' It is possible that with more complex trees the range of id values may need to 
-#' expand to reduce the probability of two varieties being assigned the same id value. 
-#' 
-#' @param tlist list of varieties
-#' @param branch of particular variety in tree
-#' @param par.id the id of the parent of the variety
-#' @param id.offset value to ensure labels are at unique locations
-nodeToDF = function(tlist, branch=0, par.id = NA,id.offset=1){
-  listidx = which(sapply(tlist, mode)=="list")
-  if(length(listidx)==0){
-    temp = as.data.frame(tlist)
-    if(nrow(temp)==0) return(data.frame())
-    # If gen (not followed by a number), then it does not exist
-    if(!"gen"%in%names(temp)){
-      id.offset <= id.offset+1
-      return(cbind(as.data.frame(tlist), branch=branch, par.id=par.id, id=sample(0:99, 1)*10+id.offset/10))
-    }
-    id.offset <= id.offset+1
-    return(cbind(as.data.frame(tlist), branch=branch, par.id=par.id, id=sign(temp$gen)*sample((abs(temp$gen)*100):((abs(temp$gen)+1)*100-1), 1)*10+id.offset/10))
-  } else {
-    # Grabs everything that does not have children.
-    temp = as.data.frame(tlist[-listidx])
-    # First time, branchidx = 1 2
-    branchidx = listidx-min(listidx)+1
-    if(length(branchidx)>1){
-      # First time, branchidx = -0.5 0.5
-      branchidx = seq(-.5, .5, length.out=length(branchidx)) 
-      # branchidx = equals either -.5 (if temp$gen is even) or .5 (if temp$gen is odd)
-    } else branchidx = c(-.5, .5)[temp$gen%%2+1]
-    id.offset <= id.offset+1
-    # Creates a unique id
-    id = sign(temp$gen)*sample((abs(temp$gen)*100):((abs(temp$gen)+1)*100-1), 1)*10+id.offset/10
-    return(rbind.fill(cbind(temp, branch=branch, id=id, par.id=par.id), 
-                      ldply(1:length(listidx), function(i) 
-                        nodeToDF(tlist[[listidx[i]]], branch=branchidx[i], par.id=id))))
-  }
-}
-
 #' Returns the coordinate positions of all ancestors and descendants of a variety
 #' 
 #' Calculates coordinates to plot each ancestors and descendant of a variety on a tree.
@@ -786,7 +53,7 @@ buildAncDesCoordDF = function(df){
   yfac = diff(range(df$y))  
   df$ystart = df$y
   df$yend = df$y
-
+  
   # Maximum character length of each generation
   widths = ddply(df, .(genside), summarize, len=max(nchar(as.character(label))))
   # Create a padding for label length
@@ -905,6 +172,578 @@ buildAncDesTotalDF = function(v1, mAnc=3, mDes=3, tree){
   genDF
 }
 
+#' Build the edges in the  total tree graph
+#' 
+#' This function takes the ig object and creates a data frame object of the edges between all parent-child
+#' relationships in the graph
+#' @param ig igraph object from treeToIG
+#' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
+#' @seealso \url{http://www.r-project.org} for iGraph information
+buildEdgeTotalDF = function(ig, binVector=1:12){
+  
+  if(class(ig)!="igraph"){
+    stop("ig must be an igraph object")
+  }
+  
+  if(sum(1:length(binVector)%in%binVector)!=length(binVector)){
+    stop("binVector must contain all numbers 1:length(binVector)")
+  }
+  
+  tG <- buildSpreadTotalDF(ig, binVector)
+  eG <- get.data.frame(ig, "edges")
+  
+  # edgeTotalDF used in function plotPathOnTree()
+  numEdges = length(E(ig))
+  x=as.numeric(rep("",numEdges))
+  y=as.numeric(rep("",numEdges))
+  xend=as.numeric(rep("",numEdges))
+  yend=as.numeric(rep("",numEdges))
+  # For each edge in the graph
+  for (i in 1:numEdges){
+    xname = as.character(eG[i,]$from)
+    xendname = as.character(eG[i,]$to)
+    x_i = getYear(xname, tG)
+    xend_i = getYear(xendname, tG)
+    if(!xname%in%tG$name) {
+      stop(paste(xname, "cannot be found in ig vertices"))
+    }
+    if(!xendname%in%tG$name) {
+      stop(paste(xendname, "cannot be found in ig vertices"))
+    }
+    y_i = tG$y[which(tG$name==xname)]
+    yend_i = tG$y[which(tG$name==xendname)]
+    x[i] = x_i
+    xend[i] = xend_i
+    y[i] = y_i
+    yend[i] = yend_i
+  }
+  # Create a dataframe containing the start and end positions of the x and y axes
+  edgeTotalDF = as.data.frame(cbind(x, y, xend, yend))
+  
+  edgeTotalDF
+}
+
+#' Process the tree graph
+#' 
+#' This function takes the spreadTotalDF object (from the buildSpreadTotalDF function) and the path object
+#' as inputs. From these objects, it creates a data frame object of the label, x, and y values of all nodes
+#' in the tree. However, the data frame object does not include the labels of the path varieties, as they
+#' will be treated differently.
+#' @param path path as returned from getPath() or a vector of two variety names which exist in the ig object
+#' @param ig the igraph representation of the tree
+#' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
+#' @seealso \url{http://www.r-project.org} for iGraph information
+#' @seealso \code{\link{getPath}} for information on input path building
+buildMinusPathDF = function(path, ig, binVector=1:12){
+  
+  if(class(ig)!="igraph"){
+    stop("ig must be an igraph object")
+  }
+  
+  if(sum(1:length(binVector)%in%binVector)!=length(binVector)){
+    stop("binVector must contain all numbers 1:length(binVector)")
+  }
+  
+  if(mode(path)=="character"){
+    if(length(path)!=2){
+      stop("path needs to contain two variety names")
+    }
+    varieties <- path
+    path <- getPath(varieties[1], varieties[2], ig)
+  } else if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
+    stop("path does not appear to be a result of the getPath() function")
+  } 
+  
+  tG <- buildSpreadTotalDF(ig, binVector)
+  eG <- get.data.frame(ig, "edges")
+  
+  label=tG$name
+  x=tG$year
+  y=tG$y
+  # If the label is part of the path, then we change the its value to NA
+  for (i in 1:length(label)){
+    if (label[i]%in%path$pathVertices){
+      label[i]=NA
+    }
+  }
+  plotMinusPathDF = data.frame(label,x,y)
+  
+  # Return the data frame object of the total tree
+  plotMinusPathDF
+}
+
+#' Build data frame for path representation
+#' 
+#' This function builds a dataframe of information about the path object that can later be used
+#' for visualization. The dataframe includes "label" (name of each variety) of each node,
+#' "x" (the year of the variety, the x-axis value for which the label and
+#' incoming/outgoing edges are centered), "y" (the y-axis value, which is the index
+#' of the path, incremented by unity), "xstart" (the x-axis position of the 
+#' outgoing edge (leaving to connect to the node at the next largest y-value)),
+#' "xend" (the x-axis position of the outgoing edge (connected to the node at the
+#' next largest y-value)), "ystart" (the y-axis position of the outgoing edge (leaving
+#' to connect to the node at the next largest y-value), "yend" (the y-axis position
+#' of the outgoing edge (connected to the node at the next largest y-value))).
+#' @param path path object representing the path between two vertices
+buildPathDF = function(path){
+  if(length(path) > 0){
+    # The labels of the nodes are the names of the varieties in the path
+    label=path$pathVertices
+    # The x-axis position of the node labels are the years of the varieties in the path
+    x=as.numeric(path$yearVertices)
+    # The y-axis position of the node labels are incremented by unity for each new connected
+    # node in the path
+    y=seq(1, length(label), 1)
+    # The starting x-axis position of the edge between two nodes will be the x-axis position
+    # of the label of the first node
+    xstart=x
+    xend=rep(0,length(label))
+    yend=rep(0,length(label))
+    for (i in 1:length(label)){
+      y[i] = i
+      xend[i] = xstart[i]
+      if (i < length(label)){
+        # The ending x-axis position of the edge between two nodes will be the x-axis position
+        # of the label of the second node
+        xend[i] = xstart[i+1]
+        # The ending y-axis position of the edge between two nodes will be 0.1 below the y-axis
+        # of the label of the second node
+        yend[i] = y[i+1]-.1
+      }
+    }
+    # The starting y-axis position of the edge between two nodes will be 0.1 above the y-axis of
+    # the label of the first node
+    ystart = y+.1
+    # The last edge should have equal y-axis values of the ends of its segment because it should
+    # not be drawn (as there are n-1 edges for n nodes of a graph)
+    yend[length(label)] = ystart[length(label)]
+    # Create the dataframe about the path that includes the 7 necessary parameters
+    plotPathDF = data.frame(label,xstart,ystart,xend,yend,x,y)
+    # Return the dataframe about the path
+  }
+  else{
+    print("Warning: There was no plotPathDF object created")
+    plotPathDF = NA
+  }
+  plotPathDF
+}
+
+#' Build all labels in the graph
+#' 
+#' This function takes the spreadTotalDF object (from the buildSpreadTotalDF function) and the path object
+#' as inputs. From these objects, it creates a data frame object of the text label positions for the
+#' varieties in the path, as well as the edges only in the varieties in the path.
+#' @param path path as returned from getPath() or a vector of two variety names which exist in ig
+#' @param ig igraph object
+#' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
+#' @seealso \url{http://www.r-project.org} for iGraph information
+#' @seealso \url{http://www.r-project.org} for iGraph information
+#' @seealso \code{\link{getPath}} for information on input path building
+buildPlotTotalDF = function(path, ig, binVector=1:12){
+  if(class(ig)!="igraph"){
+    stop("ig must be an igraph object")
+  }
+  
+  if(mode(path)=="character"){
+    if(length(path)!=2){
+      stop("path needs to contain two variety names")
+    }
+    varieties <- path
+    path <- getPath(varieties[1], varieties[2], ig)
+  } else if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
+    stop("path does not appear to be a result of the getPath() function")
+  } 
+  
+  
+  if(sum(1:length(binVector)%in%binVector)!=length(binVector)){
+    stop("binVector must contain all numbers 1:length(binVector)")
+  }
+  
+  tG <- buildSpreadTotalDF(ig, binVector)
+  
+  label=path$pathVertices
+  x=as.numeric(path$yearVertices)
+  xstart=x
+  xend=rep(0,length(label))
+  ystart=rep(0,length(label))
+  yend=rep(0,length(label))
+  for (i in 2:length(label)){
+    ystart[i-1] = tG$y[match(label[i-1], tG$name)]
+    yend[i-1] = tG$y[match(label[i], tG$name)]
+    xend[i-1] = xstart[i]
+  }
+  ystart[i] = yend[i-1]
+  yend[i] = ystart[i]
+  xend[i] = xstart[i]
+  y = ystart
+  plotTotalDF = data.frame(label,xstart,ystart,xend,yend,x,y)
+  
+  plotTotalDF
+}
+
+#' Build a data frame where the varieties are spread so they do not overlap
+#' 
+#' Constructs a data frame object so that varieties are spread such that they do not overlap, even
+#' though the x-axis position will represent years.
+#' @param ig the igraph representation of the tree
+#' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
+#' This vector will determine the order that increasing y index positions are repeatedly assigned to. For instance, if binVector = c(1,4,7,10,2,5,8,11,3,6,9,12), then y-axis position one will be assigned to a variety in the first
+#' bin of years, y-axis position two will be assigned to a variety in the fourth bin of years, ...., and y-axis position thirteen
+#' will be assigned again to a variety in the first bin of years. This vector can help minimize overlap of the labelling of varieties,
+#' without regard to how the layout affects the edges between varieties, as those edges will be colored faintly.
+#' @seealso \url{http://www.r-project.org} for iGraph information
+buildSpreadTotalDF = function(ig, binVector=1:12){
+  if(class(ig)!="igraph"){
+    stop("ig must be an igraph object.")
+  }
+  
+  if(sum(1:length(binVector)%in%binVector)!=length(binVector)){
+    stop("binVector must contain all numbers 1:length(binVector)")
+  }
+  
+  totalDF = get.data.frame(ig, "vertices")
+  totalDF = totalDF[!is.na(totalDF$name),]
+  totalDF = totalDF[order(totalDF$year, decreasing=FALSE), ]
+  
+  numrows <- ceiling(nrow(totalDF)/length(binVector))
+
+  idx <- matrix(1:(numrows*length(binVector)), ncol=length(binVector), nrow=numrows, byrow=TRUE)
+  idx <- idx[, binVector]
+  idx <- as.numeric(t(idx))[1:nrow(totalDF)]
+
+  spreadTotalDF <- totalDF
+  spreadTotalDF$y <- jitter(rep(1:numrows, length.out=nrow(totalDF)), amount=.5)[idx]
+
+  spreadTotalDF
+}
+
+#' Returns the ancestors of a particular variety (if they exist)
+#' 
+#' This function returns a nested list of the ancestors of the inputted variety.
+#' 
+#' @param v1 the first variety
+#' @param gen generation
+#' @seealso \code{\link{getParent}} for information on determining parents
+getAncestors = function(v1, gen=0){
+  if(is.na(v1)) return()
+  
+  temp = getParent(v1)
+  if(length(temp)==0) return()
+  
+  res = lapply(temp[!is.na(temp)], function(i){
+    # print(i)
+    temp2 = getAncestors(i, gen=gen+1)
+    if(length(temp2)<1) return(list(label=i, root=v1, root.gen=gen, gen=gen+1, type="ancestor"))
+    return(c(label=i, root=v1, root.gen=gen, gen=gen+1, type="ancestor", temp2))
+  })
+  
+  if(gen==0){
+    return(c(label=v1, root=v1, root.gen=gen, gen=gen, type="ancestor", res))
+  } else{
+    return(res)
+  } 
+}
+
+#' Determine basic statistics of the graph object
+#' 
+#' Returns basic statistics of the graph object (number of nodes, number of edges, whether or not the
+#' whole graph is connected, number of components, average path length, graph diameter, etc.)
+#' @param ig the igraph representation of the tree
+#' @examples
+#' 
+#' data(sbTree)
+#' ig = treeToIG(sbTree)
+#' getBasicStatistics(ig)
+getBasicStatistics = function(ig){
+  require(igraph)
+  if(class(ig)!="igraph"){
+    stop("ig must be an igraph object.")
+  }
+  retStats = list()
+  # Get edge and node count from "structure.info" function of igraph
+  numNodes = vcount(ig)
+  numEdges = ecount(ig)
+  # Determine if the graph is connected or not from "clusters" function of igraph
+  isConnected = is.connected(ig)
+  # Determine the number of connected components in the graph from "clusters"
+  # function of igraph
+  numComponents = no.clusters(ig)
+  # Compute the average path length of the graph
+  connected = FALSE
+  if(isConnected)
+  {
+    connected = TRUE
+  }
+  avePathLength = average.path.length(ig, directed=F, unconnected= !isConnected)
+  # Determine the log(N) value of the graph
+  logN = log(numNodes)
+  # Determine the network diameter
+  graphDiameter = diameter(ig, directed = F, unconnected = !isConnected, weights = NULL)
+  # Create a list of statistics
+  retStats = list(isConnected = isConnected, numComponents = numComponents, avePathLength = avePathLength,
+                  graphDiameter = graphDiameter, numNodes = numNodes, numEdges = numEdges, logN = logN)
+  # Return the list of statistis
+  retStats
+}
+
+#' Returns the children of a particular variety (if they exist)
+#' 
+#' This function returns zero or more values that indicate the children of the inputted variety.
+#' 
+#' @param v1 the first variety
+#' @param tree the tree
+#' @examples
+#' data(sbTree)
+#' getChild("Tokyo", sbTree)
+#' getChild("Essex", sbTree)
+getChild = function(v1, tree){
+  subset(tree, parent==v1)$child
+}
+
+#' Determine the degree between two varieties
+#' 
+#' Returns the degree (distance between unweighted edges) between two varieties, where an edge
+#' represents a parent-child relationship
+#' @param v1 the first variety
+#' @param v2 the second variety
+#' @param ig the igraph object
+#' @param tree the tree
+#' @examples
+#' data(sbTree)
+#' ig = treeToIG(sbTree)
+#' getDegree("Brim","Bedford",ig,sbTree)
+getDegree = function(v1, v2, ig, tree){
+  if(is.null(tree)){
+    stop("Please input a tree data frame where the first two columns are nodes at least one other column is labeled `Year`")
+  }
+  if(is.null(ig)){
+    stop("Please input an igraph object formatted by treeToIG()")
+  }
+  path <- getPath(v1=v1, v2=v2, ig=ig, tree = tree, isDirected=F)
+  # The degree between two vertices is equal to one less than the number of nodes in the shortest path
+  return(length(path$pathVertices)-1)
+}
+
+#' Returns the descendants of a particular variety (if they exist)
+#' 
+#' This function returns a nested list of the descendants of the inputted variety.
+#' 
+#' @param v1 the first variety
+#' @param gen generation the first variety
+#' @seealso \code{\link{getChild}} for information on determining parents
+getDescendants = function(v1, gen=0){
+  if(is.na(v1)) return()
+  
+  temp = getChild(v1)
+  if(length(temp)==0) return()
+  
+  res = lapply(temp[!is.na(temp)], function(i){
+    # print(i)
+    temp2 = getDescendants(i, gen=gen+1)
+    if(length(temp2)<1) return(list(label=i, root=v1, root.gen=gen, gen=gen+1, type="descendant"))
+    return(c(label=i, root=v1, root.gen=gen, gen=gen+1, type="descendant", temp2))
+  })
+  
+  if(gen==0){
+    return(c(label=v1, root=v1, root.gen=gen, gen=gen, type="descendant", res))
+  } else{
+    return(res)
+  } 
+}
+
+#' Returns the parents of a particular variety (if they exist)
+#' 
+#' This function returns up to two values that indicate the parents of the inputted variety.
+#' 
+#' @param v1 the first variety
+#' @param tree the tree
+#' @examples
+#' data(sbTree)
+#' getParent("Tokyo", sbTree)
+#' getParent("Essex", sbTree)
+getParent = function(v1, tree){
+  subset(tree, child==v1)$parent
+}
+
+#' Determine the path between two varieties
+#' 
+#' Determines the shortest path between the two inputted vertices, and takes into
+#' account whether or not the graph is directed. If there is a path, the list of vertices of the
+#' path will be returned. If there is not a path, a list of character(0) will be returned. Note:
+#' For a directed graph, the direction matters. However, this function will check both directions
+#' and return the path if it exists.
+#' @param v1 the first variety
+#' @param v2 the second variety
+#' @param ig the igraph representation of the tree
+#' @param tree the tree
+#' @param silent Print output? Defaults to FALSE. 
+#' @param isDirected boolean whether or not the graph is directed, defaults to FALSE
+#' @examples
+#' data(sbTree)
+#' ig = treeToIG(sbTree)
+#' getPath("Brim","Bedford",ig,sbTree)
+#' getPath("Tokyo","Volstate",ig,sbTree)
+getPath = function(v1, v2, ig, tree, silent=FALSE, isDirected=FALSE){
+  require(igraph)
+  if(!is.character(v1) & !is.character(v2)){
+    stop("First two arguments must be strings")
+  } else {
+    if(!v1%in%V(ig)$name){
+      warning("v1 is not a graph vertex")
+    }
+    if(!v2%in%V(ig)$name){
+      warning("v2 is not a graph vertex")
+    }
+  }
+  if(is.null(tree)){
+    stop("Please input a tree data frame where the first two columns are nodes at least one other column is labeled `Year`")
+  }
+  if(is.null(ig)){
+    stop("Please input an igraph object formatted by treeToIG()")
+  }
+  
+  if(is.directed(ig) != isDirected){
+    if(isDirected){
+      stop("Cannot compute directed path on an undirected graph")
+    }
+    warning("Graph type does not match isDirected specification")
+  }
+  
+  retPath = list()
+  yearVertices = character()
+  pathVertices = character()
+  # If the tree is directed
+  if (is.directed(ig)){
+    # We need to look at both forward and reverse cases of directions, because the user may not know
+    # the potential direction of a path between the two vertices
+    pathVIndicesForward = get.shortest.paths(ig, v1, v2, weights = NA, output="vpath")$vpath[[1]]
+    pathVIndicesReverse = get.shortest.paths(ig, v2, v1, weights = NA, output="vpath")$vpath[[1]]
+    # If there is a path in the forward direction, then we save the names of the vertices in that order
+    if (length(pathVIndicesForward) != 0){
+      for (i in 1:length(pathVIndicesForward)){
+        pathVertices = c(pathVertices, get.vertex.attribute(ig, "name", index=pathVIndicesForward[i]))
+        yearVertices = c(yearVertices, getYear(pathVertices[i], tree))
+      }
+      retPath = list(pathVertices = pathVertices, yearVertices = yearVertices)
+    }
+    # If there is a path in the reverse direction, then we save the names of the vertices in that order
+    if (length(pathVIndicesReverse) != 0){
+      for (i in 1:length(pathVIndicesReverse)){
+        pathVertices = c(pathVertices, get.vertex.attribute(ig, "name", index=pathVIndicesReverse[i]))
+        yearVertices = c(yearVertices, getYear(pathVertices[i], tree))
+      }
+      retPath = list(pathVertices = pathVertices, yearVertices = yearVertices)
+    }
+  } else {
+    # The direction does not matter, any shortest path between the vertices will be listed
+    pathVIndices = get.shortest.paths(ig, v1, v2, weights = NA, output="vpath")$vpath[[1]]
+    if (length(pathVIndices) != 0){
+      for (i in 1:length(pathVIndices)){
+        pathVertices = c(pathVertices, get.vertex.attribute(ig, "name", index=pathVIndices[i]))
+        yearVertices = c(yearVertices, getYear(pathVertices[i], tree))
+      }
+      retPath = list(pathVertices = pathVertices, yearVertices = yearVertices)
+    }
+  }
+  if(length(retPath)==0 & !silent){
+    message("Warning: There is no path between those two vertices")
+  }
+  # Return the shortest path, if it exists
+  retPath
+}
+
+#' Determine the year of a variety
+#' 
+#' Returns the documented year of the inputted variety
+#' @param v1 the variety
+#' @param tree tree
+#' @examples
+#' data(sbTree)
+#' getYear("Essex",sbTree)
+#' getYear("Tokyo",sbTree)
+getYear = function(v1, tree){
+  return(tree[which(tree[,1] == v1),]$year[1])
+}
+
+#' Determine if a variety is a child of another
+#' 
+#' Returns a boolean variable for whether the first variety is a child of the second variety
+#' @param child possible child variety
+#' @param parent possible parent variety
+#' @param tree tree
+#' @examples
+#' data(sbTree)
+#' isChild("Essex","Young",sbTree)
+#' isChild("Young","Essex",sbTree)
+isChild = function(child, parent, tree){
+  for (i in 1:length(which(tree$parent==parent))){
+    # Only consider if the parent is indicated in the tree
+    if (sum(which(tree$parent==parent))!=0){
+      if (tree[which(tree$parent==parent),]$child[i] == child){
+        return (TRUE)
+      }      
+    }
+  }
+  return (FALSE)
+}
+
+#' Determine if a variety is a parent of another
+#' 
+#' Returns a boolean variable for whether the second variety is a parent of the first variety
+#' @param child possible child variety
+#' @param parent possible parent variety
+#' @param tree tree
+#' @examples
+#' data(sbTree)
+#' isParent("Essex","Young",sbTree)
+#' isParent("Young","Essex",sbTree)
+isParent = function(child, parent, tree){
+  return (tree[which(tree$child==child),]$parent[1] == parent
+          || tree[which(tree$child==child),]$parent[2] == parent)
+}
+
+#' Returns the data frame representation of all ancestors and descendants of a variety
+#'
+#' Converts the list-style-tree to a data frame, where each variety has an id value
+#' and references its' parent's id value. ID value ranges correspond to generation.
+#' It is possible that with more complex trees the range of id values may need to
+#' expand to reduce the probability of two varieties being assigned the same id value.
+#'
+#' @param tlist list of varieties
+#' @param branch of particular variety in tree
+#' @param par.id the id of the parent of the variety
+#' @param id.offset value to ensure labels are at unique locations
+nodeToDF = function(tlist, branch=0, par.id = NA,id.offset=1){
+  listidx = which(sapply(tlist, mode)=="list")
+  if(length(listidx)==0){
+    temp = as.data.frame(tlist)
+    if(nrow(temp)==0) return(data.frame())
+    # If gen (not followed by a number), then it does not exist
+    if(!"gen"%in%names(temp)){
+      id.offset <= id.offset+1
+      return(cbind(as.data.frame(tlist), branch=branch, par.id=par.id, id=sample(0:99, 1)*10+id.offset/10))
+    }
+    id.offset <= id.offset+1
+    return(cbind(as.data.frame(tlist), branch=branch, par.id=par.id, id=sign(temp$gen)*sample((abs(temp$gen)*100):((abs(temp$gen)+1)*100-1), 1)*10+id.offset/10))
+  } else {
+    # Grabs everything that does not have children.
+    temp = as.data.frame(tlist[-listidx])
+    # First time, branchidx = 1 2
+    branchidx = listidx-min(listidx)+1
+    if(length(branchidx)>1){
+      # First time, branchidx = -0.5 0.5
+      branchidx = seq(-.5, .5, length.out=length(branchidx))
+      # branchidx = equals either -.5 (if temp$gen is even) or .5 (if temp$gen is odd)
+    } else branchidx = c(-.5, .5)[temp$gen%%2+1]
+    id.offset <= id.offset+1
+    # Creates a unique id
+    id = sign(temp$gen)*sample((abs(temp$gen)*100):((abs(temp$gen)+1)*100-1), 1)*10+id.offset/10
+    return(rbind.fill(cbind(temp, branch=branch, id=id, par.id=par.id),
+                      ldply(1:length(listidx), function(i)
+                        nodeToDF(tlist[[listidx[i]]], branch=branchidx[i], par.id=id))))
+  }
+}
+
 #' Returns the image object to show the ancestors and descendants of a variety
 #' 
 #' Returns the image object to show the ancestors (to the left) and descendants (to the right) of a
@@ -968,6 +807,125 @@ plotDegMatrix = function(varieties,ig,tree){
   heatMap
 }
 
+#' Construct the graphic object of the path
+#' 
+#' This function takes the path as input and outputs an ggplot2 object. The
+#' image will correctly position the node labels with x-axis representing the node
+#' year, and y-axis representing the node path index. Edges between two nodes represent
+#' parent-child relationships between those nodes. For visual appeal, there is a grey
+#' box that outlines the node label, as well as an underline and overline for each label.
+#' @param path object created from function getPath
+#' @seealso \code{\link{getPath}} for information on input path building
+plotPath = function(path){
+  if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
+    stop("path does not appear to be a result of the getPath() function")
+  }
+  require(ggplot2)
+  
+  pPDF <- buildPathDF(path)
+  
+  if (length(dim(pPDF))>1){ # check to make sure pPDF is a data frame
+    # The textFrame object will be used to create a grey rectangle around each node label
+    textFrame = data.frame(x = pPDF$x, y = pPDF$y, label = pPDF$label)
+    textFrame = transform(textFrame,
+                          w = strwidth(pPDF$label, 'inches') + 0.25,
+                          h = strheight(pPDF$label, 'inches') + 0.25
+    )
+    
+    # The plotImage object creates a grey rectangle (geom_rect) to highlight the node
+    # label; three line segments (geom_segment) to create node label underline, node
+    # label overline, and edges between nodes; and text (geom_text) to write the node label.
+    plotPathImage = ggplot(data = pPDF,aes(x = x, y = y)) + 
+      geom_rect(data = textFrame, aes(xmin = x - strwidth(label, "inches")*1.2,
+                                      xmax = x + strwidth(label, "inches")*1.2, 
+                                      ymin = y-.1, ymax = y+.1), fill = "grey80") +
+      geom_segment(aes(x=x - strwidth(label, "inches")*1.2, y=y-.1,
+                       xend =  x + strwidth(label, "inches")*1.2, yend = y-.1)) +
+      geom_segment(aes(x=x - strwidth(label, "inches")*1.2, y=y+.1,
+                       xend =  x + strwidth(label, "inches")*1.2, yend = y+.1)) +
+      geom_segment(aes(x=xstart, y=ystart, xend=xend, yend=yend)) +
+      geom_text(data = textFrame,aes(x = x, y = y, label = label), size = 4) + 
+      xlab("Year") +
+      
+      theme(axis.text.y=element_blank(),axis.ticks.y=element_blank(),
+            axis.title.y=element_blank(),legend.position="none",
+            panel.grid.major.y=element_blank(),
+            panel.grid.minor=element_blank())
+  }
+  else{
+    plotPathImage = print("There is no path to display between the two inputted vertices.")
+    plotPathImage = NA
+  }
+  # Return the plotImage
+  plotPathImage
+}
+
+#' Build the image object of the whole tree with the path superimposed onto it
+#' 
+#' This function requires a path and the ig object, and plots the entire tree 
+#' with the path highlighted.
+#' The image will correctly position the node labels with x-axis representing the node
+#' year, and y-axis representing the node path index. Light grey edges between two nodes
+#' represent parent-child relationships between those nodes. To enhance the visual
+#' understanding of how the path-of-interest fits into the entire graph structure, the
+#' nodes within the path are labelled in boldface, and connected with light-green
+#' boldfaced edges.
+#' @param path path as returned from getPath() or a vector of two variety names which exist in ig
+#' @param ig igraph representation of the tree
+#' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
+#' @examples
+#' data(sbTree)
+#' ig = treeToIG(sbTree)
+#' path = getPath("Brim","Bedford",ig,sbTree)
+#' plotPathOnTree(path,ig,binVector=sample(1:12, 12)) #Error
+#' @seealso \url{http://www.r-project.org} for iGraph information
+#' @seealso \code{\link{getPath}} for information on input path building
+plotPathOnTree = function(path, ig, binVector=sample(1:12, 12)){
+  if(class(ig)!="igraph"){
+    stop("ig must be an igraph object")
+  }
+  
+  if(mode(path)=="character"){
+    if(length(path)!=2){
+      stop("path needs to contain two variety names")
+    }
+    varieties <- path
+    path <- getPath(varieties[1], varieties[2], ig)
+  } else if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
+    stop("path does not appear to be a result of the getPath() function")
+  } 
+  
+  pMPDF <- buildMinusPathDF(path, ig, binVector)
+  eTDF <- buildEdgeTotalDF(ig, binVector)
+  pTDF <- buildPlotTotalDF(path, ig, binVector)
+  
+  textFrame = data.frame(x = pMPDF$x, y = pMPDF$y, label = pMPDF$label)
+  textFrame = transform(textFrame,
+                        w = strwidth(pMPDF$label, 'inches') + 0.25,
+                        h = strheight(pMPDF$label, 'inches') + 0.25
+  )
+  
+  # The plotTotalImage object creates two line segments (geom_segment), one to create grey
+  # edges for non-path connections between pairs of nodes, the other to create light-green
+  # edges for path connections between pairs of nodes; and two labels (geom_text), one to
+  # create labels of size 2 for non-path connections between pairs of nodes, the other to
+  # create labels of size 2.5 and boldfaced for path connections between pairs of nodes.
+  plotTotalImage = ggplot(data = pMPDF, aes(x = x, y = y)) +
+    geom_segment(data = eTDF, aes(x=x, y=y-.1, xend=xend, yend=yend+.1), colour = "gray84") +
+    geom_segment(data = pTDF, aes(x=xstart, y=ystart, xend=xend, yend=yend), colour = "seagreen2", size = 1) +
+    geom_text(data = textFrame,aes(x = x, y = y, label = label), size = 2) +
+    geom_text(data = pTDF,aes(x = x, y = y, label = label), size = 2.5,  fontface="bold") +
+    xlab("Year") +
+    
+    # Erase the y-axis, and only include grids from the x-axis
+    theme(axis.text.y=element_blank(),axis.ticks.y=element_blank(),
+          axis.title.y=element_blank(),legend.position="none",
+          panel.grid.major.y=element_blank(),
+          panel.grid.minor=element_blank())
+  # Return the plotTotalImage
+  plotTotalImage
+}
+
 #' Returns the image object to show the heat map of years between the inputted set of vertices
 #' 
 #' Returns the image object to show the heat map of years between the inputted set of vertices
@@ -992,4 +950,46 @@ plotYearMatrix = function(varieties, tree){
     scale_y_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
   heatMap
+}
+
+#' Process the tree graph
+#' 
+#' Processes the tree into an igraph object with appropriate vertex information, graph type, and edge weights. 
+#' @param tree A data frame representing tree information, containing one row for each EDGE, with at least two columns named parent and child, respectively, representing vertices connected by an edge. Terminal nodes should have "NA" for parent in order to preserve vertex information. 
+#' @param vertexinfo (default NULL) either names of columns in the tree which should be added to the database as vertex information or a data frame with information for all vertices such that the first column contains vertex names.
+#' @param edgeweights (default 1) name of a column which contains edge weights
+#' @param isDirected (default FALSE) should the graph be a directed graph?
+#' @seealso \url{http://www.r-project.org} for iGraph information
+treeToIG = function(tree, vertexinfo = NULL, edgeweights = 1, isDirected=FALSE){
+  require(igraph)
+  require(plyr)
+  if(!is.data.frame(tree)){
+    stop("t must be a data frame")
+  }
+  
+  if(!("parent"%in%names(tree) & "child"%in%names(tree))){
+    stop("tree must contain columns named 'parent' and 'child'")
+  }
+  
+  if(is.null(vertexinfo)){
+    nodes <- unique(c(tree$child, tree$parent))
+    nodes <- nodes[!is.na(nodes)]
+  } else if(is.character(vertexinfo)){
+    nodes <- tree[,c("child", vertexinfo)]
+    # add in any parents who are not in the list of children, sans any vertex information
+    if(sum(!tree$parent%in%tree$child & !is.na(tree$parent))>0){
+      nodes <- rbind.fill(nodes, data.frame(child=unique(tree$parent[!tree$parent%in%tree$child & !is.na(tree$parent)]), stringsAsFactors = FALSE))
+    }
+    nodes <- unique(nodes)
+  } else if(is.data.frame(vertexinfo)) {
+    nodes <- unique(vertexinfo)
+  } else {
+    stop("vertexinfo should be either NULL, a character vector, or a data frame")
+  }
+  
+  edges <- subset(tree, !is.na(parent) & !is.na(child))[,c("child", "parent")]
+  edges$weight <- edgeweights
+  
+  
+  graph.data.frame(d=edges, directed=isDirected, vertices=nodes)
 }
