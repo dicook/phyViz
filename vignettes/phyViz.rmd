@@ -118,21 +118,21 @@ getYear("Essex",sbTree)
 
 Fortunately, these example results make sense in that the "Young" variety is a child to the "Essex" variety by an age difference of six years.
 
-In some cases, you may wish to have a list of all the parents of a given variety. This can be achieved using the **getparent** function:
+In some cases, you may wish to have a list of all the parents of a given variety. This can be achieved using the **getParent** function:
 
 ```{r}
-getparent("Young",sbTree)
-getparent("Tokyo",sbTree)
+getParent("Young",sbTree)
+getParent("Tokyo",sbTree)
 getYear("Tokyo", sbTree)
 ```
 
 We learn from this that "Essex" is not the only parent of "Young". We also see that as "Tokyo" is a grandparent of the dataset (with a very early year, for this particular dataset, of 1907), it does not have any documented parents.
 
-Likewise, in other cases, you may wish to have a list of all the children of a given variety. This can be achieved using the **getchild** function:
+Likewise, in other cases, you may wish to have a list of all the children of a given variety. This can be achieved using the **getChild** function:
 
 ```{r}
-getchild("Tokyo",sbTree)
-getchild("Ogden",sbTree)
+getChild("Tokyo",sbTree)
+getChild("Ogden",sbTree)
 ```
 
 We find that even though the "Tokyo" variety is a grandparent of the dataset, it only had two children. However, one of its children, "Ogden", produced twelve children.
