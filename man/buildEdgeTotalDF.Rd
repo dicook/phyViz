@@ -6,7 +6,7 @@
 buildEdgeTotalDF(ig, binVector = 1:12)
 }
 \arguments{
-  \item{ig}{igraph object from processTreeGraph}
+  \item{ig}{igraph object from treeToIG}
 
   \item{binVector}{vector of numbers between 1 and
   length(binVector), each repeated exactly once}

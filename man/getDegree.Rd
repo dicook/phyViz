@@ -20,6 +20,8 @@ between two varieties, where an edge represents a
 parent-child relationship
 }
 \examples{
-getDegree("Brim","Bedford",ig)
+data(sbTree)
+ig = treeToIG(sbTree)
+getDegree("Brim","Bedford",ig,sbTree)
 }
 
