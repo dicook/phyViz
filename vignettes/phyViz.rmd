@@ -58,16 +58,16 @@ data(sbTree)
 head(sbTree)
 ```
 
-Now that the sbTree file has been loaded, it must now be converted into an **igraph** graph object. The function **processTreeGraph** requires a data frame structured such that each line represents an edge, and takes optional arguments *vertexinfo* (a list of columns of the data frame which provide information for the starting "child" vertex, or a separate data frame containing information for each vertex with the first column as the vertex name), *edgeweights*, which default to 1 if not provided, and *isDirected*, which describes whether the graph is directed (true) or undirected (false); the default is false. In this example, we want a graph with edge weights of 1 and an undirected graph because our goal is to determine whether two vertices (individuals) are related. Hence, we use the default conditions:
+Now that the sbTree file has been loaded, it must now be converted into an **igraph** graph object. The function **treeToIG** requires a data frame structured such that each line represents an edge, and takes optional arguments *vertexinfo* (a list of columns of the data frame which provide information for the starting "child" vertex, or a separate data frame containing information for each vertex with the first column as the vertex name), *edgeweights*, which default to 1 if not provided, and *isDirected*, which describes whether the graph is directed (true) or undirected (false); the default is false. In this example, we want a graph with edge weights of 1 and an undirected graph because our goal is to determine whether two vertices (individuals) are related. Hence, we use the default conditions:
 
 ```{r}
-ig <- processTreeGraph(sbTree)
+ig <- treeToIG(sbTree)
 ```
 
 We can add the other data we have about each of the nodes in ig in several ways. The sbTree dataset contains information about each child; to add that data as is to the tree, we can use the same command as before, but specify the vertexinfo parameter as follows: 
 
 ```{r}
-ig <- processTreeGraph(sbTree, vertexinfo=c("year", "yield", "year.imputed", "min.repro.year"))
+ig <- treeToIG(sbTree, vertexinfo=c("year", "yield", "year.imputed", "min.repro.year"))
 ```
 
 If we have separate data sets with node information, we can use that instead. For the example dataset, we must first obtain the node information: 
@@ -84,7 +84,7 @@ nodes <- rbind.fill(nodes, extra.nodes)
 rm(extra.nodes)
 
 # We can now specify our vertex information using the data frame nodes: 
-ig <- processTreeGraph(sbTree, vertexinfo=nodes)
+ig <- treeToIG(sbTree, vertexinfo=nodes)
 ```
 
 The ig object is used in many of the other functions included with this package. 
@@ -178,7 +178,7 @@ getPath("Brim","Bedford", ig, sbTree, isDirected=FALSE)
 
 To compute paths where direction matters, we must have a directed graph
 ```{r}
-dirgraph <- processTreeGraph(sbTree, vertexinfo=nodes, isDirected = TRUE)
+dirgraph <- treeToIG(sbTree, vertexinfo=nodes, isDirected = TRUE)
 getPath("Brim", "Bedford", dirgraph, isDirected=TRUE)
 ```
 
@@ -205,7 +205,7 @@ Indeed, as predicted above, the image verifies that the two varieties "Brim" and
 If, for some reason, you are looking at *directed* phylogenetic trees, you will need to use the true logical condition for the third parameter of the function **getPath**. The example below will hopefully reassure you that if you use this condition on a pathway composed of linear parent-child relationships, then either ordering of the first two parameters will work:
 
 ```{r}
-dirgraph <- processTreeGraph(sbTree, vertexinfo=nodes, isDirected = TRUE)
+dirgraph <- treeToIG(sbTree, vertexinfo=nodes, isDirected = TRUE)
 
 path <- getPath("Narow", "Tokyo", dirgraph, sbTree, isDirected=TRUE)
 plotPathImage <- plotPath(path)

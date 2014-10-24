@@ -6,7 +6,7 @@
 #' @param edgeweights (default 1) name of a column which contains edge weights
 #' @param isDirected (default FALSE) should the graph be a directed graph?
 #' @seealso \url{http://www.r-project.org} for iGraph information
-processTreeGraph = function(tree, vertexinfo = NULL, edgeweights = 1, isDirected=FALSE){
+treeToIG = function(tree, vertexinfo = NULL, edgeweights = 1, isDirected=FALSE){
   require(igraph)
   require(plyr)
   if(!is.data.frame(tree)){
@@ -100,14 +100,14 @@ getYear = function(v1, tree){
 #' @param tree the tree
 #' @examples
 #' data(sbTree)
-#' ig = processTreeGraph(sbTree)
+#' ig = treeToIG(sbTree)
 #' getDegree("Brim","Bedford",ig,sbTree)
 getDegree = function(v1, v2, ig, tree){
   if(is.null(tree)){
     stop("Please input a tree data frame where the first two columns are nodes at least one other column is labeled `Year`")
   }
   if(is.null(ig)){
-    stop("Please input an igraph object formatted by processTreeGraph()")
+    stop("Please input an igraph object formatted by treeToIG()")
   }
   path <- getPath(v1=v1, v2=v2, ig=ig, tree = tree, isDirected=F)
   # The degree between two vertices is equal to one less than the number of nodes in the shortest path
@@ -122,7 +122,7 @@ getDegree = function(v1, v2, ig, tree){
 #' @examples
 #' 
 #' data(sbTree)
-#' ig = processTreeGraph(sbTree)
+#' ig = treeToIG(sbTree)
 #' getBasicStatistics(ig)
 getBasicStatistics = function(ig){
   require(igraph)
@@ -156,7 +156,7 @@ getBasicStatistics = function(ig){
   retStats
 }
 
-#' Determine the degree between two varieties
+#' Determine the path between two varieties
 #' 
 #' Determines the shortest path between the two inputted vertices, and takes into
 #' account whether or not the graph is directed. If there is a path, the list of vertices of the
@@ -171,7 +171,7 @@ getBasicStatistics = function(ig){
 #' @param isDirected boolean whether or not the graph is directed, defaults to FALSE
 #' @examples
 #' data(sbTree)
-#' ig = processTreeGraph(sbTree)
+#' ig = treeToIG(sbTree)
 #' getPath("Brim","Bedford",ig,sbTree)
 #' getPath("Tokyo","Volstate",ig,sbTree)
 getPath = function(v1, v2, ig, tree, silent=FALSE, isDirected=FALSE){
@@ -190,7 +190,7 @@ getPath = function(v1, v2, ig, tree, silent=FALSE, isDirected=FALSE){
     stop("Please input a tree data frame where the first two columns are nodes at least one other column is labeled `Year`")
   }
   if(is.null(ig)){
-    stop("Please input an igraph object formatted by processTreeGraph()")
+    stop("Please input an igraph object formatted by treeToIG()")
   }
   
   if(is.directed(ig) != isDirected){
@@ -441,7 +441,7 @@ buildMinusPathDF = function(path, ig, binVector=1:12){
 #' 
 #' This function takes the ig object and creates a data frame object of the edges between all parent-child
 #' relationships in the graph
-#' @param ig igraph object from processTreeGraph
+#' @param ig igraph object from treeToIG
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
 #' @seealso \url{http://www.r-project.org} for iGraph information
 buildEdgeTotalDF = function(ig, binVector=1:12){
@@ -556,7 +556,7 @@ buildPlotTotalDF = function(path, ig, binVector=1:12){
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
 #' @examples
 #' data(sbTree)
-#' ig = processTreeGraph(sbTree)
+#' ig = treeToIG(sbTree)
 #' path = getPath("Brim","Bedford",ig,sbTree)
 #' plotPathOnTree(path,ig,binVector=sample(1:12, 12)) #Error
 #' @seealso \url{http://www.r-project.org} for iGraph information
@@ -642,7 +642,7 @@ getChild = function(v1, tree){
 #' @param v1 the first variety
 #' @param gen generation
 #' @seealso \code{\link{getParent}} for information on determining parents
-getancestors = function(v1, gen=0){
+getAncestors = function(v1, gen=0){
   if(is.na(v1)) return()
   
   temp = getParent(v1)
@@ -650,7 +650,7 @@ getancestors = function(v1, gen=0){
   
   res = lapply(temp[!is.na(temp)], function(i){
     # print(i)
-    temp2 = getancestors(i, gen=gen+1)
+    temp2 = getAncestors(i, gen=gen+1)
     if(length(temp2)<1) return(list(label=i, root=v1, root.gen=gen, gen=gen+1, type="ancestor"))
     return(c(label=i, root=v1, root.gen=gen, gen=gen+1, type="ancestor", temp2))
   })
@@ -669,7 +669,7 @@ getancestors = function(v1, gen=0){
 #' @param v1 the first variety
 #' @param gen generation the first variety
 #' @seealso \code{\link{getChild}} for information on determining parents
-getdescendants = function(v1, gen=0){
+getDescendants = function(v1, gen=0){
   if(is.na(v1)) return()
   
   temp = getChild(v1)
@@ -677,7 +677,7 @@ getdescendants = function(v1, gen=0){
   
   res = lapply(temp[!is.na(temp)], function(i){
     # print(i)
-    temp2 = getdescendants(i, gen=gen+1)
+    temp2 = getDescendants(i, gen=gen+1)
     if(length(temp2)<1) return(list(label=i, root=v1, root.gen=gen, gen=gen+1, type="descendant"))
     return(c(label=i, root=v1, root.gen=gen, gen=gen+1, type="descendant", temp2))
   })
@@ -700,7 +700,7 @@ getdescendants = function(v1, gen=0){
 #' @param branch of particular variety in tree
 #' @param par.id the id of the parent of the variety
 #' @param id.offset value to ensure labels are at unique locations
-node.to.data.frame = function(tlist, branch=0, par.id = NA,id.offset=1){
+nodeToDF = function(tlist, branch=0, par.id = NA,id.offset=1){
   listidx = which(sapply(tlist, mode)=="list")
   if(length(listidx)==0){
     temp = as.data.frame(tlist)
@@ -727,7 +727,7 @@ node.to.data.frame = function(tlist, branch=0, par.id = NA,id.offset=1){
     id = sign(temp$gen)*sample((abs(temp$gen)*100):((abs(temp$gen)+1)*100-1), 1)*10+id.offset/10
     return(rbind.fill(cbind(temp, branch=branch, id=id, par.id=par.id), 
                       ldply(1:length(listidx), function(i) 
-                        node.to.data.frame(tlist[[listidx[i]]], branch=branchidx[i], par.id=id))))
+                        nodeToDF(tlist[[listidx[i]]], branch=branchidx[i], par.id=id))))
   }
 }
 
@@ -737,10 +737,10 @@ node.to.data.frame = function(tlist, branch=0, par.id = NA,id.offset=1){
 #' The x and y values describe the coordinates of the label, while the xstart, ystart, xend,
 #' and yend values describe the edges of the label.
 #' 
-#' @param df data frame of the ancestors and descendants of a variety (from function buildGenDF)
-#' @seealso \code{\link{getancestors}} for information on determining ancestors
-#' @seealso \code{\link{getdescendants}} for information on determining descendants
-plotcoords = function(df){
+#' @param df data frame of the ancestors and descendants of a variety (from function buildAncDesTotalDF)
+#' @seealso \code{\link{getAncestors}} for information on determining ancestors
+#' @seealso \code{\link{getDescendants}} for information on determining descendants
+buildAncDesCoordDF = function(df){
   # This gets rid of redundancy and creates a "center"
   if(nrow(subset(df, root.gen==0 & gen==0))>1){
     temp = subset(df, root.gen==0 & gen==0)
@@ -853,9 +853,9 @@ plotcoords = function(df){
 #' @param mAnc maximum number of ancestors of v1 to be shown
 #' @param mDes maximum number of descendants of v1 to be shown
 #' @param tree the tree
-#' @seealso \code{\link{getancestors}} for information on determining ancestors
-#' @seealso \code{\link{getdescendants}} for information on determining descendants
-buildGenDF = function(v1, mAnc=3, mDes=3, tree){
+#' @seealso \code{\link{getAncestors}} for information on determining ancestors
+#' @seealso \code{\link{getDescendants}} for information on determining descendants
+buildAncDesTotalDF = function(v1, mAnc=3, mDes=3, tree){
   vals = list()
   # Set data frame that we will plot
   gen.vars2 = v1$varieties
@@ -867,7 +867,7 @@ buildGenDF = function(v1, mAnc=3, mDes=3, tree){
     temp2 = ldply(vals$gen.vars, function(i){
       if(i %in% tree$child | i %in% tree$parent){
         # This appends the plot coordinates of the data frame constructed for all ancesteros and descendents of the variety
-        temp = cbind(variety=i, plotcoords(rbind(node.to.data.frame(getancestors(i)), node.to.data.frame(getdescendants(i)))))
+        temp = cbind(variety=i, buildAncDesCoordDF(rbind(nodeToDF(getAncestors(i)), nodeToDF(getDescendants(i)))))
         # This create an empty data frame in the event that there are no ancestors nor descendents
         temp$label2 = temp$label
       } 
@@ -910,10 +910,10 @@ buildGenDF = function(v1, mAnc=3, mDes=3, tree){
 #' Returns the image object to show the ancestors (to the left) and descendants (to the right) of a
 #' variety, with the variety highlighted in orange
 #' 
-#' @param genDF data frame created from the buildGenDF function
-#' @seealso \code{\link{getancestors}} for information on determining ancestors
-#' @seealso \code{\link{getdescendants}} for information on determining descendants
-generateGenPlot = function(gDF){
+#' @param genDF data frame created from the buildAncDesTotalDF function
+#' @seealso \code{\link{getAncestors}} for information on determining ancestors
+#' @seealso \code{\link{getDescendants}} for information on determining descendants
+plotAncDes = function(gDF){
   # Plot the data frame, if it exists
   if(nrow(gDF)>0){
     plotGenImage = qplot(data=gDF, x=x, y=y, label=label2, geom="text", vjust=-.25, hjust=.5, 
