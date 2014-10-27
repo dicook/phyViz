@@ -3,6 +3,8 @@
 export(getBasicStatistics)
 export(getChild)
 export(getDegree)
+export(getEdges)
+export(getNodes)
 export(getParent)
 export(getPath)
 export(getYear)

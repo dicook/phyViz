@@ -64,6 +64,25 @@ Now that the sbTree file has been loaded, it must now be converted into an **igr
 ig <- treeToIG(sbTree)
 ```
 
+We can confirm that the returned *ig* object is of class *igraph*.
+
+```{r}
+class(ig)
+```
+
+We can also verify that it is unweighted (UNW), and contains 230 nodes and 340 edges.
+
+```{r}
+ig
+```
+
+nodes <- unique(c(tree$child, tree$parent))
+nodes <- nodes[!is.na(nodes)]
+    
+el = get.edgelist(ig)
+dim(el)
+
+
 We can add the other data we have about each of the nodes in ig in several ways. The sbTree dataset contains information about each child; to add that data as is to the tree, we can use the same command as before, but specify the vertexinfo parameter as follows: 
 
 ```{r}
@@ -198,7 +217,8 @@ path <- getPath("Brim","Bedford", ig, sbTree, isDirected=F)
 Now that we have a **path** object that consists of two lists (the variety names and years), we can plot the relationship between the two using plotPath(path)
 
 ```{r}
-plotPathDF <- plotPath(path)
+plotPathImage <- plotPath(path)
+plotPathImage
 ```
 
 Indeed, as predicted above, the image verifies that the two varieties "Brim" and "Bedford" are cousin-like relationships, and are not connected by a linear string of parent-child relationships. Also, as mentioned above, in this plot, the x-axis represents the years, meaning that the center of the text box for each variety represents its corresponding year.
@@ -215,10 +235,12 @@ plotPathImage
 
 Visualization of Pathway between Two Vertices Superimposed on Tree:
 ------------------------------------------------------
+
 If you are curious to see the above-demonstrated shortest pathway between two vertices of interest, only now superimposed over all the varieties and edges in the whole tree, **phyViz** has a function (**plotPathOnTree**) that can achieve just that. 
 
 <!--
-The internal process is as follows: 
+The internal process is as follows:
+
 First, the **buildSpreadTotalDF** function creates a dataframe where the varieties are shuffled such that their overlap is minimized, even though the x-axis position will represent years. (Note: **binVector** will be explained in more detail at the end of this section).
 
 ```{r}
@@ -251,6 +273,7 @@ head(plotTotalDF)
 Now that we have generated the data frames needed to construct this type of visual object, we use them as input parameters to the **plotPathOnTree** function. 
 
 -->
+
 The outputted image will correctly position the node labels with x-axis representing the node year, and y-axis representing the node path index. Light grey edges between two nodes represent parent-child relationships between those nodes. To enhance the visual understanding of how the path-of-interest fits into the entire graph structure, the nodes within the path are labelled in boldface, and connected with light-green boldfaced edges.
 
 ```{r}
@@ -270,12 +293,14 @@ The two examples below will show the importance of selecting an appropriate numb
 
 ```{r}
 plotTotalImage <- plotPathOnTree(path=path, ig=ig, binVector=1:12)
+plotTotalImage
 ```
 
 In this case, even though the number of bins is as large as the clearer-labelled image above, the order of the bins is such that varieties of consecutive x-values (years) will also have consecutive y-values (indices), and hence will be likely to overlap for years with many varieties.
 
 ```{r}
 plotTotalImage <- plotPathOnTree(path=path, ig=ig, binVector=1:2)
+plotTotalImage
 ```
 
 In this example, we see that with such a small number of bins chosen, the y-axis position designation will be similar to its original random state, and there is again much overlap in text variety labels in the year ranges where varieties occur the most.

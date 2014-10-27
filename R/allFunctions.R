@@ -487,6 +487,21 @@ getBasicStatistics = function(ig){
   retStats
 }
 
+
+#' Returns edges (vertex names and edge weights) for a tree
+#'
+#' Returns a matrix, where each row contains information about an edge (two vertex names and edge weight, if present) of the tree.
+#'   
+#' @param ig iGraph object
+#' @examples
+#' data(sbTree)
+#' ig = treeToIG(sbTree)
+#' getEdges(ig)
+#' @export
+getEdges = function(ig){
+  get.edgelist(ig)
+}
+
 #' Returns the children of a particular variety (if they exist)
 #' 
 #' This function returns zero or more values that indicate the children of the inputted variety.
@@ -553,6 +568,23 @@ getDescendants = function(v1, gen=0){
     return(res)
   } 
 }
+
+#' Returns the nodes for a tree
+#'
+#' Returns a character list, where roww contains names of the unique nodes in a tree.
+#'   
+#' @param tree the tree object
+#' @examples
+#' data(sbTree)
+#' ig = treeToIG(sbTree)
+#' getNodes(ig)
+#' @export
+getNodes = function(tree){
+  nodes = unique(c(tree$child, tree$parent))
+  nodes = nodes[!is.na(nodes)]
+  return(nodes)
+}
+
 
 #' Returns the parents of a particular variety (if they exist)
 #' 
@@ -978,11 +1010,11 @@ treeToIG = function(tree, vertexinfo = NULL, edgeweights = 1, isDirected=FALSE){
   require(igraph)
   require(plyr)
   if(!is.data.frame(tree)){
-    stop("t must be a data frame")
+    stop("The tree must be of type data frame")
   }
   
   if(!("parent"%in%names(tree) & "child"%in%names(tree))){
-    stop("tree must contain columns named 'parent' and 'child'")
+    stop("The tree must contain columns named 'parent' and 'child'")
   }
   
   if(is.null(vertexinfo)){
