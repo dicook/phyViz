@@ -180,7 +180,7 @@ To compute paths where direction matters, we must have a directed graph:
 
 ```{r}
 dirgraph <- treeToIG(sbTree, vertexinfo=nodes, isDirected = TRUE)
-getPath("Brim", "Bedford", dirgraph, isDirected=TRUE)
+getPath("Brim", "Bedford", dirgraph, sbTree, isDirected=TRUE)
 ```
 
 ```{r}
