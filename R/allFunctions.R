@@ -454,6 +454,7 @@ getAncestors = function(v1, gen=0){
 #' data(sbTree)
 #' ig = treeToIG(sbTree)
 #' getBasicStatistics(ig)
+#' @export
 getBasicStatistics = function(ig){
   require(igraph)
   if(class(ig)!="igraph"){
@@ -496,6 +497,7 @@ getBasicStatistics = function(ig){
 #' data(sbTree)
 #' getChild("Tokyo", sbTree)
 #' getChild("Essex", sbTree)
+#' @export
 getChild = function(v1, tree){
   subset(tree, parent==v1)$child
 }
@@ -512,6 +514,7 @@ getChild = function(v1, tree){
 #' data(sbTree)
 #' ig = treeToIG(sbTree)
 #' getDegree("Brim","Bedford",ig,sbTree)
+#' @export
 getDegree = function(v1, v2, ig, tree){
   if(is.null(tree)){
     stop("Please input a tree data frame where the first two columns are nodes at least one other column is labeled `Year`")
@@ -561,6 +564,7 @@ getDescendants = function(v1, gen=0){
 #' data(sbTree)
 #' getParent("Tokyo", sbTree)
 #' getParent("Essex", sbTree)
+#' @export
 getParent = function(v1, tree){
   subset(tree, child==v1)$parent
 }
@@ -583,6 +587,7 @@ getParent = function(v1, tree){
 #' ig = treeToIG(sbTree)
 #' getPath("Brim","Bedford",ig,sbTree)
 #' getPath("Tokyo","Volstate",ig,sbTree)
+#' @export
 getPath = function(v1, v2, ig, tree, silent=FALSE, isDirected=FALSE){
   require(igraph)
   if(!is.character(v1) & !is.character(v2)){
@@ -661,6 +666,7 @@ getPath = function(v1, v2, ig, tree, silent=FALSE, isDirected=FALSE){
 #' data(sbTree)
 #' getYear("Essex",sbTree)
 #' getYear("Tokyo",sbTree)
+#' @export
 getYear = function(v1, tree){
   return(tree[which(tree[,1] == v1),]$year[1])
 }
@@ -675,6 +681,7 @@ getYear = function(v1, tree){
 #' data(sbTree)
 #' isChild("Essex","Young",sbTree)
 #' isChild("Young","Essex",sbTree)
+#' @export
 isChild = function(child, parent, tree){
   for (i in 1:length(which(tree$parent==parent))){
     # Only consider if the parent is indicated in the tree
@@ -697,6 +704,7 @@ isChild = function(child, parent, tree){
 #' data(sbTree)
 #' isParent("Essex","Young",sbTree)
 #' isParent("Young","Essex",sbTree)
+#' @export
 isParent = function(child, parent, tree){
   return (tree[which(tree$child==child),]$parent[1] == parent
           || tree[which(tree$child==child),]$parent[2] == parent)
@@ -752,6 +760,7 @@ nodeToDF = function(tlist, branch=0, par.id = NA,id.offset=1){
 #' @param genDF data frame created from the buildAncDesTotalDF function
 #' @seealso \code{\link{getAncestors}} for information on determining ancestors
 #' @seealso \code{\link{getDescendants}} for information on determining descendants
+#' @export
 plotAncDes = function(gDF){
   # Plot the data frame, if it exists
   if(nrow(gDF)>0){
@@ -787,6 +796,7 @@ plotAncDes = function(gDF){
 #' @param ig igraph
 #' @param tree tree
 #' @seealso \url{http://www.r-project.org} for iGraph information
+#' @export
 plotDegMatrix = function(varieties,ig,tree){
   require(reshape2)
   matVar = matrix(, nrow = length(varieties), ncol = length(varieties))
@@ -816,6 +826,7 @@ plotDegMatrix = function(varieties,ig,tree){
 #' box that outlines the node label, as well as an underline and overline for each label.
 #' @param path object created from function getPath
 #' @seealso \code{\link{getPath}} for information on input path building
+#' @export
 plotPath = function(path){
   if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
     stop("path does not appear to be a result of the getPath() function")
@@ -880,6 +891,7 @@ plotPath = function(path){
 #' plotPathOnTree(path,ig,binVector=sample(1:12, 12)) #Error
 #' @seealso \url{http://www.r-project.org} for iGraph information
 #' @seealso \code{\link{getPath}} for information on input path building
+#' @export
 plotPathOnTree = function(path, ig, binVector=sample(1:12, 12)){
   if(class(ig)!="igraph"){
     stop("ig must be an igraph object")
@@ -932,6 +944,7 @@ plotPathOnTree = function(path, ig, binVector=sample(1:12, 12)){
 #' 
 #' @param varieties subset of varieties used to generate the heat map
 #' @param tree tree
+#' @export
 plotYearMatrix = function(varieties, tree){
   require(reshape2)
   matVar = matrix(, nrow = length(varieties), ncol = length(varieties))
@@ -960,6 +973,7 @@ plotYearMatrix = function(varieties, tree){
 #' @param edgeweights (default 1) name of a column which contains edge weights
 #' @param isDirected (default FALSE) should the graph be a directed graph?
 #' @seealso \url{http://www.r-project.org} for iGraph information
+#' @export
 treeToIG = function(tree, vertexinfo = NULL, edgeweights = 1, isDirected=FALSE){
   require(igraph)
   require(plyr)
