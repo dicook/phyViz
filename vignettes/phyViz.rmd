@@ -176,14 +176,15 @@ The **getPath** function determines the shortest path between the two inputted v
 getPath("Brim","Bedford", ig, sbTree, isDirected=FALSE)
 ```
 
-To compute paths where direction matters, we must have a directed graph
+To compute paths where direction matters, we must have a directed graph:
+
 ```{r}
 dirgraph <- treeToIG(sbTree, vertexinfo=nodes, isDirected = TRUE)
 getPath("Brim", "Bedford", dirgraph, isDirected=TRUE)
 ```
 
 ```{r}
-getPath("Bedford", "Brim", dirgraph, isDirected=TRUE)
+getPath("Bedford", "Brim", dirgraph, sbTree, isDirected=TRUE)
 ```
 
 We can derive from the empty list returned in the last two of the three commands that the varieties "Brim" and "Bedford" are not connected by a linear sequence of parent-child relationships. Rather, they are derived from a branch as some point, as siblings and/or cousins. Unless you are working with a dataset that must be analyzed as a directed graph, it is best to use the **getPath** function with the undirected specification (F) as the third parameter.
