@@ -70,23 +70,33 @@ We can confirm that the returned *ig* object is of class *igraph*.
 class(ig)
 ```
 
-We can also verify that it is unweighted (UNW), and contains 230 nodes and 340 edges.
+We can also verify that it is unweighted (UNW), and contains 230 nodes and 340 edges. Also, there are only two attributes in the ig object, the name of the vertices and the weight of the edges (which is the default value of one).
 
 ```{r}
 ig
 ```
 
-nodes <- unique(c(tree$child, tree$parent))
-nodes <- nodes[!is.na(nodes)]
-    
-el = get.edgelist(ig)
-dim(el)
+Moreover, we can confirm the node and edge counts with phyViz functions:
 
+```{r}
+nlist = getNodes(sbTree)
+length(nlist)
+elist = getEdges(ig)
+dim(elist)[1]
+```
 
-We can add the other data we have about each of the nodes in ig in several ways. The sbTree dataset contains information about each child; to add that data as is to the tree, we can use the same command as before, but specify the vertexinfo parameter as follows: 
+And also obtain the list of nodes and edges should we chose to manually examine:
+
+```{r}
+head(nlist)
+head(elist)
+```
+
+We can add the other data we have about each of the nodes in ig in several ways. The sbTree dataset contains information about each child; to add that data as is to the tree, we can use the same command as before, but specify the vertexinfo parameter with four new attributes. By printing the ig object, we see that, as expected, it is still unweighted (UNW), and has 230 nodes with 340 edges, but it now has six attributes: 
 
 ```{r}
 ig <- treeToIG(sbTree, vertexinfo=c("year", "yield", "year.imputed", "min.repro.year"))
+ig
 ```
 
 If we have separate data sets with node information, we can use that instead. For the example dataset, we must first obtain the node information: 
