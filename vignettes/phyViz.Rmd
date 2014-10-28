@@ -2,11 +2,10 @@
 title: "How to use the package **phyViz**"
 author: "Lindsay Rutter, Susan Vanderplas"
 output: 
-  knitrBootstrap:::bootstrap_document:
+  knitrBootstrap:::simple_document:
     toc: true
     theme: cerulean
     highlight: idea
-    menu: FALSE
     clean_supporting: TRUE
 ---
 
