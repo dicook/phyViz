@@ -6,7 +6,6 @@ output:
     toc: true
     theme: cerulean
     highlight: idea
-    menu: FALSE
     clean_supporting: TRUE
 ---
 
