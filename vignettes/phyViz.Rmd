@@ -4,6 +4,7 @@ author: "Lindsay Rutter, Susan Vanderplas"
 output: 
   knitrBootstrap:::simple_document:
     toc: true
+    main: true
     theme: cerulean
     highlight: idea
     clean_supporting: TRUE
