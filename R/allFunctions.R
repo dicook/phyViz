@@ -828,6 +828,11 @@ plotAncDes = function(gDF){
 #' @param ig igraph
 #' @param tree tree
 #' @seealso \url{http://www.r-project.org} for iGraph information
+#' @examples
+#' data(sbTree)
+#' ig = treeToIG(sbTree)
+#' varieties=c("Beeson", "Calland", "Dillon", "Hood", "Narow", "Pella", "Tokyo", "Young", "Zane")
+#' plotDegMatrix(varieties,ig,sbTree)
 #' @export
 plotDegMatrix = function(varieties,ig,tree){
   require(reshape2)
@@ -845,7 +850,7 @@ plotDegMatrix = function(varieties,ig,tree){
     geom_raster() +
     scale_x_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
     scale_y_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) + coord_equal()
   heatMap
 }
 
@@ -976,6 +981,10 @@ plotPathOnTree = function(path, ig, binVector=sample(1:12, 12)){
 #' 
 #' @param varieties subset of varieties used to generate the heat map
 #' @param tree tree
+#' @examples
+#' data(sbTree)
+#' varieties=c("Beeson", "Calland", "Dillon", "Hood", "Narow", "Pella", "Tokyo", "Young", "Zane")
+#' plotYearMatrix(varieties,sbTree)
 #' @export
 plotYearMatrix = function(varieties, tree){
   require(reshape2)
@@ -993,7 +1002,7 @@ plotYearMatrix = function(varieties, tree){
     geom_raster() +
     scale_x_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
     scale_y_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) + coord_equal()
   heatMap
 }
 
