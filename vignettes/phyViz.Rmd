@@ -1,6 +1,6 @@
 ---
 title: "How to use the package **phyViz**"
-author: "Lindsay Rutter, Susan Vanderplas"
+author: "Lindsay Rutter, Susan Vanderplas, Di Cook"
 output: 
   knitrBootstrap:::simple_document:
     toc: true
@@ -29,7 +29,10 @@ There is a preprocessing pipeline that you must use before visualizing your phyl
 ```{r, echo=-1, warning=F, message=F}
 options(warn=-1)
 library(phyViz)
+library(igraph)
 library(ggplot2)
+library(reshape2)
+library(plyr)
 library(stringr)
 library(knitr)
 ```
