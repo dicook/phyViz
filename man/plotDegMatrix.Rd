@@ -17,6 +17,12 @@ plotDegMatrix(varieties, ig, tree)
 Returns the image object to show the heat map of degrees
 between the inputted set of vertices
 }
+\examples{
+data(sbTree)
+ig = treeToIG(sbTree)
+varieties=c("Beeson", "Calland", "Dillon", "Hood", "Narow", "Pella", "Tokyo", "Young", "Zane")
+plotDegMatrix(varieties,ig,sbTree)
+}
 \seealso{
 \url{http://www.r-project.org} for iGraph information
 }

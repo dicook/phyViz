@@ -15,4 +15,9 @@ plotYearMatrix(varieties, tree)
 Returns the image object to show the heat map of years
 between the inputted set of vertices
 }
+\examples{
+data(sbTree)
+varieties=c("Beeson", "Calland", "Dillon", "Hood", "Narow", "Pella", "Tokyo", "Young", "Zane")
+plotYearMatrix(varieties,sbTree)
+}
 
