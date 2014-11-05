@@ -20,7 +20,7 @@ output:
 
 **Description:** The **phyViz** package allows phylogeneticists to visualize and interpret their trees in multiple ways, each which come with their pros and cons. This vignette is intended to walk readers through the different options available with the package.
 
-**Caution:** igraph must be used with version 0.7.0
+**Caution:** igraph must be used with version >= 0.7.0
 
 # Preprocessing Pipeline
 
