@@ -1024,7 +1024,8 @@ treeToIG = function(tree, vertexinfo = NULL, edgeweights = 1, isDirected=FALSE){
     nodes <- tree[,c("child", vertexinfo)]
     # add in any parents who are not in the list of children, sans any vertex information
     if(sum(!tree$parent%in%tree$child & !is.na(tree$parent))>0){
-      nodes <- plyr::rbind.fill(nodes, data.frame(child=unique(tree$parent[!tree$parent%in%tree$child & !is.na(tree$parent)]), stringsAsFactors = FALSE))
+      absentparents <- unique(tree$parent[!tree$parent%in%tree$child & !is.na(tree$parent)])
+      nodes <- plyr::rbind.fill(nodes, data.frame(child=absentparents, stringsAsFactors = FALSE))
     }
     nodes <- unique(nodes)
   } else if(is.data.frame(vertexinfo)) {
