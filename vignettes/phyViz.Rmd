@@ -26,15 +26,17 @@ output:
 
 There is a preprocessing pipeline that you must use before visualizing your phylogentic tree. First, you must load the necessary libraries. Note that loading the phyViz library should automatically load three required libraries (plyr, reshape2, igraph): 
 
-```{r, echo=-1, warning=F, message=F}
-options(warn=-1)
+```{r, echo=4:6 , warning=F, message=F}
+options(warn=-1, width=80)
+library(knitr)
+opts_chunk$set(tidy=T, results="hold", comment="#|")
 library(phyViz)
 library(igraph)
 library(ggplot2)
-library(reshape2)
-library(plyr)
-library(stringr)
-library(knitr)
+# library(reshape2)
+# library(plyr)
+# library(stringr)
+library(xtable)
 ```
 
 In the **phyViz** package, there is an example file containing phylogenetic tree of soybean varieties called **sbTree.rda**. It may be helpful to load that example file so that you can follow along with the commands and options introduced in this vignette. To ensure that you have uploaded the correct, raw **sbTree.rda** file, you can observe the first six lines of it:
