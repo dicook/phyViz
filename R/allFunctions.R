@@ -796,24 +796,24 @@ plotAncDes = function(gDF){
   if(nrow(gDF)>0){
     plotGenImage = ggplot2::qplot(data=gDF, x=x, y=y, label=label2, geom="text", vjust=-.25, hjust=.5, 
                          size=size, colour=color) +
-      ggplot2::geom_segment(aes(x=xstart, y=ystart, xend=xend, yend=yend),inherit.aes=F) + 
-      ggplot2::geom_segment(aes(x=xend, y=yend, xend=branchx, yend=branchy),inherit.aes=F) +
+      ggplot2::geom_segment(ggplot2::aes(x=xstart, y=ystart, xend=xend, yend=yend),inherit.aes=F) + 
+      ggplot2::geom_segment(ggplot2::aes(x=xend, y=yend, xend=branchx, yend=branchy),inherit.aes=F) +
       ggplot2::facet_wrap(~variety, scales="free", ncol=2) +
       ggplot2::scale_size_continuous(range=c(3,3),guide="none") +
       ggplot2::scale_colour_identity() +
       ggplot2::theme_bw() +
-      ggplot2::theme(axis.title=element_blank(), 
-            axis.text=element_blank(), 
-            axis.ticks=element_blank()) + 
+      ggplot2::theme(axis.title=ggplot2::element_blank(), 
+            axis.text=ggplot2::element_blank(), 
+            axis.ticks=ggplot2::element_blank()) + 
       ggplot2::scale_x_continuous(expand = c(.1, 1.075)) + 
       ggplot2::scale_y_continuous(expand = c(.1, 1.075))
   } else {
     plotGenImage = ggplot2::ggplot() + 
-      ggplot2::geom_text(aes(x=0, y=0, label="Please select varieties\n\n Note: It may take a minute to process the v1")) +         
+      ggplot2::geom_text(ggplot2::aes(x=0, y=0, label="Please select varieties\n\n Note: It may take a minute to process the v1")) +         
       ggplot2::theme_bw() + 
-      ggplot2::theme(axis.text=element_blank(), 
-            axis.ticks=element_blank(), 
-            axis.title=element_blank())
+      ggplot2::theme(axis.text=ggplot2::element_blank(), 
+            axis.ticks=ggplot2::element_blank(), 
+            axis.title=ggplot2::element_blank())
   }
   plotGenImage
 }
@@ -842,12 +842,12 @@ plotDegMatrix = function(varieties,ig,tree){
   
   tdm <- reshape2::melt(matVar)
   
-  heatMap = ggplot2::ggplot(tdm, aes(x = Var1, y = Var2, fill = value)) +
+  heatMap = ggplot2::ggplot(tdm, ggplot2::aes(x = Var1, y = Var2, fill = value)) +
     ggplot2::labs(x = "Variety", y = "Variety", fill = "Degree") +
     ggplot2::geom_raster() +
     ggplot2::scale_x_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
     ggplot2::scale_y_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
-    ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ggplot2::coord_equal()
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1)) + ggplot2::coord_equal()
   heatMap
 }
 
@@ -879,21 +879,21 @@ plotPath = function(path){
     # The plotImage object creates a grey rectangle (geom_rect) to highlight the node
     # label; three line segments (geom_segment) to create node label underline, node
     # label overline, and edges between nodes; and text (geom_text) to write the node label.
-    plotPathImage = ggplot2::ggplot(data = pPDF,aes(x = x, y = y)) + 
-      ggplot2::geom_rect(data = textFrame, aes(xmin = x - strwidth(label, "inches")*1.2,
+    plotPathImage = ggplot2::ggplot(data = pPDF,ggplot2::aes(x = x, y = y)) + 
+      ggplot2::geom_rect(data = textFrame, ggplot2::aes(xmin = x - strwidth(label, "inches")*1.2,
                                       xmax = x + strwidth(label, "inches")*1.2, 
                                       ymin = y-.1, ymax = y+.1), fill = "grey80") +
-      ggplot2::geom_segment(aes(x=x - strwidth(label, "inches")*1.2, y=y-.1,
+      ggplot2::geom_segment(ggplot2::aes(x=x - strwidth(label, "inches")*1.2, y=y-.1,
                        xend =  x + strwidth(label, "inches")*1.2, yend = y-.1)) +
-      ggplot2::geom_segment(aes(x=x - strwidth(label, "inches")*1.2, y=y+.1,
+      ggplot2::geom_segment(ggplot2::aes(x=x - strwidth(label, "inches")*1.2, y=y+.1,
                        xend =  x + strwidth(label, "inches")*1.2, yend = y+.1)) +
-      ggplot2::geom_segment(aes(x=xstart, y=ystart, xend=xend, yend=yend)) +
-      ggplot2::geom_text(data = textFrame,aes(x = x, y = y, label = label), size = 4) + 
+      ggplot2::geom_segment(ggplot2::aes(x=xstart, y=ystart, xend=xend, yend=yend)) +
+      ggplot2::geom_text(data = textFrame,ggplot2::aes(x = x, y = y, label = label), size = 4) + 
       ggplot2::xlab("Year") +     
-      ggplot2::theme(axis.text.y=element_blank(),axis.ticks.y=element_blank(),
-            axis.title.y=element_blank(),legend.position="none",
-            panel.grid.major.y=element_blank(),
-            panel.grid.minor=element_blank())
+      ggplot2::theme(axis.text.y=ggplot2::element_blank(),axis.ticks.y=ggplot2::element_blank(),
+            axis.title.y=ggplot2::element_blank(),legend.position="none",
+            panel.grid.major.y=ggplot2::element_blank(),
+            panel.grid.minor=ggplot2::element_blank())
   }
   else{
     plotPathImage = print("There is no path to display between the two inputted vertices.")
@@ -955,17 +955,17 @@ plotPathOnTree = function(path, ig, binVector=sample(1:12, 12)){
   # edges for path connections between pairs of nodes; and two labels (geom_text), one to
   # create labels of size 2 for non-path connections between pairs of nodes, the other to
   # create labels of size 2.5 and boldfaced for path connections between pairs of nodes.
-  plotTotalImage = ggplot2::ggplot(data = pMPDF, aes(x = x, y = y)) +
-    ggplot2::geom_segment(data = eTDF, aes(x=x, y=y-.1, xend=xend, yend=yend+.1), colour = "gray84") +
-    ggplot2::geom_segment(data = pTDF, aes(x=xstart, y=ystart, xend=xend, yend=yend), colour = "seagreen2", size = 1) +
-    ggplot2::geom_text(data = textFrame,aes(x = x, y = y, label = label), size = 2) +
-    ggplot2::geom_text(data = pTDF,aes(x = x, y = y, label = label), size = 2.5,  fontface="bold") +
+  plotTotalImage = ggplot2::ggplot(data = pMPDF, ggplot2::aes(x = x, y = y)) +
+    ggplot2::geom_segment(data = eTDF, ggplot2::aes(x=x, y=y-.1, xend=xend, yend=yend+.1), colour = "gray84") +
+    ggplot2::geom_segment(data = pTDF, ggplot2::aes(x=xstart, y=ystart, xend=xend, yend=yend), colour = "seagreen2", size = 1) +
+    ggplot2::geom_text(data = textFrame,ggplot2::aes(x = x, y = y, label = label), size = 2) +
+    ggplot2::geom_text(data = pTDF,ggplot2::aes(x = x, y = y, label = label), size = 2.5,  fontface="bold") +
     ggplot2::xlab("Year") +    
     # Erase the y-axis, and only include grids from the x-axis
-    ggplot2::theme(axis.text.y=element_blank(),axis.ticks.y=element_blank(),
-          axis.title.y=element_blank(),legend.position="none",
-          panel.grid.major.y=element_blank(),
-          panel.grid.minor=element_blank())
+    ggplot2::theme(axis.text.y=ggplot2::element_blank(),axis.ticks.y=ggplot2::element_blank(),
+          axis.title.y=ggplot2::element_blank(),legend.position="none",
+          panel.grid.major.y=ggplot2::element_blank(),
+          panel.grid.minor=ggplot2::element_blank())
   # Return the plotTotalImage
   plotTotalImage
 }
@@ -991,12 +991,12 @@ plotYearMatrix = function(varieties, tree){
   
   tdm <- reshape2::melt(matVar)
   
-  heatMap = ggplot2::ggplot(tdm, aes(x = Var1, y = Var2, fill = value)) +
+  heatMap = ggplot2::ggplot(tdm, ggplot2::aes(x = Var1, y = Var2, fill = value)) +
     ggplot2::labs(x = "Variety", y = "Variety", fill = "Difference in Years") +
     ggplot2::geom_raster() +
     ggplot2::scale_x_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
     ggplot2::scale_y_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
-    ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ggplot2::coord_equal()
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1)) + ggplot2::coord_equal()
   heatMap
 }
 
