@@ -265,17 +265,15 @@ plotTotalImage</code></pre>
 <pre style=""><code class="source r">plotTotalImage <- plotPathOnTree(path = path, ig = ig, binVector = 1:2)
 plotTotalImage</code></pre>
 <div class="row"><div class="col-md-offset-3 col-md-6"><a href="#" class="thumbnail"><img src="phyViz_files/figure-html/unnamed-chunk-21-1.png" /> </a></div></div></div><p>In this example, we see that with such a small number of bins chosen, the y-axis position designation will be similar to its original random state, and there is again much overlap in text variety labels in the year ranges where varieties occur the most.</p><h2>Generating a Pairwise Distance Matrix between Set of Vertices</h2><p>It may also be of interest to scientists studying phylogenetics to generate heat maps where the color of each index of the map indicates the distance or years between two vertices.</p><p>The package <strong>phyViz</strong> also provides functions for that purpose. Specifically, for a given set of vertices, a heat map of the distance (degree of the shortest path) between all pairs of vertices can be constructed with the <strong>plotDegMatrix</strong> function:</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
-<pre style=""><code class="source r">varieties <- c("Beeson", "Brim", "Dillon", "Narow", "Zane", "Hood", "York", "Calland", 
-    "Columbus", "Crawford", "Kershaw", "Kent", "Bragg", "Davis", "Tokyo", "Hagood", 
-    "Young", "Essex", "Holladay", "Cook", "Century", "Pella", "Forrest", "Gasoy", 
-    "Cutler")
+<pre style=""><code class="source r">varieties <- c("Beeson", "Brim", "Dillon", "Narow", "Zane", "Hood", "York", "Calland", "Columbus", "Crawford", 
+    "Kershaw", "Kent", "Bragg", "Davis", "Tokyo", "Hagood", "Young", "Essex", "Holladay", "Cook", "Century", 
+    "Pella", "Forrest", "Gasoy", "Cutler")
 heatMapDegreeImage <- plotDegMatrix(varieties, ig, sbTree)
 heatMapDegreeImage</code></pre>
 <div class="row"><div class="col-md-offset-3 col-md-6"><a href="#" class="thumbnail"><img src="phyViz_files/figure-html/unnamed-chunk-22-1.png" /> </a></div></div></div><p>In a similar function, <strong>plotYearMatrix</strong>, the difference in years between all pairwise combinations of vertices can be constructed and viewed:</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
-<pre style=""><code class="source r">varieties <- c("Beeson", "Brim", "Dillon", "Narow", "Zane", "Hood", "York", "Calland", 
-    "Columbus", "Crawford", "Kershaw", "Kent", "Bragg", "Davis", "Tokyo", "Hagood", 
-    "Young", "Essex", "Holladay", "Cook", "Century", "Pella", "Forrest", "Gasoy", 
-    "Cutler")
+<pre style=""><code class="source r">varieties <- c("Beeson", "Brim", "Dillon", "Narow", "Zane", "Hood", "York", "Calland", "Columbus", "Crawford", 
+    "Kershaw", "Kent", "Bragg", "Davis", "Tokyo", "Hagood", "Young", "Essex", "Holladay", "Cook", "Century", 
+    "Pella", "Forrest", "Gasoy", "Cutler")
 heatMapYearImage <- plotYearMatrix(varieties, sbTree)
 heatMapYearImage</code></pre>
 <div class="row"><div class="col-md-offset-3 col-md-6"><a href="#" class="thumbnail"><img src="phyViz_files/figure-html/unnamed-chunk-23-1.png" /> </a></div></div></div><p>Running this function on this particular set of vertices shows that most combinations of varieties are only a few decades apart in years, with only very few sets of vertices showing difference in years on the order of five or six decades.</p></div><div id="conclusion" class="section level1"><h1>Conclusion</h1><p>The various options of the <strong>phyViz</strong> package can offer you different ways of visually interpreting your trees that each come with advantages and disadvantages. While some visualizations connect nodes to their years, other visualizations lax this idea, and instead connect nodes based on their generation surrounding a given node. And still other visualizations from <strong>phyViz</strong> will allow you to either focus on one pathway, or view that pathway superimposed across the entire tree for reference. Hopefully, the package will have something to offer to you in your data analysis.</p></div>

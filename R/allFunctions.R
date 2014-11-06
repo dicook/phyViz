@@ -402,7 +402,18 @@ buildSpreadTotalDF = function(ig, binVector=1:12){
   }
   
   totalDF = igraph::get.data.frame(ig, "vertices")
-  totalDF = totalDF[!is.na(totalDF$name),]
+  #totalDF = totalDF[!is.na(totalDF$name),]
+  
+  yearVector = c()
+  for (i in 1:dim(totalDF)[1]){
+    currYear = getYear(totalDF[i,],sbTree)
+    yearVector = c(yearVector, currYear)
+  }
+
+  totalDF2 = cbind(totalDF, yearVector)
+  colnames(totalDF2)[2] = "year"
+  totalDF = totalDF2
+
   totalDF = totalDF[order(totalDF$year, decreasing=FALSE), ]
   
   numrows <- ceiling(nrow(totalDF)/length(binVector))
@@ -920,7 +931,8 @@ plotPath = function(path){
 #' data(sbTree)
 #' ig = treeToIG(sbTree)
 #' path = getPath("Brim","Bedford",ig,sbTree)
-#' plotTotalImage <- plotPathOnTree(path=path, ig=ig)
+#' binVector=sample(1:12, 12)
+#' plotTotalImage <- plotPathOnTree(path=path, ig=ig, binVector=sample(1:12, 12))
 #' plotTotalImage
 #' @seealso \url{http://www.r-project.org} for iGraph information
 #' @seealso \code{\link{getPath}} for information on input path building

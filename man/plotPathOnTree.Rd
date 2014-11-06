@@ -30,7 +30,8 @@ boldfaced edges.
 data(sbTree)
 ig = treeToIG(sbTree)
 path = getPath("Brim","Bedford",ig,sbTree)
-plotTotalImage <- plotPathOnTree(path=path, ig=ig)
+binVector=sample(1:12, 12)
+plotTotalImage <- plotPathOnTree(path=path, ig=ig, binVector=sample(1:12, 12))
 plotTotalImage
 }
 \seealso{
