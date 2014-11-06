@@ -255,12 +255,14 @@ The two examples below will show the importance of selecting an appropriate numb
 
 ```{r}
 plotTotalImage <- plotPathOnTree(path=path, ig=ig, binVector=1:12)
+plotTotalImage
 ```
 
 In this case, even though the number of bins is as large as the clearer-labelled image above, the order of the bins is such that varieties of consecutive x-values (years) will also have consecutive y-values (indices), and hence will be likely to overlap for years with many varieties.
 
 ```{r}
 plotTotalImage <- plotPathOnTree(path=path, ig=ig, binVector=1:2)
+plotTotalImage
 ```
 
 In this example, we see that with such a small number of bins chosen, the y-axis position designation will be similar to its original random state, and there is again much overlap in text variety labels in the year ranges where varieties occur the most.
