@@ -3,7 +3,7 @@
 \alias{getDescendants}
 \title{Returns the descendants of a particular variety (if they exist)}
 \usage{
-getDescendants(v1, gen = 0)
+getDescendants(v1, tree, gen = 0)
 }
 \arguments{
   \item{v1}{the first variety}
@@ -17,7 +17,7 @@ the inputted variety.
 \examples{
 data(sbTree)
 getParent("Essex", sbTree)
-getDescendants("Essex", 3)
+getDescendants("Essex", sbTree, 3)
 }
 \seealso{
 \code{\link{getChild}} for information on determining

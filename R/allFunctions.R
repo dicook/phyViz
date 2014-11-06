@@ -107,7 +107,7 @@ buildAncDesCoordDF = function(df){
     }
   }
   
-  df$size = (1-(nrow(df))/412)*4+2
+  df$size = (1-(nrow(df))/412)*4+2 # error to hardcode 412
   return(df)
 }
 
@@ -125,20 +125,22 @@ buildAncDesCoordDF = function(df){
 #' @export
 #' @examples
 #' data(sbTree)
-#' buildAncDesTotalDF("Essex", sbTree)
-buildAncDesTotalDF = function(v1, mAnc=3, mDes=3, tree){
+#' tree=sbTree
+#' v1="Essex"
+#' buildAncDesTotalDF("Essex", tree)
+buildAncDesTotalDF = function(v1, tree, mAnc=3, mDes=3){
   vals = list()
   # Set data frame that we will plot
-  gen.vars2 = v1$varieties
+  gen.vars2 = v1 #varieties
   vals$gen.vars = gen.vars2
   
-  if(length(v1$varieties)>0){
-    # This ldply statement is converting a list to a datatype. It takes the v1 variety and retunrs the
+  if(length(v1)>0){ #varieties
+    # This ldply statement is converting a list to a datatype. It takes the v1 variety and returns the
     # plot coordinates of all its parents and children.
     temp2 = plyr::ldply(vals$gen.vars, function(i){
       if(i %in% tree$child | i %in% tree$parent){
         # This appends the plot coordinates of the data frame constructed for all ancesteros and descendents of the variety
-        temp = cbind(variety=i, buildAncDesCoordDF(rbind(nodeToDF(getAncestors(i)), nodeToDF(getDescendants(i)))))
+        temp = cbind(variety=i, buildAncDesCoordDF(rbind(nodeToDF(getAncestors(i, tree)), nodeToDF(getDescendants(i, tree)))))
         # This create an empty data frame in the event that there are no ancestors nor descendents
         temp$label2 = temp$label
       } 
@@ -164,15 +166,15 @@ buildAncDesTotalDF = function(v1, mAnc=3, mDes=3, tree){
     # This is stored separately in case this will be extended to be used for Shiny reactive programming.
     genDF = temp2
     
-    temp = merge(data.frame(variety=v1$varieties,NewName=vals$gen.vars), plyr::ddply(genDF, .(label), summarize, gen=mean(gen*c(-1,1)[(type=="descendant")+1])), by.x=2, by.y=1)
+    temp = merge(data.frame(variety=v1,NewName=vals$gen.vars), plyr::ddply(genDF, .(label), summarize, gen=mean(gen*c(-1,1)[(type=="descendant")+1])), by.x=2, by.y=1) #varieties
     vals$match = temp[order(temp$gen, temp$variety),]
   } else {
     genDF = data.frame()
     vals$match = data.frame()
-    vals$gen.vars = v1$varieties
+    vals$gen.vars = v1 #$varieties
   }
   genDF = genDF[-which(genDF$gen > mAnc & genDF$type == "ancestor"),]
-  genDF = genDF[-which(genDF$gen > mDes & genDF$type == "descendant"),]
+  genDF = genDF[which(genDF$gen <= mDes & genDF$type == "descendant"),] #strangely -which with > does not work!
   genDF
 }
 
@@ -443,16 +445,16 @@ buildSpreadTotalDF = function(ig, binVector=1:12){
 #' @examples
 #' data(sbTree)
 #' getParent("Essex", sbTree)
-#' getAncestors("Essex", 3)
-getAncestors = function(v1, gen=0){
+#' getAncestors("Essex", sbTree, 3)
+getAncestors = function(v1, tree, gen=0){
   if(is.na(v1)) return()
   
-  temp = getParent(v1)
+  temp = getParent(v1, tree)
   if(length(temp)==0) return()
   
   res = lapply(temp[!is.na(temp)], function(i){
     # print(i)
-    temp2 = getAncestors(i, gen=gen+1)
+    temp2 = getAncestors(i, tree, gen=gen+1)
     if(length(temp2)<1) return(list(label=i, root=v1, root.gen=gen, gen=gen+1, type="ancestor"))
     return(c(label=i, root=v1, root.gen=gen, gen=gen+1, type="ancestor", temp2))
   })
@@ -572,16 +574,16 @@ getDegree = function(v1, v2, ig, tree){
 #' @examples
 #' data(sbTree)
 #' getParent("Essex", sbTree)
-#' getDescendants("Essex", 3)
-getDescendants = function(v1, gen=0){
+#' getDescendants("Essex", sbTree, 3)
+getDescendants = function(v1, tree, gen=0){
   if(is.na(v1)) return()
   
-  temp = getChild(v1)
+  temp = getChild(v1, tree)
   if(length(temp)==0) return()
   
   res = lapply(temp[!is.na(temp)], function(i){
     # print(i)
-    temp2 = getDescendants(i, gen=gen+1)
+    temp2 = getDescendants(i, tree, gen=gen+1)
     if(length(temp2)<1) return(list(label=i, root=v1, root.gen=gen, gen=gen+1, type="descendant"))
     return(c(label=i, root=v1, root.gen=gen, gen=gen+1, type="descendant", temp2))
   })

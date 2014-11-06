@@ -3,18 +3,18 @@
 \alias{buildAncDesTotalDF}
 \title{Returns the data frame of labels and plot coordinates of all ancestors and descendants of a variety}
 \usage{
-buildAncDesTotalDF(v1, mAnc = 3, mDes = 3, tree)
+buildAncDesTotalDF(v1, tree, mAnc = 3, mDes = 3)
 }
 \arguments{
   \item{v1}{variety of interest}
+
+  \item{tree}{the tree}
 
   \item{mAnc}{maximum number of ancestors of v1 to be
   shown}
 
   \item{mDes}{maximum number of descendants of v1 to be
   shown}
-
-  \item{tree}{the tree}
 }
 \description{
 Returns the data frame that includes labels and plot
@@ -24,7 +24,9 @@ descendants to display
 }
 \examples{
 data(sbTree)
-buildAncDesTotalDF("Essex", sbTree)
+tree=sbTree
+v1="Essex"
+buildAncDesTotalDF("Essex", tree)
 }
 \seealso{
 \code{\link{getAncestors}} for information on determining
