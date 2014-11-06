@@ -22,6 +22,10 @@ coordinates of all ancestors and descendants of a variety.
 Users can specify the maximum number of ancestors and
 descendants to display
 }
+\examples{
+data(sbTree)
+buildAncDesTotalDF("Essex", sbTree)
+}
 \seealso{
 \code{\link{getAncestors}} for information on determining
 ancestors

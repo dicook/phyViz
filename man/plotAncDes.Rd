@@ -14,6 +14,11 @@ Returns the image object to show the ancestors (to the
 left) and descendants (to the right) of a variety, with the
 variety highlighted in orange
 }
+\examples{
+data(sbTree)
+ADdf <- buildAncDesTotalDF("Essex", sbTree)
+plotAncDes(ADdf)
+}
 \seealso{
 \code{\link{getAncestors}} for information on determining
 ancestors

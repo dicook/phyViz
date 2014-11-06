@@ -122,6 +122,10 @@ buildAncDesCoordDF = function(df){
 #' @param tree the tree
 #' @seealso \code{\link{getAncestors}} for information on determining ancestors
 #' @seealso \code{\link{getDescendants}} for information on determining descendants
+#' @export
+#' @examples
+#' data(sbTree)
+#' buildAncDesTotalDF("Essex", sbTree)
 buildAncDesTotalDF = function(v1, mAnc=3, mDes=3, tree){
   vals = list()
   # Set data frame that we will plot
@@ -812,6 +816,10 @@ nodeToDF = function(tlist, branch=0, par.id = NA,id.offset=1){
 #' @seealso \code{\link{getAncestors}} for information on determining ancestors
 #' @seealso \code{\link{getDescendants}} for information on determining descendants
 #' @export
+#' @examples
+#' data(sbTree)
+#' ADdf <- buildAncDesTotalDF("Essex", sbTree)
+#' plotAncDes(ADdf)
 plotAncDes = function(gDF){
   # Plot the data frame, if it exists
   if(nrow(gDF)>0){
