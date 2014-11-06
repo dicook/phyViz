@@ -18,6 +18,12 @@ For visual appeal, there is a grey box that outlines the
 node label, as well as an underline and overline for each
 label.
 }
+\examples{
+data(sbTree)
+ig <- treeToIG(sbTree)
+p <- getPath("Brim","Bedford",ig,sbTree)
+plotPath(p)
+}
 \seealso{
 \code{\link{getPath}} for information on input path
 building

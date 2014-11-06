@@ -435,6 +435,11 @@ buildSpreadTotalDF = function(ig, binVector=1:12){
 #' @param v1 the first variety
 #' @param gen generation
 #' @seealso \code{\link{getParent}} for information on determining parents
+#' @export
+#' @examples
+#' data(sbTree)
+#' getParent("Essex", sbTree)
+#' getAncestors("Essex", 3)
 getAncestors = function(v1, gen=0){
   if(is.na(v1)) return()
   
@@ -559,6 +564,11 @@ getDegree = function(v1, v2, ig, tree){
 #' @param v1 the first variety
 #' @param gen generation the first variety
 #' @seealso \code{\link{getChild}} for information on determining parents
+#' @export
+#' @examples
+#' data(sbTree)
+#' getParent("Essex", sbTree)
+#' getDescendants("Essex", 3)
 getDescendants = function(v1, gen=0){
   if(is.na(v1)) return()
   
@@ -872,6 +882,11 @@ plotDegMatrix = function(varieties,ig,tree){
 #' @param path object created from function getPath
 #' @seealso \code{\link{getPath}} for information on input path building
 #' @export
+#' @examples
+#' data(sbTree)
+#' ig <- treeToIG(sbTree)
+#' p <- getPath("Brim","Bedford",ig,sbTree)
+#' plotPath(p)
 plotPath = function(path){
   if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
     stop("path does not appear to be a result of the getPath() function")

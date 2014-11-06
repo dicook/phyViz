@@ -14,6 +14,11 @@ getDescendants(v1, gen = 0)
 This function returns a nested list of the descendants of
 the inputted variety.
 }
+\examples{
+data(sbTree)
+getParent("Essex", sbTree)
+getDescendants("Essex", 3)
+}
 \seealso{
 \code{\link{getChild}} for information on determining
 parents
