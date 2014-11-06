@@ -16,7 +16,7 @@ buildAncDesCoordDF = function(df){
     df$par.id[which(df$par.id%in%old.ids)] = temp$id[1]
     temp$id[-1] = temp$id[1]
     temp = unique(temp)
-    df = rbind.fill(subset(df, !(root.gen==0 & gen==0)), temp)
+    df = plyr::rbind.fill(subset(df, !(root.gen==0 & gen==0)), temp)
   }
   # This adds a leaf boolean column
   df$leaf = !df$id%in%df$par.id
@@ -55,7 +55,7 @@ buildAncDesCoordDF = function(df){
   df$yend = df$y
   
   # Maximum character length of each generation
-  widths = ddply(df, .(genside), summarize, len=max(nchar(as.character(label))))
+  widths = plyr::ddply(df, .(genside), summarize, len=max(nchar(as.character(label))))
   # Create a padding for label length
   widths$len = widths$len*(1+yfac/(1+yfac))
   gap = mean(widths$len)/2
@@ -131,7 +131,7 @@ buildAncDesTotalDF = function(v1, mAnc=3, mDes=3, tree){
   if(length(v1$varieties)>0){
     # This ldply statement is converting a list to a datatype. It takes the v1 variety and retunrs the
     # plot coordinates of all its parents and children.
-    temp2 = ldply(vals$gen.vars, function(i){
+    temp2 = plyr::ldply(vals$gen.vars, function(i){
       if(i %in% tree$child | i %in% tree$parent){
         # This appends the plot coordinates of the data frame constructed for all ancesteros and descendents of the variety
         temp = cbind(variety=i, buildAncDesCoordDF(rbind(nodeToDF(getAncestors(i)), nodeToDF(getDescendants(i)))))
@@ -160,7 +160,7 @@ buildAncDesTotalDF = function(v1, mAnc=3, mDes=3, tree){
     # This is stored separately in case this will be extended to be used for Shiny reactive programming.
     genDF = temp2
     
-    temp = merge(data.frame(variety=v1$varieties,NewName=vals$gen.vars), ddply(genDF, .(label), summarize, gen=mean(gen*c(-1,1)[(type=="descendant")+1])), by.x=2, by.y=1)
+    temp = merge(data.frame(variety=v1$varieties,NewName=vals$gen.vars), plyr::ddply(genDF, .(label), summarize, gen=mean(gen*c(-1,1)[(type=="descendant")+1])), by.x=2, by.y=1)
     vals$match = temp[order(temp$gen, temp$variety),]
   } else {
     genDF = data.frame()
@@ -190,10 +190,10 @@ buildEdgeTotalDF = function(ig, binVector=1:12){
   }
   
   tG <- buildSpreadTotalDF(ig, binVector)
-  eG <- get.data.frame(ig, "edges")
+  eG <- igraph::get.data.frame(ig, "edges")
   
   # edgeTotalDF used in function plotPathOnTree()
-  numEdges = length(E(ig))
+  numEdges = length(igraph::E(ig))
   x=as.numeric(rep("",numEdges))
   y=as.numeric(rep("",numEdges))
   xend=as.numeric(rep("",numEdges))
@@ -255,7 +255,7 @@ buildMinusPathDF = function(path, ig, binVector=1:12){
   } 
   
   tG <- buildSpreadTotalDF(ig, binVector)
-  eG <- get.data.frame(ig, "edges")
+  eG <- igraph::get.data.frame(ig, "edges")
   
   label=tG$name
   x=tG$year
@@ -401,7 +401,7 @@ buildSpreadTotalDF = function(ig, binVector=1:12){
     stop("binVector must contain all numbers 1:length(binVector)")
   }
   
-  totalDF = get.data.frame(ig, "vertices")
+  totalDF = igraph::get.data.frame(ig, "vertices")
   totalDF = totalDF[!is.na(totalDF$name),]
   totalDF = totalDF[order(totalDF$year, decreasing=FALSE), ]
   
@@ -456,30 +456,29 @@ getAncestors = function(v1, gen=0){
 #' getBasicStatistics(ig)
 #' @export
 getBasicStatistics = function(ig){
-  require(igraph)
   if(class(ig)!="igraph"){
     stop("ig must be an igraph object.")
   }
   retStats = list()
   # Get edge and node count from "structure.info" function of igraph
-  numNodes = vcount(ig)
-  numEdges = ecount(ig)
+  numNodes = igraph::vcount(ig)
+  numEdges = igraph::ecount(ig)
   # Determine if the graph is connected or not from "clusters" function of igraph
-  isConnected = is.connected(ig)
+  isConnected = igraph::is.connected(ig)
   # Determine the number of connected components in the graph from "clusters"
   # function of igraph
-  numComponents = no.clusters(ig)
+  numComponents = igraph::no.clusters(ig)
   # Compute the average path length of the graph
   connected = FALSE
   if(isConnected)
   {
     connected = TRUE
   }
-  avePathLength = average.path.length(ig, directed=F, unconnected= !isConnected)
+  avePathLength = igraph::average.path.length(ig, directed=F, unconnected= !isConnected)
   # Determine the log(N) value of the graph
   logN = log(numNodes)
   # Determine the network diameter
-  graphDiameter = diameter(ig, directed = F, unconnected = !isConnected, weights = NULL)
+  graphDiameter = igraph::diameter(ig, directed = F, unconnected = !isConnected, weights = NULL)
   # Create a list of statistics
   retStats = list(isConnected = isConnected, numComponents = numComponents, avePathLength = avePathLength,
                   graphDiameter = graphDiameter, numNodes = numNodes, numEdges = numEdges, logN = logN)
@@ -499,7 +498,7 @@ getBasicStatistics = function(ig){
 #' getEdges(ig)
 #' @export
 getEdges = function(ig){
-  get.edgelist(ig)
+  igraph::get.edgelist(ig)
 }
 
 #' Returns the children of a particular variety (if they exist)
@@ -621,14 +620,13 @@ getParent = function(v1, tree){
 #' getPath("Tokyo","Volstate",ig,sbTree)
 #' @export
 getPath = function(v1, v2, ig, tree, silent=FALSE, isDirected=FALSE){
-  require(igraph)
   if(!is.character(v1) & !is.character(v2)){
     stop("First two arguments must be strings")
   } else {
-    if(!v1%in%V(ig)$name){
+    if(!v1%in%igraph::V(ig)$name){
       warning("v1 is not a graph vertex")
     }
-    if(!v2%in%V(ig)$name){
+    if(!v2%in%igraph::V(ig)$name){
       warning("v2 is not a graph vertex")
     }
   }
@@ -639,7 +637,7 @@ getPath = function(v1, v2, ig, tree, silent=FALSE, isDirected=FALSE){
     stop("Please input an igraph object formatted by treeToIG()")
   }
   
-  if(is.directed(ig) != isDirected){
+  if(igraph::is.directed(ig) != isDirected){
     if(isDirected){
       stop("Cannot compute directed path on an undirected graph")
     }
@@ -650,15 +648,15 @@ getPath = function(v1, v2, ig, tree, silent=FALSE, isDirected=FALSE){
   yearVertices = character()
   pathVertices = character()
   # If the tree is directed
-  if (is.directed(ig)){
+  if (igraph::is.directed(ig)){
     # We need to look at both forward and reverse cases of directions, because the user may not know
     # the potential direction of a path between the two vertices
-    pathVIndicesForward = get.shortest.paths(ig, v1, v2, weights = NA, output="vpath")$vpath[[1]]
-    pathVIndicesReverse = get.shortest.paths(ig, v2, v1, weights = NA, output="vpath")$vpath[[1]]
+    pathVIndicesForward = igraph::get.shortest.paths(ig, v1, v2, weights = NA, output="vpath")$vpath[[1]]
+    pathVIndicesReverse = igraph::get.shortest.paths(ig, v2, v1, weights = NA, output="vpath")$vpath[[1]]
     # If there is a path in the forward direction, then we save the names of the vertices in that order
     if (length(pathVIndicesForward) != 0){
       for (i in 1:length(pathVIndicesForward)){
-        pathVertices = c(pathVertices, get.vertex.attribute(ig, "name", index=pathVIndicesForward[i]))
+        pathVertices = c(pathVertices, igraph::get.vertex.attribute(ig, "name", index=pathVIndicesForward[i]))
         yearVertices = c(yearVertices, getYear(pathVertices[i], tree))
       }
       retPath = list(pathVertices = pathVertices, yearVertices = yearVertices)
@@ -666,17 +664,17 @@ getPath = function(v1, v2, ig, tree, silent=FALSE, isDirected=FALSE){
     # If there is a path in the reverse direction, then we save the names of the vertices in that order
     if (length(pathVIndicesReverse) != 0){
       for (i in 1:length(pathVIndicesReverse)){
-        pathVertices = c(pathVertices, get.vertex.attribute(ig, "name", index=pathVIndicesReverse[i]))
+        pathVertices = c(pathVertices, igraph::get.vertex.attribute(ig, "name", index=pathVIndicesReverse[i]))
         yearVertices = c(yearVertices, getYear(pathVertices[i], tree))
       }
       retPath = list(pathVertices = pathVertices, yearVertices = yearVertices)
     }
   } else {
     # The direction does not matter, any shortest path between the vertices will be listed
-    pathVIndices = get.shortest.paths(ig, v1, v2, weights = NA, output="vpath")$vpath[[1]]
+    pathVIndices = igraph::get.shortest.paths(ig, v1, v2, weights = NA, output="vpath")$vpath[[1]]
     if (length(pathVIndices) != 0){
       for (i in 1:length(pathVIndices)){
-        pathVertices = c(pathVertices, get.vertex.attribute(ig, "name", index=pathVIndices[i]))
+        pathVertices = c(pathVertices, igraph::get.vertex.attribute(ig, "name", index=pathVIndices[i]))
         yearVertices = c(yearVertices, getYear(pathVertices[i], tree))
       }
       retPath = list(pathVertices = pathVertices, yearVertices = yearVertices)
@@ -778,8 +776,8 @@ nodeToDF = function(tlist, branch=0, par.id = NA,id.offset=1){
     id.offset <= id.offset+1
     # Creates a unique id
     id = sign(temp$gen)*sample((abs(temp$gen)*100):((abs(temp$gen)+1)*100-1), 1)*10+id.offset/10
-    return(rbind.fill(cbind(temp, branch=branch, id=id, par.id=par.id),
-                      ldply(1:length(listidx), function(i)
+    return(plyr::rbind.fill(cbind(temp, branch=branch, id=id, par.id=par.id),
+                            plyr::ldply(1:length(listidx), function(i)
                         nodeToDF(tlist[[listidx[i]]], branch=branchidx[i], par.id=id))))
   }
 }
@@ -796,24 +794,24 @@ nodeToDF = function(tlist, branch=0, par.id = NA,id.offset=1){
 plotAncDes = function(gDF){
   # Plot the data frame, if it exists
   if(nrow(gDF)>0){
-    plotGenImage = qplot(data=gDF, x=x, y=y, label=label2, geom="text", vjust=-.25, hjust=.5, 
+    plotGenImage = ggplot2::qplot(data=gDF, x=x, y=y, label=label2, geom="text", vjust=-.25, hjust=.5, 
                          size=size, colour=color) +
-      geom_segment(aes(x=xstart, y=ystart, xend=xend, yend=yend),inherit.aes=F) + 
-      geom_segment(aes(x=xend, y=yend, xend=branchx, yend=branchy),inherit.aes=F) +
-      facet_wrap(~variety, scales="free", ncol=2) +
-      scale_size_continuous(range=c(3,3),guide="none") +
-      scale_colour_identity() +
-      theme_bw() +
-      theme(axis.title=element_blank(), 
+      ggplot2::geom_segment(aes(x=xstart, y=ystart, xend=xend, yend=yend),inherit.aes=F) + 
+      ggplot2::geom_segment(aes(x=xend, y=yend, xend=branchx, yend=branchy),inherit.aes=F) +
+      ggplot2::facet_wrap(~variety, scales="free", ncol=2) +
+      ggplot2::scale_size_continuous(range=c(3,3),guide="none") +
+      ggplot2::scale_colour_identity() +
+      ggplot2::theme_bw() +
+      ggplot2::theme(axis.title=element_blank(), 
             axis.text=element_blank(), 
             axis.ticks=element_blank()) + 
-      scale_x_continuous(expand = c(.1, 1.075)) + 
-      scale_y_continuous(expand = c(.1, 1.075))
+      ggplot2::scale_x_continuous(expand = c(.1, 1.075)) + 
+      ggplot2::scale_y_continuous(expand = c(.1, 1.075))
   } else {
-    plotGenImage = ggplot() + 
-      geom_text(aes(x=0, y=0, label="Please select varieties\n\n Note: It may take a minute to process the v1")) +         
-      theme_bw() + 
-      theme(axis.text=element_blank(), 
+    plotGenImage = ggplot2::ggplot() + 
+      ggplot2::geom_text(aes(x=0, y=0, label="Please select varieties\n\n Note: It may take a minute to process the v1")) +         
+      ggplot2::theme_bw() + 
+      ggplot2::theme(axis.text=element_blank(), 
             axis.ticks=element_blank(), 
             axis.title=element_blank())
   }
@@ -835,7 +833,6 @@ plotAncDes = function(gDF){
 #' plotDegMatrix(varieties,ig,sbTree)
 #' @export
 plotDegMatrix = function(varieties,ig,tree){
-  require(reshape2)
   matVar = matrix(, nrow = length(varieties), ncol = length(varieties))
   for (i in 1:length(varieties)){
     for (j in 1:length(varieties)){
@@ -843,14 +840,14 @@ plotDegMatrix = function(varieties,ig,tree){
     }
   }
   
-  tdm <- melt(matVar)
+  tdm <- reshape2::melt(matVar)
   
-  heatMap = ggplot(tdm, aes(x = Var1, y = Var2, fill = value)) +
-    labs(x = "Variety", y = "Variety", fill = "Degree") +
-    geom_raster() +
-    scale_x_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
-    scale_y_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1)) + coord_equal()
+  heatMap = ggplot2::ggplot(tdm, aes(x = Var1, y = Var2, fill = value)) +
+    ggplot2::labs(x = "Variety", y = "Variety", fill = "Degree") +
+    ggplot2::geom_raster() +
+    ggplot2::scale_x_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
+    ggplot2::scale_y_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
+    ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ggplot2::coord_equal()
   heatMap
 }
 
@@ -868,7 +865,6 @@ plotPath = function(path){
   if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
     stop("path does not appear to be a result of the getPath() function")
   }
-  require(ggplot2)
   
   pPDF <- buildPathDF(path)
   
@@ -883,19 +879,18 @@ plotPath = function(path){
     # The plotImage object creates a grey rectangle (geom_rect) to highlight the node
     # label; three line segments (geom_segment) to create node label underline, node
     # label overline, and edges between nodes; and text (geom_text) to write the node label.
-    plotPathImage = ggplot(data = pPDF,aes(x = x, y = y)) + 
-      geom_rect(data = textFrame, aes(xmin = x - strwidth(label, "inches")*1.2,
+    plotPathImage = ggplot2::ggplot(data = pPDF,aes(x = x, y = y)) + 
+      ggplot2::geom_rect(data = textFrame, aes(xmin = x - strwidth(label, "inches")*1.2,
                                       xmax = x + strwidth(label, "inches")*1.2, 
                                       ymin = y-.1, ymax = y+.1), fill = "grey80") +
-      geom_segment(aes(x=x - strwidth(label, "inches")*1.2, y=y-.1,
+      ggplot2::geom_segment(aes(x=x - strwidth(label, "inches")*1.2, y=y-.1,
                        xend =  x + strwidth(label, "inches")*1.2, yend = y-.1)) +
-      geom_segment(aes(x=x - strwidth(label, "inches")*1.2, y=y+.1,
+      ggplot2::geom_segment(aes(x=x - strwidth(label, "inches")*1.2, y=y+.1,
                        xend =  x + strwidth(label, "inches")*1.2, yend = y+.1)) +
-      geom_segment(aes(x=xstart, y=ystart, xend=xend, yend=yend)) +
-      geom_text(data = textFrame,aes(x = x, y = y, label = label), size = 4) + 
-      xlab("Year") +
-      
-      theme(axis.text.y=element_blank(),axis.ticks.y=element_blank(),
+      ggplot2::geom_segment(aes(x=xstart, y=ystart, xend=xend, yend=yend)) +
+      ggplot2::geom_text(data = textFrame,aes(x = x, y = y, label = label), size = 4) + 
+      ggplot2::xlab("Year") +     
+      ggplot2::theme(axis.text.y=element_blank(),axis.ticks.y=element_blank(),
             axis.title.y=element_blank(),legend.position="none",
             panel.grid.major.y=element_blank(),
             panel.grid.minor=element_blank())
@@ -960,15 +955,14 @@ plotPathOnTree = function(path, ig, binVector=sample(1:12, 12)){
   # edges for path connections between pairs of nodes; and two labels (geom_text), one to
   # create labels of size 2 for non-path connections between pairs of nodes, the other to
   # create labels of size 2.5 and boldfaced for path connections between pairs of nodes.
-  plotTotalImage = ggplot(data = pMPDF, aes(x = x, y = y)) +
-    geom_segment(data = eTDF, aes(x=x, y=y-.1, xend=xend, yend=yend+.1), colour = "gray84") +
-    geom_segment(data = pTDF, aes(x=xstart, y=ystart, xend=xend, yend=yend), colour = "seagreen2", size = 1) +
-    geom_text(data = textFrame,aes(x = x, y = y, label = label), size = 2) +
-    geom_text(data = pTDF,aes(x = x, y = y, label = label), size = 2.5,  fontface="bold") +
-    xlab("Year") +
-    
+  plotTotalImage = ggplot2::ggplot(data = pMPDF, aes(x = x, y = y)) +
+    ggplot2::geom_segment(data = eTDF, aes(x=x, y=y-.1, xend=xend, yend=yend+.1), colour = "gray84") +
+    ggplot2::geom_segment(data = pTDF, aes(x=xstart, y=ystart, xend=xend, yend=yend), colour = "seagreen2", size = 1) +
+    ggplot2::geom_text(data = textFrame,aes(x = x, y = y, label = label), size = 2) +
+    ggplot2::geom_text(data = pTDF,aes(x = x, y = y, label = label), size = 2.5,  fontface="bold") +
+    ggplot2::xlab("Year") +    
     # Erase the y-axis, and only include grids from the x-axis
-    theme(axis.text.y=element_blank(),axis.ticks.y=element_blank(),
+    ggplot2::theme(axis.text.y=element_blank(),axis.ticks.y=element_blank(),
           axis.title.y=element_blank(),legend.position="none",
           panel.grid.major.y=element_blank(),
           panel.grid.minor=element_blank())
@@ -988,7 +982,6 @@ plotPathOnTree = function(path, ig, binVector=sample(1:12, 12)){
 #' plotYearMatrix(varieties,sbTree)
 #' @export
 plotYearMatrix = function(varieties, tree){
-  require(reshape2)
   matVar = matrix(, nrow = length(varieties), ncol = length(varieties))
   for (i in 1:length(varieties)){
     for (j in 1:length(varieties)){
@@ -996,14 +989,14 @@ plotYearMatrix = function(varieties, tree){
     }
   }
   
-  tdm <- melt(matVar)
+  tdm <- reshape2::melt(matVar)
   
-  heatMap = ggplot(tdm, aes(x = Var1, y = Var2, fill = value)) +
-    labs(x = "Variety", y = "Variety", fill = "Difference in Years") +
-    geom_raster() +
-    scale_x_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
-    scale_y_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1)) + coord_equal()
+  heatMap = ggplot2::ggplot(tdm, aes(x = Var1, y = Var2, fill = value)) +
+    ggplot2::labs(x = "Variety", y = "Variety", fill = "Difference in Years") +
+    ggplot2::geom_raster() +
+    ggplot2::scale_x_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
+    ggplot2::scale_y_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
+    ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ggplot2::coord_equal()
   heatMap
 }
 
@@ -1017,8 +1010,6 @@ plotYearMatrix = function(varieties, tree){
 #' @seealso \url{http://www.r-project.org} for iGraph information
 #' @export
 treeToIG = function(tree, vertexinfo = NULL, edgeweights = 1, isDirected=FALSE){
-  require(igraph)
-  require(plyr)
   if(!is.data.frame(tree)){
     stop("The tree must be of type data frame")
   }
@@ -1034,7 +1025,8 @@ treeToIG = function(tree, vertexinfo = NULL, edgeweights = 1, isDirected=FALSE){
     nodes <- tree[,c("child", vertexinfo)]
     # add in any parents who are not in the list of children, sans any vertex information
     if(sum(!tree$parent%in%tree$child & !is.na(tree$parent))>0){
-      nodes <- rbind.fill(nodes, data.frame(child=unique(tree$parent[!tree$parent%in%tree$child & !is.na(tree$parent)]), stringsAsFactors = FALSE))
+      absentparents <- unique(tree$parent[!tree$parent%in%tree$child & !is.na(tree$parent)])
+      nodes <- plyr::rbind.fill(nodes, data.frame(child=absentparents, stringsAsFactors = FALSE))
     }
     nodes <- unique(nodes)
   } else if(is.data.frame(vertexinfo)) {
@@ -1047,5 +1039,5 @@ treeToIG = function(tree, vertexinfo = NULL, edgeweights = 1, isDirected=FALSE){
   edges$weight <- edgeweights
   
   
-  graph.data.frame(d=edges, directed=isDirected, vertices=nodes)
+  igraph::graph.data.frame(d=edges, directed=isDirected, vertices=nodes)
 }

@@ -1,8 +1,8 @@
 ---
 title: "How to use the package **phyViz**"
-author: "Lindsay Rutter, Susan Vanderplas"
+author: "Lindsay Rutter, Susan Vanderplas, Di Cook"
 output: 
-  knitrBootstrap:::simple_document:
+  knitrBootstrap::simple_document:
     toc: true
     main: true
     theme: cerulean
@@ -20,18 +20,23 @@ output:
 
 **Description:** The **phyViz** package allows phylogeneticists to visualize and interpret their trees in multiple ways, each which come with their pros and cons. This vignette is intended to walk readers through the different options available with the package.
 
-**Caution:** igraph must be used with version 0.7.0
+**Caution:** igraph must be used with version >= 0.7.0
 
-# Preprocessing Pipeline:
+# Preprocessing Pipeline
 
 There is a preprocessing pipeline that you must use before visualizing your phylogentic tree. First, you must load the necessary libraries. Note that loading the phyViz library should automatically load three required libraries (plyr, reshape2, igraph): 
 
-```{r, echo=-1, warning=F, message=F}
-options(warn=-1)
-library(phyViz)
-library(ggplot2)
-library(stringr)
+```{r, echo=4:6 , warning=F, message=F}
+options(warn=-1, width=80)
 library(knitr)
+opts_chunk$set(tidy=T, results="hold", comment="#|")
+library(phyViz)
+library(igraph)
+library(ggplot2)
+# library(reshape2)
+# library(plyr)
+# library(stringr)
+library(xtable)
 ```
 
 In the **phyViz** package, there is an example file containing phylogenetic tree of soybean varieties called **sbTree.rda**. It may be helpful to load that example file so that you can follow along with the commands and options introduced in this vignette. To ensure that you have uploaded the correct, raw **sbTree.rda** file, you can observe the first six lines of it:
@@ -73,7 +78,7 @@ ig <- treeToIG(sbTree, vertexinfo=nodes)
 The ig object is used in many of the other functions included with this package. 
 
 
-# Functions for Individual Vertices:
+# Functions for Individual Vertices
 
 **phyViz** offers several back-of-the-envelope functions that you can use to get information for individual vertices. 
 
@@ -120,7 +125,7 @@ getChild("Ogden",sbTree)
 We find that even though the "Tokyo" variety is a grandparent of the dataset, it only had two children. However, one of its children, "Ogden", produced twelve children.
 
 
-# Functions for Pairs of Vertices:
+# Functions for Pairs of Vertices
 
 Say you have a pair of vertices, and you wish to determine the degree of separation of the shortest path between them, where edges represent parent-child relationships. You can accomplish that with the **getDegree** function.
 
@@ -131,7 +136,7 @@ getDegree("Tokyo", "Holladay", ig, sbTree)
 
 As expected, the shortest path between the "Tokyo" and "Ogden" varieties has a value of one, as they are a direct parent-child relationship. However, the shortest path between "Tokyo" and one of its great-reat-great-etc-granchildren, "Holladay" has a much higher degree. Note that degree calculations in this case are not limited to one linear string of parent-child relationships; cousins and siblings and products thereof will also have computatable degrees via nonlinear strings of parent-child relationships.
 
-# Functions for the Whole Tree:
+# Functions for the Whole Tree
 
 There are many parameters about the tree that you may wish to know that cannot easily be obtained through images and tables. With the use of the **igraph** package, the below function **getBasicStatistics** can be used to return a list of information about typical graph theoretical measurements of the whole tree. For instance, is the whole tree connected? If not, how many separated components does it contain? In addition to these parameters, the **getBasicStatistics** function will also return the number of nodes, the number of edges, the average path length, the graph diameter, etc.:
 
@@ -141,7 +146,9 @@ getBasicStatistics(ig)
 
 In this case, we learn that our tree is actually not all connected by parent-child edges, and that instead, it is composed of four separate components. We see that the average path length of the tree is `{r} getBasicStatistics(ig)$avePathLength`, that the graph diameter is `{r} getBasicStatistics(ig)graphDiameter`, and that the logN value is `{r} getBasicStatistics(ig)logN`. We also see that the number of nodes in the tree is `{r} getBasicStatistics(ig)$numNodes` that are connected by `{r} getBasicStatistics(ig)$numEdges` edges.
 
-# Visualization of Pathway between Two Vertices:
+# Visualizing the Tree
+
+## Visualizing the Path between Two Vertices
 
 As this data set deals with soy bean lineages, it may be useful for agronomists to track how two varieties are related to each other via parent-child relationships. Then, any dramatic changes in protein yield, SNP varieties, and other measures of interest can be tracked across the genetic timeline, and pinpointed to certain varieties along the way.
 
@@ -191,7 +198,7 @@ plotPathImage <- plotPath(path)
 plotPathImage
 ```
 
-# Visualization of Pathway between Two Vertices Superimposed on Tree:
+## Visualization of Pathway between Two Vertices Superimposed on Tree
 
 If you are curious to see the above-demonstrated shortest pathway between two vertices of interest, only now superimposed over all the varieties and edges in the whole tree, **phyViz** has a function (**plotPathOnTree**) that can achieve just that. 
 
@@ -259,7 +266,7 @@ plotTotalImage <- plotPathOnTree(path=path, ig=ig, binVector=1:2)
 In this example, we see that with such a small number of bins chosen, the y-axis position designation will be similar to its original random state, and there is again much overlap in text variety labels in the year ranges where varieties occur the most.
 
 
-# Generating Pairwise Distance Matrix between Set of Vertices:
+## Generating a Pairwise Distance Matrix between Set of Vertices
 
 It may also be of interest to scientists studying phylogenetics to generate heat maps where the color of each index of the map indicates the distance or years between two vertices.
 
@@ -283,6 +290,6 @@ heatMapYearImage
 Running this function on this particular set of vertices shows that most combinations of varieties are only a few decades apart in years, with only very few sets of vertices showing difference in years on the order of five or six decades.
 
 
-# Conclusion:
+# Conclusion
 
 The various options of the **phyViz** package can offer you different ways of visually interpreting your trees that each come with advantages and disadvantages. While some visualizations connect nodes to their years, other visualizations lax this idea, and instead connect nodes based on their generation surrounding a given node. And still other visualizations from **phyViz** will allow you to either focus on one pathway, or view that pathway superimposed across the entire tree for reference. Hopefully, the package will have something to offer to you in your data analysis.

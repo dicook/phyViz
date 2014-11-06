@@ -9,17 +9,13 @@ Author: Lindsay Rutter <lrutter@iastate.edu>, Susan Vanderplas
 Maintainer: Lindsay Rutter <lrutter@iastate.edu>
 License: GPL
 Depends:
-    R (>= 3.0.2),
-    igraph (>= 0.7.0),
+    R (>= 3.0.2)
+Imports:
+    stringr,
+    igraph,
     plyr,
     reshape2,
     ggplot2
-Imports:
-    igraph (>= 0.7.0),
-    plyr,
-    reshape2,
-    ggplot2,
-    stringr
 VignetteBuilder: knitr
 Suggests:
     knitr,
