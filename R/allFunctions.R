@@ -173,8 +173,14 @@ buildAncDesTotalDF = function(v1, tree, mAnc=3, mDes=3){
     vals$match = data.frame()
     vals$gen.vars = v1 #$varieties
   }
-  genDF = genDF[-which(genDF$gen > mAnc & genDF$type == "ancestor"),]
-  genDF = genDF[which(genDF$gen <= mDes & genDF$type == "descendant"),] #strangely -which with > does not work!
+  removeAnc = length(which(genDF$gen > mAnc & genDF$type == "ancestor"))
+  removeDes = length(which(genDF$gen > mDes & genDF$type == "descendant"))
+  if (removeAnc > 0){
+    genDF = genDF[-which(genDF$gen > mAnc & genDF$type == "ancestor"),]
+  }
+  if (removeDes > 0){
+    genDF = genDF[-which(genDF$gen > mDes & genDF$type == "descendant"),] 
+  }  
   genDF
 }
 
