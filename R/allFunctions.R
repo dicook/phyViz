@@ -125,16 +125,15 @@ buildAncDesCoordDF = function(df){
 #' @export
 #' @examples
 #' data(sbTree)
-#' tree=sbTree
 #' v1="Essex"
 #' buildAncDesTotalDF("Essex", tree)
 buildAncDesTotalDF = function(v1, tree, mAnc=3, mDes=3){
   vals = list()
   # Set data frame that we will plot
-  gen.vars2 = v1 #varieties
+  gen.vars2 = v1
   vals$gen.vars = gen.vars2
   
-  if(length(v1)>0){ #varieties
+  if(length(v1)>0){
     # This ldply statement is converting a list to a datatype. It takes the v1 variety and returns the
     # plot coordinates of all its parents and children.
     temp2 = plyr::ldply(vals$gen.vars, function(i){
@@ -166,12 +165,12 @@ buildAncDesTotalDF = function(v1, tree, mAnc=3, mDes=3){
     # This is stored separately in case this will be extended to be used for Shiny reactive programming.
     genDF = temp2
     
-    temp = merge(data.frame(variety=v1,NewName=vals$gen.vars), plyr::ddply(genDF, .(label), summarize, gen=mean(gen*c(-1,1)[(type=="descendant")+1])), by.x=2, by.y=1) #varieties
+    temp = merge(data.frame(variety=v1,NewName=vals$gen.vars), plyr::ddply(genDF, .(label), summarize, gen=mean(gen*c(-1,1)[(type=="descendant")+1])), by.x=2, by.y=1)
     vals$match = temp[order(temp$gen, temp$variety),]
   } else {
     genDF = data.frame()
     vals$match = data.frame()
-    vals$gen.vars = v1 #$varieties
+    vals$gen.vars = v1
   }
   removeAnc = length(which(genDF$gen > mAnc & genDF$type == "ancestor"))
   removeDes = length(which(genDF$gen > mDes & genDF$type == "descendant"))
@@ -826,8 +825,8 @@ nodeToDF = function(tlist, branch=0, par.id = NA,id.offset=1){
 #' @export
 #' @examples
 #' data(sbTree)
-#' ADdf <- buildAncDesTotalDF("Essex", sbTree)
-#' plotAncDes(ADdf)
+#' adDF = buildAncDesTotalDF("Essex", sbTree)
+#' plotAncDes(adDF)
 plotAncDes = function(gDF){
   # Plot the data frame, if it exists
   if(nrow(gDF)>0){
