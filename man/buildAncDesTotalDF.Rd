@@ -28,10 +28,10 @@ v1="Essex"
 buildAncDesTotalDF(v1, sbTree)
 }
 \seealso{
-\code{\link{getAncestors}} for information on determining
+\code{\link{buildAncList}} for information on determining
 ancestors
 
-\code{\link{getDescendants}} for information on determining
+\code{\link{buildDesList}} for information on determining
 descendants
 }
 

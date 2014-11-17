@@ -5,8 +5,8 @@
 #' and yend values describe the edges of the label.
 #' 
 #' @param df data frame of the ancestors and descendants of a variety (from function buildAncDesTotalDF)
-#' @seealso \code{\link{getAncestors}} for information on determining ancestors
-#' @seealso \code{\link{getDescendants}} for information on determining descendants
+#' @seealso \code{\link{buildAncList}} for information on determining ancestors
+#' @seealso \code{\link{buildDesList}} for information on determining descendants
 buildAncDesCoordDF = function(df){
   # This gets rid of redundancy and creates a "center"
   if(nrow(subset(df, root.gen==0 & gen==0))>1){
@@ -106,7 +106,7 @@ buildAncDesCoordDF = function(df){
     }
   }
   
-  df$size = (1-(nrow(df))/412)*4+2 # error to hardcode 412
+  df$size = 1
   return(df)
 }
 
@@ -119,8 +119,8 @@ buildAncDesCoordDF = function(df){
 #' @param mAnc maximum number of ancestors of v1 to be shown
 #' @param mDes maximum number of descendants of v1 to be shown
 #' @param tree the tree
-#' @seealso \code{\link{getAncestors}} for information on determining ancestors
-#' @seealso \code{\link{getDescendants}} for information on determining descendants
+#' @seealso \code{\link{buildAncList}} for information on determining ancestors
+#' @seealso \code{\link{buildDesList}} for information on determining descendants
 #' @export
 #' @examples
 #' data(sbTree)
@@ -138,7 +138,7 @@ buildAncDesTotalDF = function(v1, tree, mAnc=3, mDes=3){
     temp2 = plyr::ldply(vals$gen.vars, function(i){
       if(i %in% tree$child | i %in% tree$parent){
         # This appends the plot coordinates of the data frame constructed for all ancesteors and descendents of the variety
-        temp = cbind(variety=i, buildAncDesCoordDF(rbind(nodeToDF(getAncestors(i, tree)), nodeToDF(getDescendants(i, tree)))))
+        temp = cbind(variety=i, buildAncDesCoordDF(rbind(nodeToDF(buildAncList(i, tree)), nodeToDF(buildDesList(i, tree)))))
         # This create an empty data frame in the event that there are no ancestors nor descendents
         temp$label2 = temp$label
       } 
@@ -179,6 +179,72 @@ buildAncDesTotalDF = function(v1, tree, mAnc=3, mDes=3){
     genDF = genDF[-which(genDF$gen > mDes & genDF$type == "descendant"),] 
   }  
   genDF
+}
+
+#' Returns the ancestors of a particular variety (if they exist)
+#' 
+#' This function returns a nested list of the ancestors of the inputted variety.
+#' 
+#' @param v1 the first variety
+#' @param tree the tree
+#' @param gen the generation (Note: This should be left as default, as any other input will not affect results anyway)
+#' @seealso \code{\link{getParent}} for information on determining parents
+#' @export
+#' @examples
+#' data(sbTree)
+#' getParent("Essex", sbTree)
+#' buildAncList("Essex", sbTree)
+buildAncList = function(v1, tree, gen = 0){
+  if(is.na(v1)) return()
+  
+  temp = getParent(v1, tree)
+  if(length(temp)==0) return()
+  
+  res = lapply(temp[!is.na(temp)], function(i){
+    # print(i)
+    temp2 = buildAncList(i, tree, gen=gen+1)
+    if(length(temp2)<1) return(list(label=i, root=v1, root.gen=gen, gen=gen+1, type="ancestor"))
+    return(c(label=i, root=v1, root.gen=gen, gen=gen+1, type="ancestor", temp2))
+  })
+  
+  if(gen==0){
+    return(c(label=v1, root=v1, root.gen=gen, gen=gen, type="ancestor", res))
+  } else{
+    return(res)
+  } 
+}
+
+#' Returns the descendants of a particular variety (if they exist)
+#' 
+#' This function returns a nested list of the descendants of the inputted variety.
+#' 
+#' @param v1 the first variety
+#' @param tree the tree
+#' @param gen the generation (Note: This should be left as default, as any other input will not affect results anyway)
+#' @seealso \code{\link{getChild}} for information on determining parents
+#' @export
+#' @examples
+#' data(sbTree)
+#' getParent("Essex", sbTree)
+#' buildDesList("Essex", sbTree, 3)
+buildDesList = function(v1, tree, gen=0){
+  if(is.na(v1)) return()
+  
+  temp = getChild(v1, tree)
+  if(length(temp)==0) return()
+  
+  res = lapply(temp[!is.na(temp)], function(i){
+    # print(i)
+    temp2 = buildDesList(i, tree, gen=gen+1)
+    if(length(temp2)<1) return(list(label=i, root=v1, root.gen=gen, gen=gen+1, type="descendant"))
+    return(c(label=i, root=v1, root.gen=gen, gen=gen+1, type="descendant", temp2))
+  })
+  
+  if(gen==0){
+    return(c(label=v1, root=v1, root.gen=gen, gen=gen, type="descendant", res))
+  } else{
+    return(res)
+  } 
 }
 
 #' Build the edges in the  total tree graph
@@ -437,36 +503,23 @@ buildSpreadTotalDF = function(ig, binVector=1:12){
   spreadTotalDF
 }
 
-#' Returns the ancestors of a particular variety (if they exist)
+#' Returns a list of the ancestors of a particular variety (if they exist)
 #' 
-#' This function returns a nested list of the ancestors of the inputted variety.
+#' This function returns a list of the ancestors of the inputted variety within and including a given number of generations
 #' 
-#' @param v1 the first variety
-#' @param gen generation
-#' @seealso \code{\link{getParent}} for information on determining parents
+#' @param v1 the variety
+#' @param tree the tree
+#' @param gen the number of generations back to include as ancestors
 #' @export
 #' @examples
 #' data(sbTree)
 #' getParent("Essex", sbTree)
-#' getAncestors("Essex", sbTree, 3)
-getAncestors = function(v1, tree, gen=0){
-  if(is.na(v1)) return()
-  
-  temp = getParent(v1, tree)
-  if(length(temp)==0) return()
-  
-  res = lapply(temp[!is.na(temp)], function(i){
-    # print(i)
-    temp2 = getAncestors(i, tree, gen=gen+1)
-    if(length(temp2)<1) return(list(label=i, root=v1, root.gen=gen, gen=gen+1, type="ancestor"))
-    return(c(label=i, root=v1, root.gen=gen, gen=gen+1, type="ancestor", temp2))
-  })
-  
-  if(gen==0){
-    return(c(label=v1, root=v1, root.gen=gen, gen=gen, type="ancestor", res))
-  } else{
-    return(res)
-  } 
+#' getAncestors("Essex", sbTree, 1)
+#' getAncestors("Essex", sbTree, 5)
+getAncestors = function(v1, tree, gen=3){
+  aDF = buildAncDesCoordDF(nodeToDF(buildAncList(v1, tree)))
+  aGenDF = as.character(aDF[aDF$gen <= gen & aDF$gen != 0,]$label)
+  return(sort(unique(aGenDF)))  
 }
 
 #' Determine basic statistics of the graph object
@@ -511,6 +564,24 @@ getBasicStatistics = function(ig){
   retStats
 }
 
+#' Returns a list of the descendants of a particular variety (if they exist)
+#' 
+#' This function returns a list of the descendants of the inputted variety within and including a given number of generations
+#' 
+#' @param v1 the variety
+#' @param tree the tree
+#' @param gen the number of generations back to include as descendants
+#' @export
+#' @examples
+#' data(sbTree)
+#' getChild("Essex",sbTree)
+#' getDescendants("Essex", sbTree, 1)
+#' getDescendants("Essex", sbTree, 3)
+getDescendants = function(v1, tree, gen=3){
+  dDF = buildAncDesCoordDF(nodeToDF(buildDesList(v1, tree)))
+  dGenDF = as.character(dDF[dDF$gen <= gen & dDF$gen != 0,]$label)
+  return(sort(unique(dGenDF)))
+}
 
 #' Returns edges (vertex names and edge weights) for a tree
 #'
@@ -538,7 +609,7 @@ getEdges = function(ig){
 #' getChild("Essex", sbTree)
 #' @export
 getChild = function(v1, tree){
-  subset(tree, parent==v1)$child
+  sort(subset(tree, parent==v1)$child)
 }
 
 #' Determine the degree between two varieties
@@ -564,38 +635,6 @@ getDegree = function(v1, v2, ig, tree){
   path <- getPath(v1=v1, v2=v2, ig=ig, tree = tree, isDirected=F)
   # The degree between two vertices is equal to one less than the number of nodes in the shortest path
   return(length(path$pathVertices)-1)
-}
-
-#' Returns the descendants of a particular variety (if they exist)
-#' 
-#' This function returns a nested list of the descendants of the inputted variety.
-#' 
-#' @param v1 the first variety
-#' @param gen generation the first variety
-#' @seealso \code{\link{getChild}} for information on determining parents
-#' @export
-#' @examples
-#' data(sbTree)
-#' getParent("Essex", sbTree)
-#' getDescendants("Essex", sbTree, 3)
-getDescendants = function(v1, tree, gen=0){
-  if(is.na(v1)) return()
-  
-  temp = getChild(v1, tree)
-  if(length(temp)==0) return()
-  
-  res = lapply(temp[!is.na(temp)], function(i){
-    # print(i)
-    temp2 = getDescendants(i, tree, gen=gen+1)
-    if(length(temp2)<1) return(list(label=i, root=v1, root.gen=gen, gen=gen+1, type="descendant"))
-    return(c(label=i, root=v1, root.gen=gen, gen=gen+1, type="descendant", temp2))
-  })
-  
-  if(gen==0){
-    return(c(label=v1, root=v1, root.gen=gen, gen=gen, type="descendant", res))
-  } else{
-    return(res)
-  } 
 }
 
 #' Returns the nodes for a tree
@@ -627,7 +666,7 @@ getNodes = function(tree){
 #' getParent("Essex", sbTree)
 #' @export
 getParent = function(v1, tree){
-  subset(tree, child==v1)$parent
+  sort(subset(tree, child==v1)$parent)
 }
 
 #' Determine the path between two varieties
@@ -814,16 +853,15 @@ nodeToDF = function(tlist, branch=0, par.id = NA,id.offset=1){
 
 #' Returns the image object to show the ancestors and descendants of a variety
 #' 
-#' Returns the image object to show the ancestors (to the left) and descendants (to the right) of a
-#' variety, with the variety highlighted in orange
+#' Returns the image object to show the ancestors (to the left) and descendants (to the right) of a variety, with the variety highlighted in orange
 #' 
 #' @param genDF data frame created from the buildAncDesTotalDF function
-#' @seealso \code{\link{getAncestors}} for information on determining ancestors
-#' @seealso \code{\link{getDescendants}} for information on determining descendants
+#' @seealso \code{\link{buildAncList}} for information on determining ancestors
+#' @seealso \code{\link{buildDesList}} for information on determining descendants
 #' @export
 #' @examples
 #' data(sbTree)
-#' adDF = buildAncDesTotalDF("Essex", sbTree)
+#' adDF = buildAncDesTotalDF("Essex", sbTree, 5, 3)
 #' plotAncDes(adDF)
 #' 
 #' data(sbTree)

@@ -16,7 +16,7 @@ variety highlighted in orange
 }
 \examples{
 data(sbTree)
-adDF = buildAncDesTotalDF("Essex", sbTree)
+adDF = buildAncDesTotalDF("Essex", sbTree, 6, 3)
 plotAncDes(adDF)
 
 data(sbTree)
@@ -24,10 +24,10 @@ adDF = buildAncDesTotalDF("Tokyo", sbTree)
 plotAncDes(adDF)
 }
 \seealso{
-\code{\link{getAncestors}} for information on determining
+\code{\link{buildAncList}} for information on determining
 ancestors
 
-\code{\link{getDescendants}} for information on determining
+\code{\link{buildDesList}} for information on determining
 descendants
 }
 
