@@ -24,9 +24,8 @@ descendants to display
 }
 \examples{
 data(sbTree)
-tree=sbTree
 v1="Essex"
-buildAncDesTotalDF("Essex", tree)
+buildAncDesTotalDF(v1, sbTree)
 }
 \seealso{
 \code{\link{getAncestors}} for information on determining

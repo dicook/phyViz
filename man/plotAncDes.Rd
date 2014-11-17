@@ -16,8 +16,12 @@ variety highlighted in orange
 }
 \examples{
 data(sbTree)
-ADdf <- buildAncDesTotalDF("Essex", sbTree)
-plotAncDes(ADdf)
+adDF = buildAncDesTotalDF("Essex", sbTree)
+plotAncDes(adDF)
+
+data(sbTree)
+adDF = buildAncDesTotalDF("Tokyo", sbTree)
+plotAncDes(adDF)
 }
 \seealso{
 \code{\link{getAncestors}} for information on determining
