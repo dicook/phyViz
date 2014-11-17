@@ -39,10 +39,10 @@ buildAncDesCoordDF = function(df){
   df$branchx = 0
   df$branchy = 0
   
-  # sort data frame
+  # Sort data frame
   df = df[rev(order(df$type, df$root.gen, df$gen, df$par.id, df$branch)),]
-  # set y coordinates
-  #( Ex. -5 -4 -3  3 -2  2 -1  1  0 ) // start furthest away from center
+  # set y coordinates to start furthest away from center
+  #( Ex. -5 -4 -3  3 -2  2 -1  1  0 )
   for(i in unique(df$genside)[rev(order(abs(unique(df$genside))))]){
     kids = subset(df, df$genside==i)
     for(j in unique(kids$par.id)){
