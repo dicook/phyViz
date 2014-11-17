@@ -55,7 +55,7 @@ buildAncDesCoordDF = function(df){
   df$yend = df$y
   
   # Maximum character length of each generation
-  widths = plyr::ddply(df, .(genside), summarize, len=max(nchar(as.character(label))))
+  widths = plyr::ddply(df, "genside", plyr::summarise, len=max(nchar(as.character(label))))
   # Create a padding for label length
   widths$len = widths$len*(1+yfac/(1+yfac))
   gap = mean(widths$len)/2
@@ -86,7 +86,6 @@ buildAncDesCoordDF = function(df){
     } else if(i>1){
       for(k in j){
         par = df[which(df$id==df$par.id[k]),]
-        # Only the center node has no "parents" 
         df$branchx[k] = par$xstart
         df$branchy[k] = par$ystart
         df$xend[k] = df$branchx[k]+gap*sign(i)
@@ -96,7 +95,7 @@ buildAncDesCoordDF = function(df){
       # The negative side of tree
     } else {
       for(k in j){
-        par = df[which(df$id==df$par.id[k]),] # find parent
+        par = df[which(df$id==df$par.id[k]),]
         # Only the center node has no "parents" 
         df$branchx[k] = par$xstart
         df$branchy[k] = par$ystart
@@ -126,7 +125,7 @@ buildAncDesCoordDF = function(df){
 #' @examples
 #' data(sbTree)
 #' v1="Essex"
-#' buildAncDesTotalDF("Essex", tree)
+#' buildAncDesTotalDF(v1, sbTree)
 buildAncDesTotalDF = function(v1, tree, mAnc=3, mDes=3){
   vals = list()
   # Set data frame that we will plot
@@ -138,7 +137,7 @@ buildAncDesTotalDF = function(v1, tree, mAnc=3, mDes=3){
     # plot coordinates of all its parents and children.
     temp2 = plyr::ldply(vals$gen.vars, function(i){
       if(i %in% tree$child | i %in% tree$parent){
-        # This appends the plot coordinates of the data frame constructed for all ancesteros and descendents of the variety
+        # This appends the plot coordinates of the data frame constructed for all ancesteors and descendents of the variety
         temp = cbind(variety=i, buildAncDesCoordDF(rbind(nodeToDF(getAncestors(i, tree)), nodeToDF(getDescendants(i, tree)))))
         # This create an empty data frame in the event that there are no ancestors nor descendents
         temp$label2 = temp$label
@@ -165,12 +164,11 @@ buildAncDesTotalDF = function(v1, tree, mAnc=3, mDes=3){
     # This is stored separately in case this will be extended to be used for Shiny reactive programming.
     genDF = temp2
     
-    temp = merge(data.frame(variety=v1,NewName=vals$gen.vars), plyr::ddply(genDF, .(label), summarize, gen=mean(gen*c(-1,1)[(type=="descendant")+1])), by.x=2, by.y=1)
+    temp = merge(data.frame(variety=v1,NewName=vals$gen.vars), plyr::ddply(genDF, "label", plyr::summarise, gen=mean(gen*c(-1,1)[(type=="descendant")+1])), by.x=2, by.y=1)
     vals$match = temp[order(temp$gen, temp$variety),]
   } else {
     genDF = data.frame()
     vals$match = data.frame()
-    vals$gen.vars = v1
   }
   removeAnc = length(which(genDF$gen > mAnc & genDF$type == "ancestor"))
   removeDes = length(which(genDF$gen > mDes & genDF$type == "descendant"))
@@ -794,7 +792,7 @@ nodeToDF = function(tlist, branch=0, par.id = NA,id.offset=1){
       return(cbind(as.data.frame(tlist), branch=branch, par.id=par.id, id=sample(0:99, 1)*10+id.offset/10))
     }
     id.offset <= id.offset+1
-    return(cbind(as.data.frame(tlist), branch=branch, par.id=par.id, id=sign(temp$gen)*sample((abs(temp$gen)*100):((abs(temp$gen)+1)*100-1), 1)*10+id.offset/10))
+    return(cbind(as.data.frame(tlist), branch=branch, par.id=par.id, id=sign(temp$gen)*sample((abs(temp$gen)*100):((abs(temp$gen)+1)*1000000 -1), 1)*10+id.offset/10))
   } else {
     # Grabs everything that does not have children.
     temp = as.data.frame(tlist[-listidx])
@@ -807,7 +805,7 @@ nodeToDF = function(tlist, branch=0, par.id = NA,id.offset=1){
     } else branchidx = c(-.5, .5)[temp$gen%%2+1]
     id.offset <= id.offset+1
     # Creates a unique id
-    id = sign(temp$gen)*sample((abs(temp$gen)*100):((abs(temp$gen)+1)*100-1), 1)*10+id.offset/10
+    id = sign(temp$gen)*sample((abs(temp$gen)*100):((abs(temp$gen)+1)*1000000 -1), 1)*10+id.offset/10 #changed to 100000
     return(plyr::rbind.fill(cbind(temp, branch=branch, id=id, par.id=par.id),
                             plyr::ldply(1:length(listidx), function(i)
                         nodeToDF(tlist[[listidx[i]]], branch=branchidx[i], par.id=id))))
@@ -827,12 +825,17 @@ nodeToDF = function(tlist, branch=0, par.id = NA,id.offset=1){
 #' data(sbTree)
 #' adDF = buildAncDesTotalDF("Essex", sbTree)
 #' plotAncDes(adDF)
+#' 
+#' data(sbTree)
+#' adDF = buildAncDesTotalDF("Tokyo", sbTree)
+#' plotAncDes(adDF)
 plotAncDes = function(gDF){
   # Plot the data frame, if it exists
   if(nrow(gDF)>0){
     plotGenImage = ggplot2::qplot(data=gDF, x=x, y=y, label=label2, geom="text", vjust=-.25, hjust=.5, 
                          size=size, colour=color) +
       ggplot2::geom_segment(ggplot2::aes(x=xstart, y=ystart, xend=xend, yend=yend),inherit.aes=F) + 
+      # Draw the underline of the variety
       ggplot2::geom_segment(ggplot2::aes(x=xend, y=yend, xend=branchx, yend=branchy),inherit.aes=F) +
       ggplot2::facet_wrap(~variety, scales="free", ncol=2) +
       ggplot2::scale_size_continuous(range=c(3,3),guide="none") +
