@@ -871,7 +871,7 @@ plotAncDes = function(gDF){
   # Plot the data frame, if it exists
   if(nrow(gDF)>0){
     plotGenImage = ggplot2::qplot(data=gDF, x=x, y=y, label=label2, geom="text", vjust=-.25, hjust=.5, 
-                         size=size, colour=color) +
+size=size, colour=color) +
       ggplot2::geom_segment(ggplot2::aes(x=xstart, y=ystart, xend=xend, yend=yend),inherit.aes=F) + 
       # Draw the underline of the variety
       ggplot2::geom_segment(ggplot2::aes(x=xend, y=yend, xend=branchx, yend=branchy),inherit.aes=F) +
@@ -919,11 +919,11 @@ plotDegMatrix = function(varieties,ig,tree){
   
   tdm <- reshape2::melt(matVar)
   
-  heatMap = ggplot2::ggplot(tdm, ggplot2::aes(x = Var1, y = Var2, fill = value)) +
+  heatMap = ggplot2::ggplot(tdm, ggplot2::aes(x = Var1, y = rev(Var2), fill = value)) +
     ggplot2::labs(x = "Variety", y = "Variety", fill = "Degree") +
     ggplot2::geom_raster() +
     ggplot2::scale_x_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
-    ggplot2::scale_y_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
+    ggplot2::scale_y_continuous(breaks=seq(1, length(varieties), 1), labels=rev(varieties)) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1)) + ggplot2::coord_equal()
   heatMap
 }
@@ -1074,11 +1074,11 @@ plotYearMatrix = function(varieties, tree){
   
   tdm <- reshape2::melt(matVar)
   
-  heatMap = ggplot2::ggplot(tdm, ggplot2::aes(x = Var1, y = Var2, fill = value)) +
+  heatMap = ggplot2::ggplot(tdm, ggplot2::aes(x = Var1, y = rev(Var2), fill = value)) +
     ggplot2::labs(x = "Variety", y = "Variety", fill = "Difference in Years") +
     ggplot2::geom_raster() +
     ggplot2::scale_x_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
-    ggplot2::scale_y_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
+    ggplot2::scale_y_continuous(breaks=seq(1, length(varieties), 1), labels=rev(varieties)) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1)) + ggplot2::coord_equal()
   heatMap
 }

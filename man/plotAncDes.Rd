@@ -16,7 +16,7 @@ variety highlighted in orange
 }
 \examples{
 data(sbTree)
-adDF = buildAncDesTotalDF("Essex", sbTree, 6, 3)
+adDF = buildAncDesTotalDF("Essex", sbTree, 5, 3)
 plotAncDes(adDF)
 
 data(sbTree)
