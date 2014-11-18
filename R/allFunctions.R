@@ -860,20 +860,20 @@ nodeToDF = function(tlist, branch=0, par.id = NA,id.offset=1){
 #' 
 #' Returns the image object to show the ancestors (to the left) and descendants (to the right) of a variety, with the variety highlighted in orange
 #' 
-#' @param genDF data frame created from the buildAncDesTotalDF function
-#' @seealso \code{\link{buildAncList}} for information on determining ancestors
-#' @seealso \code{\link{buildDesList}} for information on determining descendants
+#' @param v1 variety of interest
+#' @param mAnc maximum number of ancestors of v1 to be shown
+#' @param mDes maximum number of descendants of v1 to be shown
+#' @param tree the tree
 #' @export
 #' @examples
 #' data(sbTree)
-#' adDF = buildAncDesTotalDF("Essex", sbTree, 5, 3)
-#' plotAncDes(adDF)
+#' plotAncDes("Essex", sbTree, 5, 3)
 #' 
 #' data(sbTree)
-#' adDF = buildAncDesTotalDF("Tokyo", sbTree)
-#' plotAncDes(adDF)
-plotAncDes = function(gDF){
+#' plotAncDes("Tokyo", sbTree)
+plotAncDes = function(v1, tree, mAnc=3, mDes=3){
   # Plot the data frame, if it exists
+  gDF = buildAncDesTotalDF(v1, tree, mAnc, mDes)
   if(nrow(gDF)>0){
     plotGenImage = ggplot2::qplot(data=gDF, x=x, y=y, label=label2, geom="text", vjust=-.25, hjust=.5, 
 size=size, colour=color) +

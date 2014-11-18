@@ -126,27 +126,27 @@ getChild("Ogden", sbTree)</code></pre>
 #| 22 Roanoke x (Ogden x CNS)   2
 #| 25                     Lee   2
 #| 24                S55-7075   2
-#| 21                   Ogden   3
-#| 20                  Ralsoy   3
-#| 15             Ogden x CNS   3
-#| 17                     CNS   3
-#| 14                 Roanoke   3
-#| 16                   S 100   3
-#| 19                N48-1248   3
-#| 18                   Perry   3
-#| 8                    Ogden   4
+#| 15                   Ogden   3
+#| 14                  Ralsoy   3
+#| 21             Ogden x CNS   3
+#| 19                     CNS   3
+#| 20                 Roanoke   3
+#| 18                   S 100   3
+#| 17                N48-1248   3
+#| 16                   Perry   3
+#| 9                    Ogden   4
 #| 7                 PI 54610   4
 #| 6                    Tokyo   4
-#| 9                      CNS   4
-#| 10                 Clemson   4
-#| 11                 Roanoke   4
-#| 13                  Illini   4
-#| 12 N45-745 x (Ogden x CNS)   4
-#| 2                 PI 54610   5
-#| 1                    Tokyo   5
-#| 4              Ogden x CNS   5
-#| 5                  Clemson   5
-#| 3                     A.K.   5
+#| 10                     CNS   4
+#| 8                  Clemson   4
+#| 12                 Roanoke   4
+#| 11                  Illini   4
+#| 13 N45-745 x (Ogden x CNS)   4
+#| 5                 PI 54610   5
+#| 4                    Tokyo   5
+#| 1              Ogden x CNS   5
+#| 3                  Clemson   5
+#| 2                     A.K.   5
 </code></pre></div><p>Similarly, if we only look at the first generation of descendants of the Ogden variety, we should see the aforementioned output as the <strong>getChild</strong> function of the Ogden variety:</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
 <pre style=""><code class="source r">getDescendants("Ogden", sbTree, 1)</code></pre>
 <button class="output R toggle btn btn-xs btn-success"><span class="glyphicon glyphicon-chevron-down"></span> R output</button>
@@ -163,108 +163,38 @@ getChild("Ogden", sbTree)</code></pre>
 #| 3        N48-1101   1
 #| 2     Ogden x CNS   1
 #| 1  Ralsoy x Ogden   1
-</code></pre></div><p>However, we can view the first 9 generations of descendants of the Ogden variety:</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
-<pre style=""><code class="source r">getDescendants("Ogden", sbTree, 9)</code></pre>
+</code></pre></div><p>However, we can view the first 2 generations of descendants of the Ogden variety:</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
+<pre style=""><code class="source r">getDescendants("Ogden", sbTree, 2)</code></pre>
 <button class="output R toggle btn btn-xs btn-success"><span class="glyphicon glyphicon-chevron-down"></span> R output</button>
 <pre style=""><code class="output r">#|                      label gen
-#| 98                   C1069   1
-#| 97                   C1079   1
-#| 96                D51-2427   1
-#| 95                D55-4090   1
-#| 94                D55-4159   1
-#| 93                D55-4168   1
-#| 92                    Kent   1
-#| 91                  N44-92   1
-#| 90                 N45-745   1
-#| 89                N48-1101   1
-#| 88             Ogden x CNS   1
-#| 87          Ralsoy x Ogden   1
-#| 84                Columbus   2
-#| 83                  Cutler   2
-#| 82                  C1266R   2
-#| 85                  Semmes   2
-#| 74                D60-7965   2
-#| 75                D60-7965   2
-#| 81                D59-9289   2
-#| 77                  Beeson   2
-#| 76                 Calland   2
-#| 73                    Hood   2
-#| 72                N48-1867   2
-#| 71                 D52-810   2
-#| 80 N45-745 x (Ogden x CNS)   2
-#| 79                 R54-168   2
-#| 78 Roanoke x (Ogden x CNS)   2
-#| 86                   Davis   2
-#| 55                Crawford   3
-#| 70                   Bonus   3
-#| 68                 Century   3
-#| 69                   Wells   3
-#| 49                 R66-873   3
-#| 54        Bragg x D60-7965   3
-#| 59        Bragg x D60-7965   3
-#| 50                D65-6765   3
-#| 67                 Douglas   3
-#| 66                Lawrence   3
-#| 65                 Oakland   3
-#| 64                   Pella   3
-#| 63                D59-5289   3
-#| 62                   Gasoy   3
-#| 61                    York   3
-#| 58                    Dare   3
-#| 60                N48-1248   3
-#| 51                   Young   3
-#| 57                 R62-550   3
-#| 56                   Davis   3
-#| 53          Davis x Peking   3
-#| 52                 Kershaw   3
-#| 41                 Century   4
-#| 43                   Narow   4
-#| 34                 Braxton   4
-#| 42                 Braxton   4
-#| 47                    Cook   4
-#| 32                N70-1549   4
-#| 38                N70-1549   4
-#| 44                    Zane   4
-#| 30                     Bay   4
-#| 40                     Bay   4
-#| 39                V68-1034   4
-#| 33                S55-7075   4
-#| 35                   Young   4
-#| 48                    Brim   4
-#| 46                  Dillon   4
-#| 45                  Hagood   4
-#| 37          Davis x Peking   4
-#| 31             S62-6-16-12   4
-#| 36                 Kershaw   4
-#| 20                    Cook   5
-#| 24                    Cook   5
-#| 27                    Cook   5
-#| 19                 N77-179   5
-#| 21                 N77-179   5
-#| 29               Hutcheson   5
-#| 28                   Essex   5
-#| 25                    Brim   5
-#| 23                  Dillon   5
-#| 22                  Hagood   5
-#| 26             S62-6-16-12   5
-#| 17                Holladay   6
-#| 18                Holladay   6
-#| 14               Hutcheson   6
-#| 16                   5601T   6
-#| 15        Essex x L69-4143   6
-#| 13                Pershing   6
-#| 12                  T80-69   6
-#| 11                  TN5-85   6
-#| 10                   Young   6
-#| 8                     Cook   7
-#| 4                    5601T   7
-#| 3             Pioneer 9381   7
-#| 5                  TN89-39   7
-#| 9                     Brim   7
-#| 7                   Dillon   7
-#| 6                   Hagood   7
-#| 1                    5601T   8
-#| 2                  IA 3023   8
+#| 28                   C1069   1
+#| 27                   C1079   1
+#| 26                D51-2427   1
+#| 25                D55-4090   1
+#| 24                D55-4159   1
+#| 23                D55-4168   1
+#| 22                    Kent   1
+#| 21                  N44-92   1
+#| 20                 N45-745   1
+#| 19                N48-1101   1
+#| 18             Ogden x CNS   1
+#| 17          Ralsoy x Ogden   1
+#| 12                Columbus   2
+#| 11                  Cutler   2
+#| 6                   C1266R   2
+#| 4                   Semmes   2
+#| 1                 D60-7965   2
+#| 7                 D60-7965   2
+#| 5                 D59-9289   2
+#| 3                   Beeson   2
+#| 2                  Calland   2
+#| 15                    Hood   2
+#| 14                N48-1867   2
+#| 13                 D52-810   2
+#| 10 N45-745 x (Ogden x CNS)   2
+#| 9                  R54-168   2
+#| 8  Roanoke x (Ogden x CNS)   2
+#| 16                   Davis   2
 </code></pre></div></div><div id="functions-for-pairs-of-vertices" class="section level1"><h1>Functions for Pairs of Vertices</h1><p>Say you have a pair of vertices, and you wish to determine the degree of separation of the shortest path between them, where edges represent parent-child relationships. You can accomplish that with the <strong>getDegree</strong> function.</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
 <pre style=""><code class="source r">getDegree("Tokyo", "Ogden", ig, sbTree)
 getDegree("Tokyo", "Holladay", ig, sbTree)</code></pre>
@@ -309,7 +239,9 @@ getDegree("Tokyo", "Holladay", ig, sbTree)</code></pre>
 <button class="output R toggle btn btn-xs btn-success"><span class="glyphicon glyphicon-chevron-down"></span> R output</button>
 <pre style=""><code class="output r">#| [1] "5601T"         "Adams"         "A.K."          "A.K. (Harrow)"
 #| [5] "Altona"        "Amcor"
-</code></pre></div></div><div id="visualizing-the-tree" class="section level1"><h1>Visualizing the Tree</h1><div id="visualizing-the-path-between-two-vertices" class="section level2"><h2>Visualizing the Path between Two Vertices</h2><p>As this data set deals with soy bean lineages, it may be useful for agronomists to track how two varieties are related to each other via parent-child relationships. Then, any dramatic changes in protein yield, SNP varieties, and other measures of interest can be tracked across the genetic timeline, and pinpointed to certain varieties along the way.</p><p>The <strong>phyViz</strong> software can allow you to select two varieties of interest, and view the shortest pathway between them. You can produce a neat visual that informs you of all the varieties involved in the path between the two varieties of interest, as well as the years of all varieties involved in the path.</p><p>To produce and view this plot, two functions must be called in the order presented below (<strong>getPath</strong> and <strong>plotPath</strong>). We next introduce each of these two functions.</p><p>The <strong>getPath</strong> function determines the shortest path between the two inputted vertices, and takes into account whether or not the graph is directed. If there is a path, the list of vertices of the path (and their associated years) will be returned. For a directed graph, the direction matters. However, <strong>getPath</strong> will check both directions and return the path if it exists. The third parameter indicates the logical boolean of whether or not the graph is directed. Below, we look at all three possibilities (undirected and directed in reverse orders) between two varieties:</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
+</code></pre></div></div><div id="visualizing-the-tree" class="section level1"><h1>Visualizing the Tree</h1><div id="plotting-the-ancestors-and-descendants-of-a-vertex" class="section level2"><h2>Plotting the Ancestors and Descendants of a Vertex</h2><p>One visualization available in <strong>phyViz</strong> allows the user to view the ancestors and descendants of a given variety. The inputted variety is highlighted in the center of the plot, ancestors are displayed to the left of the center, and descendants are displayed to the right of the center. The further left or right from the center, the larger the number of generations that particular ancestor/descendant is from the inputted and centered variety.</p><p>As such, this plotting command does not provide visual information about specific years associated with each related variety (as is done in some of the visualization tools introduced later), but it does categorize all varieties from a given generation onto the same point of the x-axis. Here, we specify that we want to plot 5 ancestor generations and 3 descendant generations of the variety Essex:</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
+<pre style=""><code class="source r">plotAncDes("Essex", sbTree, 5, 3)</code></pre><div class="row"><div class="col-md-offset-3 col-md-6"><a href="#" class="thumbnail"><img src="phyViz_files/figure-html/unnamed-chunk-19-1.png" /> </a></div></div></div><p>We verify here, as we saw earlier, that the variety Tokyo has no ancestors, when we plot with the defaults of dispalying 3 generations of ancestors and 3 generations of descendants:</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
+<pre style=""><code class="source r">plotAncDes("Tokyo", sbTree)</code></pre><div class="row"><div class="col-md-offset-3 col-md-6"><a href="#" class="thumbnail"><img src="phyViz_files/figure-html/unnamed-chunk-20-1.png" /> </a></div></div></div></div><div id="plotting-the-path-between-two-vertices" class="section level2"><h2>Plotting the Path between Two Vertices</h2><p>As this data set deals with soy bean lineages, it may be useful for agronomists to track how two varieties are related to each other via parent-child relationships. Then, any dramatic changes in protein yield, SNP varieties, and other measures of interest can be tracked across the genetic timeline, and pinpointed to certain varieties along the way.</p><p>The <strong>phyViz</strong> software can allow you to select two varieties of interest, and view the shortest pathway between them. You can produce a neat visual that informs you of all the varieties involved in the path between the two varieties of interest, as well as the years of all varieties involved in the path.</p><p>To produce and view this plot, two functions must be called in the order presented below (<strong>getPath</strong> and <strong>plotPath</strong>). We next introduce each of these two functions.</p><p>The <strong>getPath</strong> function determines the shortest path between the two inputted vertices, and takes into account whether or not the graph is directed. If there is a path, the list of vertices of the path (and their associated years) will be returned. For a directed graph, the direction matters. However, <strong>getPath</strong> will check both directions and return the path if it exists. The third parameter indicates the logical boolean of whether or not the graph is directed. Below, we look at all three possibilities (undirected and directed in reverse orders) between two varieties:</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
 <pre style=""><code class="source r">getPath("Brim", "Bedford", ig, sbTree, isDirected = FALSE)</code></pre>
 <button class="output R toggle btn btn-xs btn-success"><span class="glyphicon glyphicon-chevron-down"></span> R output</button>
 <pre style=""><code class="output r">#| $pathVertices
@@ -318,7 +250,7 @@ getDegree("Tokyo", "Holladay", ig, sbTree)</code></pre>
 #| $yearVertices
 #| [1] "1977" "1968" "1962" "1975" "1975" "1973" "1978"
 </code></pre></div>To compute paths where direction matters, we must have a directed graph<div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
-<pre style=""><code class="source r">dirgraph <- treeToIG(sbTree, vertexinfo = nodes, isDirected = TRUE)
+<pre style=""><code class="source r">dirgraph = treeToIG(sbTree, vertexinfo = nodes, isDirected = TRUE)
 getPath("Brim", "Bedford", dirgraph, sbTree, isDirected = TRUE)</code></pre>
 <button class="message R toggle btn btn-xs btn-info"><span class="glyphicon glyphicon-chevron-down"></span> R message</button>
 <pre style=""><code class="message r">#| Warning: There is no path between those two vertices
@@ -333,13 +265,13 @@ getPath("Brim", "Bedford", dirgraph, sbTree, isDirected = TRUE)</code></pre>
 <button class="output R toggle btn btn-xs btn-success"><span class="glyphicon glyphicon-chevron-down"></span> R output</button>
 <pre style=""><code class="output r">#| list()
 </code></pre></div><p>We can derive from the empty list returned in the last two of the three commands that the varieties “Brim” and “Bedford” are not connected by a linear sequence of parent-child relationships. Rather, they are derived from a branch as some point, as siblings and/or cousins. Unless you are working with a dataset that must be analyzed as a directed graph, it is best to use the <strong>getPath</strong> function with the undirected specification (F) as the third parameter.</p><p>As such, we save the path between these two varieties to a variable called <strong>path</strong>:</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
-<pre style=""><code class="source r">path <- getPath("Brim", "Bedford", ig, sbTree, isDirected = F)</code></pre></div><p>Now that we have a <strong>path</strong> object that consists of two lists (the variety names and years), we can plot the relationship between the two using plotPath(path)</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
-<pre style=""><code class="source r">plotPathDF <- plotPath(path)</code></pre></div><p>Indeed, as predicted above, the image verifies that the two varieties “Brim” and “Bedford” are cousin-like relationships, and are not connected by a linear string of parent-child relationships. Also, as mentioned above, in this plot, the x-axis represents the years, meaning that the center of the text box for each variety represents its corresponding year.</p><p>If, for some reason, you are looking at <em>directed</em> phylogenetic trees, you will need to use the true logical condition for the third parameter of the function <strong>getPath</strong>. The example below will hopefully reassure you that if you use this condition on a pathway composed of linear parent-child relationships, then either ordering of the first two parameters will work:</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
-<pre style=""><code class="source r">dirgraph <- treeToIG(sbTree, vertexinfo = nodes, isDirected = TRUE)
+<pre style=""><code class="source r">path = getPath("Brim", "Bedford", ig, sbTree, isDirected = F)</code></pre></div><p>Now that we have a <strong>path</strong> object that consists of two lists (the variety names and years), we can plot the relationship between the two using plotPath(path)</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
+<pre style=""><code class="source r">plotPathDF = plotPath(path)</code></pre></div><p>Indeed, as predicted above, the image verifies that the two varieties “Brim” and “Bedford” are cousin-like relationships, and are not connected by a linear string of parent-child relationships. Also, as mentioned above, in this plot, the x-axis represents the years, meaning that the center of the text box for each variety represents its corresponding year.</p><p>If, for some reason, you are looking at <em>directed</em> phylogenetic trees, you will need to use the true logical condition for the third parameter of the function <strong>getPath</strong>. The example below will hopefully reassure you that if you use this condition on a pathway composed of linear parent-child relationships, then either ordering of the first two parameters will work:</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
+<pre style=""><code class="source r">dirgraph = treeToIG(sbTree, vertexinfo = nodes, isDirected = TRUE)
 
-path <- getPath("Narow", "Tokyo", dirgraph, sbTree, isDirected = TRUE)
+path = getPath("Narow", "Tokyo", dirgraph, sbTree, isDirected = TRUE)
 plotPathImage <- plotPath(path)
-plotPathImage</code></pre><div class="row"><div class="col-md-offset-3 col-md-6"><a href="#" class="thumbnail"><img src="phyViz_files/figure-html/unnamed-chunk-24-1.png" /> </a></div></div></div></div><div id="visualization-of-pathway-between-two-vertices-superimposed-on-tree" class="section level2"><h2>Visualization of Pathway between Two Vertices Superimposed on Tree</h2><p>If you are curious to see the above-demonstrated shortest pathway between two vertices of interest, only now superimposed over all the varieties and edges in the whole tree, <strong>phyViz</strong> has a function (<strong>plotPathOnTree</strong>) that can achieve just that.</p><!--
+plotPathImage</code></pre><div class="row"><div class="col-md-offset-3 col-md-6"><a href="#" class="thumbnail"><img src="phyViz_files/figure-html/unnamed-chunk-26-1.png" /> </a></div></div></div></div><div id="plotting-the-pathway-between-two-vertices-superimposed-on-tree" class="section level2"><h2>Plotting the Pathway between Two Vertices Superimposed on Tree</h2><p>If you are curious to see the above-demonstrated shortest pathway between two vertices of interest, only now superimposed over all the varieties and edges in the whole tree, <strong>phyViz</strong> has a function (<strong>plotPathOnTree</strong>) that can achieve just that.</p><!--
 The internal process is as follows: 
 First, the **buildSpreadTotalDF** function creates a dataframe where the varieties are shuffled such that their overlap is minimized, even though the x-axis position will represent years. (Note: **binVector** will be explained in more detail at the end of this section).
 
@@ -374,23 +306,23 @@ Now that we have generated the data frames needed to construct this type of visu
 
 --><p>The outputted image will correctly position the node labels with x-axis representing the node year, and y-axis representing the node path index. Light grey edges between two nodes represent parent-child relationships between those nodes. To enhance the visual understanding of how the path-of-interest fits into the entire graph structure, the nodes within the path are labelled in boldface, and connected with light-green boldfaced edges.</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
 <pre style=""><code class="source r">plotTotalImage <- plotPathOnTree(path = path, ig = ig)
-plotTotalImage</code></pre><div class="row"><div class="col-md-offset-3 col-md-6"><a href="#" class="thumbnail"><img src="phyViz_files/figure-html/unnamed-chunk-25-1.png" /> </a></div></div></div><p>Even though the edges of the large tree in this image are criss-crossing in all directions, that was not the focus, and hence the edges not belonging to the green path-of-interest are softly colored in a light gray. The highlight of this image was to keep all varieties in line with their appropriate year (corresponding to the x-axis), and to mitigate any overlap of the text of the varieties. Achieving this can be difficult, especially if your dataset has many varieties scrunched into a narrow set of years. That was the case with this dataset. As can be seen in the image above, most of the hundreds of varieties are associated with years between 1960 and 1975.</p><p>And this is where the explanation of the variable <strong>binVector</strong> (used as input parameters to the function <strong>spreadTotalDF</strong>) comes into play. As there is no uniform solution for this complicated problem, the <strong>phyViz</strong> package offers you the flexbility to changes these variables until you can optimize this image so that the text of the nodes of your tree overlap as little as possible. This can be done with a trial-and-error process by tweaking <strong>binVector</strong>’s order and length at the start.</p><p>Specifically, the length of <strong>binVector</strong> indicates how many bins of equal sizes should be allocated (where bins separate the vertices into groups of years). Theo order of <strong>binVector</strong> can be altered to avoid spatial collisions in labels.</p><p>The <strong>binVector</strong> will determine the order that increasing y index positions are repeatedly assigned to. For instance, if binVector = c(1,4,7,10,2,5,8,11,3,6,9,12), then y-axis position one will be assigned to a variety in the first bin of years, y-axis position two will be assigned to a variety in the fourth bin of years, …., and y-axis position thirteen will be assigned again to a variety in the first bin of years. This will be repreated until all varieties from all bins have been assigned in that order. This vector can help minimize overlap of the labelling of varieties, as varieites from the same bins (near each other on the x-axis for years) will not have consecutive y-axis values.</p><p>The two examples below will show the importance of selecting an appropriate number of bins and order of bins to minimize overlap:</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
+plotTotalImage</code></pre><div class="row"><div class="col-md-offset-3 col-md-6"><a href="#" class="thumbnail"><img src="phyViz_files/figure-html/unnamed-chunk-27-1.png" /> </a></div></div></div><p>Even though the edges of the large tree in this image are criss-crossing in all directions, that was not the focus, and hence the edges not belonging to the green path-of-interest are softly colored in a light gray. The highlight of this image was to keep all varieties in line with their appropriate year (corresponding to the x-axis), and to mitigate any overlap of the text of the varieties. Achieving this can be difficult, especially if your dataset has many varieties scrunched into a narrow set of years. That was the case with this dataset. As can be seen in the image above, most of the hundreds of varieties are associated with years between 1960 and 1975.</p><p>And this is where the explanation of the variable <strong>binVector</strong> (used as input parameters to the function <strong>spreadTotalDF</strong>) comes into play. As there is no uniform solution for this complicated problem, the <strong>phyViz</strong> package offers you the flexbility to changes these variables until you can optimize this image so that the text of the nodes of your tree overlap as little as possible. This can be done with a trial-and-error process by tweaking <strong>binVector</strong>’s order and length at the start.</p><p>Specifically, the length of <strong>binVector</strong> indicates how many bins of equal sizes should be allocated (where bins separate the vertices into groups of years). Theo order of <strong>binVector</strong> can be altered to avoid spatial collisions in labels.</p><p>The <strong>binVector</strong> will determine the order that increasing y index positions are repeatedly assigned to. For instance, if binVector = c(1,4,7,10,2,5,8,11,3,6,9,12), then y-axis position one will be assigned to a variety in the first bin of years, y-axis position two will be assigned to a variety in the fourth bin of years, …., and y-axis position thirteen will be assigned again to a variety in the first bin of years. This will be repreated until all varieties from all bins have been assigned in that order. This vector can help minimize overlap of the labelling of varieties, as varieites from the same bins (near each other on the x-axis for years) will not have consecutive y-axis values.</p><p>The two examples below will show the importance of selecting an appropriate number of bins and order of bins to minimize overlap:</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
 <pre style=""><code class="source r">plotTotalImage <- plotPathOnTree(path = path, ig = ig, binVector = 1:12)
-plotTotalImage</code></pre><div class="row"><div class="col-md-offset-3 col-md-6"><a href="#" class="thumbnail"><img src="phyViz_files/figure-html/unnamed-chunk-26-1.png" /> </a></div></div></div><p>In this case, even though the number of bins is as large as the clearer-labelled image above, the order of the bins is such that varieties of consecutive x-values (years) will also have consecutive y-values (indices), and hence will be likely to overlap for years with many varieties.</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
+plotTotalImage</code></pre><div class="row"><div class="col-md-offset-3 col-md-6"><a href="#" class="thumbnail"><img src="phyViz_files/figure-html/unnamed-chunk-28-1.png" /> </a></div></div></div><p>In this case, even though the number of bins is as large as the clearer-labelled image above, the order of the bins is such that varieties of consecutive x-values (years) will also have consecutive y-values (indices), and hence will be likely to overlap for years with many varieties.</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
 <pre style=""><code class="source r">plotTotalImage <- plotPathOnTree(path = path, ig = ig, binVector = 1:2)
-plotTotalImage</code></pre><div class="row"><div class="col-md-offset-3 col-md-6"><a href="#" class="thumbnail"><img src="phyViz_files/figure-html/unnamed-chunk-27-1.png" /> </a></div></div></div><p>In this example, we see that with such a small number of bins chosen, the y-axis position designation will be similar to its original random state, and there is again much overlap in text variety labels in the year ranges where varieties occur the most.</p></div><div id="generating-a-pairwise-distance-matrix-between-set-of-vertices" class="section level2"><h2>Generating a Pairwise Distance Matrix between Set of Vertices</h2><p>It may also be of interest to scientists studying phylogenetics to generate heat maps where the color of each index of the map indicates the distance or years between two vertices.</p><p>The package <strong>phyViz</strong> also provides functions for that purpose. Specifically, for a given set of vertices, a heat map of the distance (degree of the shortest path) between all pairs of vertices can be constructed with the <strong>plotDegMatrix</strong> function:</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
+plotTotalImage</code></pre><div class="row"><div class="col-md-offset-3 col-md-6"><a href="#" class="thumbnail"><img src="phyViz_files/figure-html/unnamed-chunk-29-1.png" /> </a></div></div></div><p>In this example, we see that with such a small number of bins chosen, the y-axis position designation will be similar to its original random state, and there is again much overlap in text variety labels in the year ranges where varieties occur the most.</p></div><div id="generating-a-pairwise-distance-matrix-between-set-of-vertices" class="section level2"><h2>Generating a Pairwise Distance Matrix between Set of Vertices</h2><p>It may also be of interest to scientists studying phylogenetics to generate heat maps where the color of each index of the map indicates the distance or years between two vertices.</p><p>The package <strong>phyViz</strong> also provides functions for that purpose. Specifically, for a given set of vertices, a heat map of the distance (degree of the shortest path) between all pairs of vertices can be constructed with the <strong>plotDegMatrix</strong> function:</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
 <pre style=""><code class="source r">varieties <- c("Beeson", "Brim", "Dillon", "Narow", "Zane", "Hood", "York", "Calland", 
     "Columbus", "Crawford", "Kershaw", "Kent", "Bragg", "Davis", "Tokyo", "Hagood", 
     "Young", "Essex", "Holladay", "Cook", "Century", "Pella", "Forrest", "Gasoy", 
     "Cutler")
 heatMapDegreeImage <- plotDegMatrix(varieties, ig, sbTree)
-heatMapDegreeImage</code></pre><div class="row"><div class="col-md-offset-3 col-md-6"><a href="#" class="thumbnail"><img src="phyViz_files/figure-html/unnamed-chunk-28-1.png" /> </a></div></div></div><p>In a similar function, <strong>plotYearMatrix</strong>, the difference in years between all pairwise combinations of vertices can be constructed and viewed:</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
+heatMapDegreeImage</code></pre><div class="row"><div class="col-md-offset-3 col-md-6"><a href="#" class="thumbnail"><img src="phyViz_files/figure-html/unnamed-chunk-30-1.png" /> </a></div></div></div><p>In a similar function, <strong>plotYearMatrix</strong>, the difference in years between all pairwise combinations of vertices can be constructed and viewed:</p><div class="row"><button class="source R toggle btn btn-xs btn-primary"><span class="glyphicon glyphicon-chevron-down"></span> R source</button>
 <pre style=""><code class="source r">varieties <- c("Beeson", "Brim", "Dillon", "Narow", "Zane", "Hood", "York", "Calland", 
     "Columbus", "Crawford", "Kershaw", "Kent", "Bragg", "Davis", "Tokyo", "Hagood", 
     "Young", "Essex", "Holladay", "Cook", "Century", "Pella", "Forrest", "Gasoy", 
     "Cutler")
 heatMapYearImage <- plotYearMatrix(varieties, sbTree)
-heatMapYearImage</code></pre><div class="row"><div class="col-md-offset-3 col-md-6"><a href="#" class="thumbnail"><img src="phyViz_files/figure-html/unnamed-chunk-29-1.png" /> </a></div></div></div><p>Running this function on this particular set of vertices shows that most combinations of varieties are only a few decades apart in years, with only very few sets of vertices showing difference in years on the order of five or six decades.</p></div></div><div id="conclusion" class="section level1"><h1>Conclusion</h1><p>The various options of the <strong>phyViz</strong> package can offer you different ways of visually interpreting your trees that each come with advantages and disadvantages. While some visualizations connect nodes to their years, other visualizations lax this idea, and instead connect nodes based on their generation surrounding a given node. And still other visualizations from <strong>phyViz</strong> will allow you to either focus on one pathway, or view that pathway superimposed across the entire tree for reference. Hopefully, the package will have something to offer to you in your data analysis.</p></div>
+heatMapYearImage</code></pre><div class="row"><div class="col-md-offset-3 col-md-6"><a href="#" class="thumbnail"><img src="phyViz_files/figure-html/unnamed-chunk-31-1.png" /> </a></div></div></div><p>Running this function on this particular set of vertices shows that most combinations of varieties are only a few decades apart in years, with only very few sets of vertices showing difference in years on the order of five or six decades.</p></div></div><div id="conclusion" class="section level1"><h1>Conclusion</h1><p>The various options of the <strong>phyViz</strong> package can offer you different ways of visually interpreting your trees that each come with advantages and disadvantages. While some visualizations connect nodes to their years, other visualizations lax this idea, and instead connect nodes based on their generation surrounding a given node. And still other visualizations from <strong>phyViz</strong> will allow you to either focus on one pathway, or view that pathway superimposed across the entire tree for reference. Hopefully, the package will have something to offer to you in your data analysis.</p></div>
 
           <p class="text-muted" id="credit">
             Styled with <a href="https://github.com/jimhester/knitrBootstrap">knitrBootstrap</a>

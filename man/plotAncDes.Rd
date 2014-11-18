@@ -3,11 +3,18 @@
 \alias{plotAncDes}
 \title{Returns the image object to show the ancestors and descendants of a variety}
 \usage{
-plotAncDes(gDF)
+plotAncDes(v1, tree, mAnc = 3, mDes = 3)
 }
 \arguments{
-  \item{genDF}{data frame created from the
-  buildAncDesTotalDF function}
+  \item{v1}{variety of interest}
+
+  \item{tree}{the tree}
+
+  \item{mAnc}{maximum number of ancestors of v1 to be
+  shown}
+
+  \item{mDes}{maximum number of descendants of v1 to be
+  shown}
 }
 \description{
 Returns the image object to show the ancestors (to the
@@ -16,18 +23,9 @@ variety highlighted in orange
 }
 \examples{
 data(sbTree)
-adDF = buildAncDesTotalDF("Essex", sbTree, 5, 3)
-plotAncDes(adDF)
+plotAncDes("Essex", sbTree, 5, 3)
 
 data(sbTree)
-adDF = buildAncDesTotalDF("Tokyo", sbTree)
-plotAncDes(adDF)
-}
-\seealso{
-\code{\link{buildAncList}} for information on determining
-ancestors
-
-\code{\link{buildDesList}} for information on determining
-descendants
+plotAncDes("Tokyo", sbTree)
 }
 

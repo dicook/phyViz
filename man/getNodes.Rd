@@ -14,7 +14,6 @@ unique nodes in a tree.
 }
 \examples{
 data(sbTree)
-ig = treeToIG(sbTree)
-getNodes(ig)
+getNodes(sbTree)
 }
 
