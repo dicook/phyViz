@@ -518,8 +518,11 @@ buildSpreadTotalDF = function(ig, binVector=1:12){
 #' getAncestors("Essex", sbTree, 5)
 getAncestors = function(v1, tree, gen=3){
   aDF = buildAncDesCoordDF(nodeToDF(buildAncList(v1, tree)))
-  aGenDF = as.character(aDF[aDF$gen <= gen & aDF$gen != 0,]$label)
-  return(sort(unique(aGenDF)))  
+  subDF = aDF[aDF$gen <= gen & aDF$gen != 0,]
+  keep = c("label","gen")
+  subDF = subDF[keep]
+  row.names(subDF) = NULL
+  return(subDF[order(subDF$gen,subDF$label),])  
 }
 
 #' Determine basic statistics of the graph object
@@ -579,8 +582,11 @@ getBasicStatistics = function(ig){
 #' getDescendants("Essex", sbTree, 3)
 getDescendants = function(v1, tree, gen=3){
   dDF = buildAncDesCoordDF(nodeToDF(buildDesList(v1, tree)))
-  dGenDF = as.character(dDF[dDF$gen <= gen & dDF$gen != 0,]$label)
-  return(sort(unique(dGenDF)))
+  subDF = dDF[dDF$gen <= gen & dDF$gen != 0,]
+  keep = c("label","gen")
+  subDF = subDF[keep]
+  row.names(subDF) = NULL
+  return(subDF[order(subDF$gen,subDF$label),]) 
 }
 
 #' Returns edges (vertex names and edge weights) for a tree

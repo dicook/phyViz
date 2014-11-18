@@ -124,6 +124,12 @@ getChild("Ogden",sbTree)
 
 We find that even though the "Tokyo" variety is a grandparent of the dataset, it only had two children. However, one of its children, "Ogden", produced twelve children.
 
+Now, we may want to know more than only one generation past and previous (parents and children) varieties belonging to a given variety. We could then use the **getAncestors** and **getDescendants** function, where we specify the number of generations we wish to view:
+
+```{r}
+getDescendants("Tokyo",sbTree,1)
+getDescendants("Tokyo",sbTree,9)
+```
 
 # Functions for Pairs of Vertices
 
