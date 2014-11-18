@@ -871,7 +871,7 @@ nodeToDF = function(tlist, branch=0, par.id = NA,id.offset=1){
 #' 
 #' data(sbTree)
 #' plotAncDes("Tokyo", sbTree)
-plotAncDes = function(v1, tree, mAnc=3, mDes=3){
+plotAncDes = function(v1, tree, mAnc=3, mDes=3, colour=color){
   # Plot the data frame, if it exists
   gDF = buildAncDesTotalDF(v1, tree, mAnc, mDes)
   if(nrow(gDF)>0){
@@ -907,14 +907,21 @@ size=size, colour=color) +
 #' @param varieties subset of varieties used to generate the heat map
 #' @param ig igraph
 #' @param tree tree
+#' @param xLab string label on the x axis (default is "Variety")
+#' @param yLab string label on the y axis (default is "Variety")
+#' @param legendLab string label on the legend (default is "Degree")
+#' 
 #' @seealso \url{http://www.r-project.org} for iGraph information
 #' @examples
 #' data(sbTree)
 #' ig = treeToIG(sbTree)
 #' varieties=c("Beeson", "Calland", "Dillon", "Hood", "Narow", "Pella", "Tokyo", "Young", "Zane")
-#' plotDegMatrix(varieties,ig,sbTree)
+#' plotDegMatrix(varieties,ig,sbTree,"Soybean name", "Soybean name", "Deg")
+#' 
+#' plotDegMatrix(varieties,ig, sbTree) + ggplot2::scale_fill_continuous(low="yellow", high="purple")
+#' 
 #' @export
-plotDegMatrix = function(varieties,ig,tree){
+plotDegMatrix = function(varieties,ig,tree,xLab="Variety",yLab="Variety",legendLab="Degree"){
   matVar = matrix(, nrow = length(varieties), ncol = length(varieties))
   for (i in 1:length(varieties)){
     for (j in 1:length(varieties)){
@@ -925,7 +932,7 @@ plotDegMatrix = function(varieties,ig,tree){
   tdm <- reshape2::melt(matVar)
   
   heatMap = ggplot2::ggplot(tdm, ggplot2::aes(x = Var1, y = rev(Var2), fill = value)) +
-    ggplot2::labs(x = "Variety", y = "Variety", fill = "Degree") +
+    ggplot2::labs(x = xLab, y = yLab, fill = legendLab) +
     ggplot2::geom_raster() +
     ggplot2::scale_x_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
     ggplot2::scale_y_continuous(breaks=seq(1, length(varieties), 1), labels=rev(varieties)) +
@@ -1064,12 +1071,18 @@ plotPathOnTree = function(path, ig, binVector=sample(1:12, 12)){
 #' 
 #' @param varieties subset of varieties used to generate the heat map
 #' @param tree tree
+#' @param xLab string label on the x axis (default is "Variety")
+#' @param yLab string label on the y axis (default is "Variety")
+#' @param legendLab string label on the legend (default is "Degree")
 #' @examples
 #' data(sbTree)
 #' varieties=c("Beeson", "Calland", "Dillon", "Hood", "Narow", "Pella", "Tokyo", "Young", "Zane")
 #' plotYearMatrix(varieties,sbTree)
+#' 
+#' plotYearMatrix(varieties,sbTree,"Soybean name", "Soybean name", "Year diff") + ggplot2::scale_fill_continuous(low="yellow", high="red")
+#' 
 #' @export
-plotYearMatrix = function(varieties, tree){
+plotYearMatrix = function(varieties, tree, xLab = "Variety", yLab = "Variety", legendLab = "Difference in years"){
   matVar = matrix(, nrow = length(varieties), ncol = length(varieties))
   for (i in 1:length(varieties)){
     for (j in 1:length(varieties)){
@@ -1080,10 +1093,11 @@ plotYearMatrix = function(varieties, tree){
   tdm <- reshape2::melt(matVar)
   
   heatMap = ggplot2::ggplot(tdm, ggplot2::aes(x = Var1, y = rev(Var2), fill = value)) +
-    ggplot2::labs(x = "Variety", y = "Variety", fill = "Difference in Years") +
+    ggplot2::labs(x = xLab, y = yLab, fill = legendLab) +
     ggplot2::geom_raster() +
     ggplot2::scale_x_continuous(breaks=seq(1, length(varieties), 1), labels=varieties) +
     ggplot2::scale_y_continuous(breaks=seq(1, length(varieties), 1), labels=rev(varieties)) +
+    ggplot2::theme_bw() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1)) + ggplot2::coord_equal()
   heatMap
 }

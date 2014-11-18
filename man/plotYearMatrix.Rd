@@ -3,7 +3,8 @@
 \alias{plotYearMatrix}
 \title{Returns the image object to show the heat map of years between the inputted set of vertices}
 \usage{
-plotYearMatrix(varieties, tree)
+plotYearMatrix(varieties, tree, xLab = "Variety", yLab = "Variety",
+  legendLab = "Difference in years")
 }
 \arguments{
   \item{varieties}{subset of varieties used to generate the
@@ -19,5 +20,7 @@ between the inputted set of vertices
 data(sbTree)
 varieties=c("Beeson", "Calland", "Dillon", "Hood", "Narow", "Pella", "Tokyo", "Young", "Zane")
 plotYearMatrix(varieties,sbTree)
+
+plotYearMatrix(varieties,sbTree) + ggplot2::scale_fill_continuous(low="yellow", high="red")
 }
 

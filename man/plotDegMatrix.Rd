@@ -3,7 +3,8 @@
 \alias{plotDegMatrix}
 \title{Returns the image object to show the heat map of degrees between the inputted set of vertices}
 \usage{
-plotDegMatrix(varieties, ig, tree)
+plotDegMatrix(varieties, ig, tree, xLab = "Variety", yLab = "Variety",
+  legendLab = "Degree")
 }
 \arguments{
   \item{varieties}{subset of varieties used to generate the
@@ -12,6 +13,15 @@ plotDegMatrix(varieties, ig, tree)
   \item{ig}{igraph}
 
   \item{tree}{tree}
+
+  \item{xLab}{string label on the x axis (default is
+  "Variety")}
+
+  \item{yLab}{string label on the y axis (default is
+  "Variety")}
+
+  \item{legendLab}{string label on the legend (default is
+  "Degree")}
 }
 \description{
 Returns the image object to show the heat map of degrees
@@ -21,7 +31,9 @@ between the inputted set of vertices
 data(sbTree)
 ig = treeToIG(sbTree)
 varieties=c("Beeson", "Calland", "Dillon", "Hood", "Narow", "Pella", "Tokyo", "Young", "Zane")
-plotDegMatrix(varieties,ig,sbTree)
+plotDegMatrix(varieties,ig,sbTree,"Soybean name", "Soybean name", "Deg")
+
+plotDegMatrix(varieties,ig, sbTree) + ggplot2::scale_fill_continuous(low="yellow", high="purple")
 }
 \seealso{
 \url{http://www.r-project.org} for iGraph information
