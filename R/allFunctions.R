@@ -650,8 +650,7 @@ getDegree = function(v1, v2, ig, tree){
 #' @param tree the tree object
 #' @examples
 #' data(sbTree)
-#' ig = treeToIG(sbTree)
-#' getNodes(ig)
+#' getNodes(sbTree)
 #' @export
 getNodes = function(tree){
   nodes = unique(c(tree$child, tree$parent))

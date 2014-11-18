@@ -124,11 +124,30 @@ getChild("Ogden",sbTree)
 
 We find that even though the "Tokyo" variety is a grandparent of the dataset, it only had two children. However, one of its children, "Ogden", produced twelve children.
 
-Now, we may want to know more than only one generation past and previous (parents and children) varieties belonging to a given variety. We could then use the **getAncestors** and **getDescendants** function, where we specify the number of generations we wish to view:
+If we want to know more than one generation past or previous, we can use the **getAncestors** and **getDescendants** function, where we specify the number of generations we wish to view. This will return a data frame to us with the labels of each ancestor or desendant, along with the number of generations each one is from the given variety.
+
+If we only look at the first generation of ancestors of the Young variety, we should see the aforementioned output as the **getParent** function of the Young variety:
 
 ```{r}
-getDescendants("Tokyo",sbTree,1)
-getDescendants("Tokyo",sbTree,9)
+getAncestors("Young",sbTree,1)
+```
+
+However, if we view the first 5 generations of ancestors of the Young variety, we can view ancestors past simply the parents:
+
+```{r}
+getAncestors("Young",sbTree,5)
+```
+
+Similarly, if we only look at the first generation of descendants of the Ogden variety, we should see the aforementioned output as the **getChild** function of the Ogden variety:
+
+```{r}
+getDescendants("Ogden",sbTree,1)
+```
+
+However, we can view the first 2 generations of descendants of the Ogden variety:
+
+```{r}
+getDescendants("Ogden",sbTree,2)
 ```
 
 # Functions for Pairs of Vertices
@@ -150,7 +169,19 @@ There are many parameters about the tree that you may wish to know that cannot e
 getBasicStatistics(ig)
 ```
 
-In this case, we learn that our tree is actually not all connected by parent-child edges, and that instead, it is composed of four separate components. We see that the average path length of the tree is `{r} getBasicStatistics(ig)$avePathLength`, that the graph diameter is `{r} getBasicStatistics(ig)graphDiameter`, and that the logN value is `{r} getBasicStatistics(ig)logN`. We also see that the number of nodes in the tree is `{r} getBasicStatistics(ig)$numNodes` that are connected by `{r} getBasicStatistics(ig)$numEdges` edges.
+In this case, we learn that our tree is actually not all connected by parent-child edges, and that instead, it is composed of 11 separate components. We see that the average path length of the tree is 5.333, that the graph diameter is 13, and that the logN value is 5.438. We also see that the number of nodes in the tree is 230 that are connected by 340 edges.
+
+But can we view a list of these nodes and edges? To do so, we can call the **getNodes** and **getEdges** commands to obtain non-repeated lists of the nodes and the edges in the tree. Here, we obtain a list of the 340 edges (with each row containing the names of the two connected vertices, and an edge weight, if existent). We then obtain a list of the 230 nodes. (In this example, we only view the first six items):
+
+```{r}
+head(getEdges(ig))
+```
+
+We can also obtain a list of the 230 nodes:
+
+```{r}
+head(getNodes(sbTree))
+```
 
 # Visualizing the Tree
 
