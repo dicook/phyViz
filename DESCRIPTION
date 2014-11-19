@@ -14,7 +14,8 @@ Imports:
     igraph,
     plyr,
     reshape2,
-    ggplot2
+    ggplot2,
+    stringr
 VignetteBuilder: knitr
 Suggests:
     knitr,

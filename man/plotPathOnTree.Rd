@@ -3,11 +3,13 @@
 \alias{plotPathOnTree}
 \title{Build the image object of the whole tree with the path superimposed onto it}
 \usage{
-plotPathOnTree(path, ig, binVector = sample(1:12, 12))
+plotPathOnTree(path, tree, ig, binVector = sample(1:12, 12))
 }
 \arguments{
   \item{path}{path as returned from getPath() or a vector
   of two variety names which exist in ig}
+
+  \item{tree}{the tree}
 
   \item{ig}{igraph representation of the tree}
 
@@ -31,7 +33,7 @@ data(sbTree)
 ig = treeToIG(sbTree)
 path = getPath("Brim","Bedford",ig,sbTree)
 binVector=sample(1:12, 12)
-plotTotalImage <- plotPathOnTree(path=path, ig=ig, binVector=sample(1:12, 12))
+plotTotalImage <- plotPathOnTree(path=path, tree=sbTree, ig=ig, binVector=sample(1:12, 12))
 plotTotalImage
 }
 \seealso{

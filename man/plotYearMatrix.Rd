@@ -11,6 +11,15 @@ plotYearMatrix(varieties, tree, xLab = "Variety", yLab = "Variety",
   heat map}
 
   \item{tree}{tree}
+
+  \item{xLab}{string label on the x axis (default is
+  "Variety")}
+
+  \item{yLab}{string label on the y axis (default is
+  "Variety")}
+
+  \item{legendLab}{string label on the legend (default is
+  "Degree")}
 }
 \description{
 Returns the image object to show the heat map of years
@@ -21,6 +30,6 @@ data(sbTree)
 varieties=c("Beeson", "Calland", "Dillon", "Hood", "Narow", "Pella", "Tokyo", "Young", "Zane")
 plotYearMatrix(varieties,sbTree)
 
-plotYearMatrix(varieties,sbTree) + ggplot2::scale_fill_continuous(low="yellow", high="red")
+plotYearMatrix(varieties,sbTree,"Soybean name", "Soybean name", "Year diff") + ggplot2::scale_fill_continuous(low="yellow", high="red")
 }
 

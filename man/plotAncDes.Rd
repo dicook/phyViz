@@ -3,7 +3,7 @@
 \alias{plotAncDes}
 \title{Returns the image object to show the ancestors and descendants of a variety}
 \usage{
-plotAncDes(v1, tree, mAnc = 3, mDes = 3, colour = color)
+plotAncDes(v1, tree, mAnc = 3, mDes = 3)
 }
 \arguments{
   \item{v1}{variety of interest}

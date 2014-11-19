@@ -3,9 +3,11 @@
 \alias{buildEdgeTotalDF}
 \title{Build the edges in the  total tree graph}
 \usage{
-buildEdgeTotalDF(ig, binVector = 1:12)
+buildEdgeTotalDF(tree, ig, binVector = 1:12)
 }
 \arguments{
+  \item{tree}{the tree}
+
   \item{ig}{igraph object from treeToIG}
 
   \item{binVector}{vector of numbers between 1 and

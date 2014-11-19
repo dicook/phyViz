@@ -292,7 +292,7 @@ Now that we have generated the data frames needed to construct this type of visu
 The outputted image will correctly position the node labels with x-axis representing the node year, and y-axis representing the node path index. Light grey edges between two nodes represent parent-child relationships between those nodes. To enhance the visual understanding of how the path-of-interest fits into the entire graph structure, the nodes within the path are labelled in boldface, and connected with light-green boldfaced edges.
 
 ```{r}
-plotTotalImage <- plotPathOnTree(path=path, ig=ig)
+plotTotalImage <- plotPathOnTree(path=path, tree=sbTree, ig=ig)
 plotTotalImage
 ```
 
@@ -307,14 +307,14 @@ The **binVector** will determine the order that increasing y index positions are
 The two examples below will show the importance of selecting an appropriate number of bins and order of bins to minimize overlap: 
 
 ```{r}
-plotTotalImage <- plotPathOnTree(path=path, ig=ig, binVector=1:12)
+plotTotalImage <- plotPathOnTree(path=path, tree=sbTree, ig=ig, binVector=1:12)
 plotTotalImage
 ```
 
 In this case, even though the number of bins is as large as the clearer-labelled image above, the order of the bins is such that varieties of consecutive x-values (years) will also have consecutive y-values (indices), and hence will be likely to overlap for years with many varieties.
 
 ```{r}
-plotTotalImage <- plotPathOnTree(path=path, ig=ig, binVector=1:2)
+plotTotalImage <- plotPathOnTree(path=path, tree=sbTree, ig=ig, binVector=1:2)
 plotTotalImage
 ```
 

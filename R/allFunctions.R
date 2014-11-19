@@ -8,6 +8,7 @@
 #' @seealso \code{\link{buildAncList}} for information on determining ancestors
 #' @seealso \code{\link{buildDesList}} for information on determining descendants
 buildAncDesCoordDF = function(df){
+  root.gen <- gen <- par.id <- label <- NULL 
   # This gets rid of redundancy and creates a "center"
   if(nrow(subset(df, root.gen==0 & gen==0))>1){
     temp = subset(df, root.gen==0 & gen==0)
@@ -127,6 +128,7 @@ buildAncDesCoordDF = function(df){
 #' v1="Essex"
 #' buildAncDesTotalDF(v1, sbTree)
 buildAncDesTotalDF = function(v1, tree, mAnc=3, mDes=3){
+  gen <- type <- NULL
   vals = list()
   # Set data frame that we will plot
   gen.vars2 = v1
@@ -251,10 +253,11 @@ buildDesList = function(v1, tree, gen=0){
 #' 
 #' This function takes the ig object and creates a data frame object of the edges between all parent-child
 #' relationships in the graph
+#' @param tree the tree
 #' @param ig igraph object from treeToIG
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
 #' @seealso \url{http://www.r-project.org} for iGraph information
-buildEdgeTotalDF = function(ig, binVector=1:12){
+buildEdgeTotalDF = function(tree, ig, binVector=1:12){
   
   if(class(ig)!="igraph"){
     stop("ig must be an igraph object")
@@ -264,7 +267,7 @@ buildEdgeTotalDF = function(ig, binVector=1:12){
     stop("binVector must contain all numbers 1:length(binVector)")
   }
   
-  tG <- buildSpreadTotalDF(ig, binVector)
+  tG <- buildSpreadTotalDF(tree, ig, binVector)
   eG <- igraph::get.data.frame(ig, "edges")
   
   # edgeTotalDF used in function plotPathOnTree()
@@ -305,11 +308,12 @@ buildEdgeTotalDF = function(ig, binVector=1:12){
 #' in the tree. However, the data frame object does not include the labels of the path varieties, as they
 #' will be treated differently.
 #' @param path path as returned from getPath() or a vector of two variety names which exist in the ig object
+#' @param tree the tree
 #' @param ig the igraph representation of the tree
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
 #' @seealso \url{http://www.r-project.org} for iGraph information
 #' @seealso \code{\link{getPath}} for information on input path building
-buildMinusPathDF = function(path, ig, binVector=1:12){
+buildMinusPathDF = function(path, tree, ig, binVector=1:12){
   
   if(class(ig)!="igraph"){
     stop("ig must be an igraph object")
@@ -329,7 +333,7 @@ buildMinusPathDF = function(path, ig, binVector=1:12){
     stop("path does not appear to be a result of the getPath() function")
   } 
   
-  tG <- buildSpreadTotalDF(ig, binVector)
+  tG <- buildSpreadTotalDF(tree, ig, binVector)
   eG <- igraph::get.data.frame(ig, "edges")
   
   label=tG$name
@@ -409,12 +413,13 @@ buildPathDF = function(path){
 #' as inputs. From these objects, it creates a data frame object of the text label positions for the
 #' varieties in the path, as well as the edges only in the varieties in the path.
 #' @param path path as returned from getPath() or a vector of two variety names which exist in ig
+#' @param tree the tree
 #' @param ig igraph object
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
 #' @seealso \url{http://www.r-project.org} for iGraph information
 #' @seealso \url{http://www.r-project.org} for iGraph information
 #' @seealso \code{\link{getPath}} for information on input path building
-buildPlotTotalDF = function(path, ig, binVector=1:12){
+buildPlotTotalDF = function(path, tree, ig, binVector=1:12){
   if(class(ig)!="igraph"){
     stop("ig must be an igraph object")
   }
@@ -434,7 +439,7 @@ buildPlotTotalDF = function(path, ig, binVector=1:12){
     stop("binVector must contain all numbers 1:length(binVector)")
   }
   
-  tG <- buildSpreadTotalDF(ig, binVector)
+  tG <- buildSpreadTotalDF(tree, ig, binVector)
   
   label=path$pathVertices
   x=as.numeric(path$yearVertices)
@@ -460,14 +465,12 @@ buildPlotTotalDF = function(path, ig, binVector=1:12){
 #' 
 #' Constructs a data frame object so that varieties are spread such that they do not overlap, even
 #' though the x-axis position will represent years.
+#' @param tree the tree
 #' @param ig the igraph representation of the tree
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
-#' This vector will determine the order that increasing y index positions are repeatedly assigned to. For instance, if binVector = c(1,4,7,10,2,5,8,11,3,6,9,12), then y-axis position one will be assigned to a variety in the first
-#' bin of years, y-axis position two will be assigned to a variety in the fourth bin of years, ...., and y-axis position thirteen
-#' will be assigned again to a variety in the first bin of years. This vector can help minimize overlap of the labelling of varieties,
-#' without regard to how the layout affects the edges between varieties, as those edges will be colored faintly.
+#' This vector will determine the order that increasing y index positions are repeatedly assigned to. For instance, if binVector = c(1,4,7,10,2,5,8,11,3,6,9,12), then y-axis position one will be assigned to a variety in the first bin of years, y-axis position two will be assigned to a variety in the fourth bin of years, ...., and y-axis position thirteen will be assigned again to a variety in the first bin of years. This vector can help minimize overlap of the labelling of varieties, without regard to how the layout affects the edges between varieties, as those edges will be colored faintly.
 #' @seealso \url{http://www.r-project.org} for iGraph information
-buildSpreadTotalDF = function(ig, binVector=1:12){
+buildSpreadTotalDF = function(tree, ig, binVector=1:12){
   if(class(ig)!="igraph"){
     stop("ig must be an igraph object.")
   }
@@ -481,7 +484,7 @@ buildSpreadTotalDF = function(ig, binVector=1:12){
   
   yearVector = c()
   for (i in 1:dim(totalDF)[1]){
-    currYear = getYear(totalDF[i,],sbTree)
+    currYear = getYear(totalDF[i,],tree)
     yearVector = c(yearVector, currYear)
   }
 
@@ -615,6 +618,7 @@ getEdges = function(ig){
 #' getChild("Essex", sbTree)
 #' @export
 getChild = function(v1, tree){
+  parent <- NULL
   sort(subset(tree, parent==v1)$child)
 }
 
@@ -671,6 +675,7 @@ getNodes = function(tree){
 #' getParent("Essex", sbTree)
 #' @export
 getParent = function(v1, tree){
+  child <- NULL
   sort(subset(tree, child==v1)$parent)
 }
 
@@ -871,7 +876,8 @@ nodeToDF = function(tlist, branch=0, par.id = NA,id.offset=1){
 #' 
 #' data(sbTree)
 #' plotAncDes("Tokyo", sbTree)
-plotAncDes = function(v1, tree, mAnc=3, mDes=3, colour=color){
+plotAncDes = function(v1, tree, mAnc=3, mDes=3){
+  color <- x <- y <- label2 <- size <- xstart <- ystart <- xend <- yend <- branchx <- branchy <- NULL
   # Plot the data frame, if it exists
   gDF = buildAncDesTotalDF(v1, tree, mAnc, mDes)
   if(nrow(gDF)>0){
@@ -922,6 +928,7 @@ size=size, colour=color) +
 #' 
 #' @export
 plotDegMatrix = function(varieties,ig,tree,xLab="Variety",yLab="Variety",legendLab="Degree"){
+  Var1 <- Var2 <- value <- NULL
   matVar = matrix(, nrow = length(varieties), ncol = length(varieties))
   for (i in 1:length(varieties)){
     for (j in 1:length(varieties)){
@@ -956,6 +963,7 @@ plotDegMatrix = function(varieties,ig,tree,xLab="Variety",yLab="Variety",legendL
 #' p <- getPath("Brim","Bedford",ig,sbTree)
 #' plotPath(p)
 plotPath = function(path){
+  x <- y <- label <- xstart <- ystart <- xend <- yend <- NULL
   if(sum(names(path)%in%c("pathVertices", "yearVertices"))!=2){
     stop("path does not appear to be a result of the getPath() function")
   }
@@ -1008,6 +1016,7 @@ plotPath = function(path){
 #' nodes within the path are labelled in boldface, and connected with light-green
 #' boldfaced edges.
 #' @param path path as returned from getPath() or a vector of two variety names which exist in ig
+#' @param tree the tree
 #' @param ig igraph representation of the tree
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
 #' @examples
@@ -1015,12 +1024,13 @@ plotPath = function(path){
 #' ig = treeToIG(sbTree)
 #' path = getPath("Brim","Bedford",ig,sbTree)
 #' binVector=sample(1:12, 12)
-#' plotTotalImage <- plotPathOnTree(path=path, ig=ig, binVector=sample(1:12, 12))
+#' plotTotalImage <- plotPathOnTree(path=path, tree=sbTree, ig=ig, binVector=sample(1:12, 12))
 #' plotTotalImage
 #' @seealso \url{http://www.r-project.org} for iGraph information
 #' @seealso \code{\link{getPath}} for information on input path building
 #' @export
-plotPathOnTree = function(path, ig, binVector=sample(1:12, 12)){
+plotPathOnTree = function(path, tree, ig, binVector=sample(1:12, 12)){
+  x <- y <- xend <- yend <- xstart <- ystart <- label <- NULL
   if(class(ig)!="igraph"){
     stop("ig must be an igraph object")
   }
@@ -1035,9 +1045,9 @@ plotPathOnTree = function(path, ig, binVector=sample(1:12, 12)){
     stop("path does not appear to be a result of the getPath() function")
   } 
   
-  pMPDF <- buildMinusPathDF(path, ig, binVector)
-  eTDF <- buildEdgeTotalDF(ig, binVector)
-  pTDF <- buildPlotTotalDF(path, ig, binVector)
+  pMPDF <- buildMinusPathDF(path, tree, ig, binVector)
+  eTDF <- buildEdgeTotalDF(tree, ig, binVector)
+  pTDF <- buildPlotTotalDF(path, tree, ig, binVector)
   
   textFrame = data.frame(x = pMPDF$x, y = pMPDF$y, label = pMPDF$label)
   textFrame = transform(textFrame,
@@ -1083,6 +1093,7 @@ plotPathOnTree = function(path, ig, binVector=sample(1:12, 12)){
 #' 
 #' @export
 plotYearMatrix = function(varieties, tree, xLab = "Variety", yLab = "Variety", legendLab = "Difference in years"){
+  Var1 <- Var2 <- value <- NULL
   matVar = matrix(, nrow = length(varieties), ncol = length(varieties))
   for (i in 1:length(varieties)){
     for (j in 1:length(varieties)){
@@ -1112,6 +1123,7 @@ plotYearMatrix = function(varieties, tree, xLab = "Variety", yLab = "Variety", l
 #' @seealso \url{http://www.r-project.org} for iGraph information
 #' @export
 treeToIG = function(tree, vertexinfo = NULL, edgeweights = 1, isDirected=FALSE){
+  parent <- child <- NULL
   if(!is.data.frame(tree)){
     stop("The tree must be of type data frame")
   }
