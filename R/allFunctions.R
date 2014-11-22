@@ -828,58 +828,61 @@ isParent = function(child, parent, tree){
 #'
 #' @param tlist list of varieties
 #' @param branch of particular variety in tree
-#' @param par.id the id of the parent of the variety
-#' @param id.offset value to ensure labels are at unique locations
-nodeToDF = function(tlist, branch=0, par.id = NA,id.offset=1){
-  listidx = which(sapply(tlist, mode)=="list")
-  if(length(listidx)==0){
-    temp = as.data.frame(tlist)
-    if(nrow(temp)==0) return(data.frame())
-    # If gen (not followed by a number), then it does not exist
-    if(!"gen"%in%names(temp)){
+#' @param par.id the id of the parent
+#' @param id.offset id offset
+nodeToDF = function(tlist, branch=0, par.id = NA, id.offset=1){
+    listidx = which(sapply(tlist, mode)=="list")
+    if(length(listidx)==0){
+      temp = as.data.frame(tlist)
+      if(nrow(temp)==0) return(data.frame())
+      # If gen (not followed by a number), then it does not exist
+      if(!"gen"%in%names(temp)){
+        id.offset <= id.offset+1
+        return(cbind(as.data.frame(tlist), branch=branch, par.id=par.id, id=sample(0:99, 1)*10+id.offset/10))
+      }
       id.offset <= id.offset+1
-      return(cbind(as.data.frame(tlist), branch=branch, par.id=par.id, id=sample(0:99, 1)*10+id.offset/10))
+      return(cbind(as.data.frame(tlist), branch=branch, par.id=par.id, id=sign(temp$gen)*sample((abs(temp$gen)*100):((abs(temp$gen)+1)*1000000 -1), 1)*10+id.offset/10))
+    } else {
+      # Grabs everything that does not have children.
+      temp = as.data.frame(tlist[-listidx])
+      # First time, branchidx = 1 2
+      branchidx = listidx-min(listidx)+1
+      if(length(branchidx)>1){
+        # First time, branchidx = -0.5 0.5
+        branchidx = seq(-.5, .5, length.out=length(branchidx))
+        # branchidx = equals either -.5 (if temp$gen is even) or .5 (if temp$gen is odd)
+      } else branchidx = c(-.5, .5)[temp$gen%%2+1]
+      id.offset <= id.offset+1
+      # Creates a unique id
+      id = sign(temp$gen)*sample((abs(temp$gen)*100):((abs(temp$gen)+1)*1000000 -1), 1)*10+id.offset/10 #changed to 100000
+      return(plyr::rbind.fill(cbind(temp, branch=branch, id=id, par.id=par.id),
+                              plyr::ldply(1:length(listidx), function(i)
+                                nodeToDF(tlist[[listidx[i]]], branch=branchidx[i], par.id=id))))
     }
-    id.offset <= id.offset+1
-    return(cbind(as.data.frame(tlist), branch=branch, par.id=par.id, id=sign(temp$gen)*sample((abs(temp$gen)*100):((abs(temp$gen)+1)*1000000 -1), 1)*10+id.offset/10))
-  } else {
-    # Grabs everything that does not have children.
-    temp = as.data.frame(tlist[-listidx])
-    # First time, branchidx = 1 2
-    branchidx = listidx-min(listidx)+1
-    if(length(branchidx)>1){
-      # First time, branchidx = -0.5 0.5
-      branchidx = seq(-.5, .5, length.out=length(branchidx))
-      # branchidx = equals either -.5 (if temp$gen is even) or .5 (if temp$gen is odd)
-    } else branchidx = c(-.5, .5)[temp$gen%%2+1]
-    id.offset <= id.offset+1
-    # Creates a unique id
-    id = sign(temp$gen)*sample((abs(temp$gen)*100):((abs(temp$gen)+1)*1000000 -1), 1)*10+id.offset/10 #changed to 100000
-    return(plyr::rbind.fill(cbind(temp, branch=branch, id=id, par.id=par.id),
-                            plyr::ldply(1:length(listidx), function(i)
-                        nodeToDF(tlist[[listidx[i]]], branch=branchidx[i], par.id=id))))
   }
-}
 
 #' Returns the image object to show the ancestors and descendants of a variety
-#' 
-#' Returns the image object to show the ancestors (to the left) and descendants (to the right) of a variety, with the variety highlighted in orange
+#'
+#' Returns the image object to show the ancestors and descendants of a variety, with the variety highlighted, if desired
 #' 
 #' @param v1 variety of interest
 #' @param mAnc maximum number of ancestors of v1 to be shown
 #' @param mDes maximum number of descendants of v1 to be shown
 #' @param tree the tree
+#' @param vCol the color of the text of the main variety
+#' 
 #' @export
 #' @examples
 #' data(sbTree)
-#' plotAncDes("Essex", sbTree, 5, 3)
+#' plotAncDes("Essex", sbTree, 2, 3, "blue")
 #' 
 #' data(sbTree)
-#' plotAncDes("Tokyo", sbTree)
-plotAncDes = function(v1, tree, mAnc=3, mDes=3){
+#' plotAncDes("Tokyo", sbTree, vCol="red")
+plotAncDes = function(v1, tree, mAnc=3, mDes=3, vCol="#D35C79"){
   color <- x <- y <- label2 <- size <- xstart <- ystart <- xend <- yend <- branchx <- branchy <- NULL
   # Plot the data frame, if it exists
   gDF = buildAncDesTotalDF(v1, tree, mAnc, mDes)
+  gDF[gDF$root.gen==0&gDF$gen==0,]$color = vCol
   if(nrow(gDF)>0){
     plotGenImage = ggplot2::qplot(data=gDF, x=x, y=y, label=label2, geom="text", vjust=-.25, hjust=.5, 
 size=size, colour=color) +
@@ -1151,7 +1154,6 @@ treeToIG = function(tree, vertexinfo = NULL, edgeweights = 1, isDirected=FALSE){
   
   edges <- subset(tree, !is.na(parent) & !is.na(child))[,c("child", "parent")]
   edges$weight <- edgeweights
-  
-  
+   
   igraph::graph.data.frame(d=edges, directed=isDirected, vertices=nodes)
 }

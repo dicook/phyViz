@@ -10,10 +10,9 @@ nodeToDF(tlist, branch = 0, par.id = NA, id.offset = 1)
 
   \item{branch}{of particular variety in tree}
 
-  \item{par.id}{the id of the parent of the variety}
+  \item{par.id}{the id of the parent}
 
-  \item{id.offset}{value to ensure labels are at unique
-  locations}
+  \item{id.offset}{id offset}
 }
 \description{
 Converts the list-style-tree to a data frame, where each
