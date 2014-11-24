@@ -830,7 +830,9 @@ isParent = function(child, parent, tree){
 #' @param branch of particular variety in tree
 #' @param par.id the id of the parent
 #' @param id.offset id offset
-nodeToDF = function(tlist, branch=0, par.id = NA, id.offset=1){
+nodeToDF = local({
+  id.offset <<- 1
+  function(tlist, branch=0, par.id = NA, id=1){
     listidx = which(sapply(tlist, mode)=="list")
     if(length(listidx)==0){
       temp = as.data.frame(tlist)
@@ -860,6 +862,7 @@ nodeToDF = function(tlist, branch=0, par.id = NA, id.offset=1){
                                 nodeToDF(tlist[[listidx[i]]], branch=branchidx[i], par.id=id))))
     }
   }
+})
 
 #' Returns the image object to show the ancestors and descendants of a variety
 #'

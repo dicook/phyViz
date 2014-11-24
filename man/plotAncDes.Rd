@@ -25,9 +25,9 @@ desired
 }
 \examples{
 data(sbTree)
-plotAncDes("Essex", sbTree, 5, 3, "blue")
+plotAncDes("Essex", sbTree, 2, 3, "blue")
 
 data(sbTree)
-plotAncDes("Tokyo", sbTree, 1, 2, vCol="red")
+plotAncDes("Tokyo", sbTree, vCol="red")
 }
 
