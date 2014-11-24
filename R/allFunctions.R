@@ -830,7 +830,9 @@ isParent = function(child, parent, tree){
 #' @param branch of particular variety in tree
 #' @param par.id the id of the parent
 #' @param id.offset id offset
-nodeToDF = function(tlist, branch=0, par.id = NA, id.offset=1){
+nodeToDF = local({
+  id.offset <<- 1
+  function(tlist, branch=0, par.id = NA, id=1){
     listidx = which(sapply(tlist, mode)=="list")
     if(length(listidx)==0){
       temp = as.data.frame(tlist)
@@ -838,10 +840,10 @@ nodeToDF = function(tlist, branch=0, par.id = NA, id.offset=1){
       # If gen (not followed by a number), then it does not exist
       if(!"gen"%in%names(temp)){
         id.offset <<- id.offset+1
-        return(cbind(as.data.frame(tlist), branch=branch, par.id=par.id, id=sample(0:99, 1)*10+id.offset/10))
+        return(cbind(as.data.frame(tlist), branch=branch, par.id=par.id, id=id.offset))
       }
       id.offset <<- id.offset+1
-      return(cbind(as.data.frame(tlist), branch=branch, par.id=par.id, id=sign(temp$gen)*sample((abs(temp$gen)*100):((abs(temp$gen)+1)*1000000 -1), 1)*10+id.offset/10))
+      return(cbind(as.data.frame(tlist), branch=branch, par.id=par.id, id=id.offset))
     } else {
       # Grabs everything that does not have children.
       temp = as.data.frame(tlist[-listidx])
@@ -855,11 +857,13 @@ nodeToDF = function(tlist, branch=0, par.id = NA, id.offset=1){
       id.offset <<- id.offset+1
       # Creates a unique id
       id = sign(temp$gen)*sample((abs(temp$gen)*100):((abs(temp$gen)+1)*1000000 -1), 1)*10+id.offset/10 #changed to 100000
-      return(plyr::rbind.fill(cbind(temp, branch=branch, id=id, par.id=par.id),
+      return(plyr::rbind.fill(cbind(temp, branch=branch, id=id.offset, par.id=par.id),
                               plyr::ldply(1:length(listidx), function(i)
                                 nodeToDF(tlist[[listidx[i]]], branch=branchidx[i], par.id=id))))
     }
   }
+})
+
 
 #' Returns the image object to show the ancestors and descendants of a variety
 #'
