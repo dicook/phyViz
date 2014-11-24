@@ -864,7 +864,7 @@ nodeToDF = local({
                                 nodeToDF(tlist[[listidx[i]]], branch=branchidx[i], par.id=id))))
     }
   }
-})
+}, envir=new.env())
 
 #' Returns the image object to show the ancestors and descendants of a variety
 #'
