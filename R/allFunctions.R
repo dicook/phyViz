@@ -874,7 +874,7 @@ nodeToDF = function(tlist, branch=0, par.id = NA, id.offset=1){
 #' @export
 #' @examples
 #' data(sbTree)
-#' plotAncDes("Essex", sbTree, 2, 3, "blue")
+#' plotAncDes("Essex", sbTree, 2, 3, "blue") + ggplot2::labs(x="Generation index",y="")
 #' 
 #' data(sbTree)
 #' plotAncDes("Tokyo", sbTree, vCol="red")
@@ -893,11 +893,10 @@ size=size, colour=color) +
       ggplot2::scale_size_continuous(range=c(3,3),guide="none") +
       ggplot2::scale_colour_identity() +
       ggplot2::theme_bw() +
-      ggplot2::theme(axis.title=ggplot2::element_blank(), 
-            axis.text=ggplot2::element_blank(), 
+      ggplot2::theme(axis.text=ggplot2::element_blank(), 
             axis.ticks=ggplot2::element_blank()) + 
       ggplot2::scale_x_continuous(expand = c(.1, 1.075)) + 
-      ggplot2::scale_y_continuous(expand = c(.1, 1.075))
+      ggplot2::scale_y_continuous(expand = c(.1, 1.075)) +
   } else {
     plotGenImage = ggplot2::ggplot() + 
       ggplot2::geom_text(ggplot2::aes(x=0, y=0, label="Please select varieties\n\n Note: It may take a minute to process the v1")) +         
@@ -906,7 +905,7 @@ size=size, colour=color) +
             axis.ticks=ggplot2::element_blank(), 
             axis.title=ggplot2::element_blank())
   }
-  plotGenImage
+    plotGenImage
 }
 
 #' Returns the image object to show the heat map of degrees between the inputted set of vertices

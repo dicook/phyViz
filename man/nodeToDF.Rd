@@ -3,7 +3,7 @@
 \alias{nodeToDF}
 \title{Returns the data frame representation of all ancestors and descendants of a variety}
 \usage{
-nodeToDF(tlist, branch = 0, par.id = NA, id.offset = 1)
+nodeToDF(tlist, branch = 0)
 }
 \arguments{
   \item{tlist}{list of varieties}
@@ -11,8 +11,6 @@ nodeToDF(tlist, branch = 0, par.id = NA, id.offset = 1)
   \item{branch}{of particular variety in tree}
 
   \item{par.id}{the id of the parent}
-
-  \item{id.offset}{id offset}
 }
 \description{
 Converts the list-style-tree to a data frame, where each
