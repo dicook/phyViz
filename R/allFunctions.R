@@ -837,10 +837,10 @@ nodeToDF = function(tlist, branch=0, par.id = NA, id.offset=1){
       if(nrow(temp)==0) return(data.frame())
       # If gen (not followed by a number), then it does not exist
       if(!"gen"%in%names(temp)){
-        id.offset <= id.offset+1
+        id.offset <<- id.offset+1
         return(cbind(as.data.frame(tlist), branch=branch, par.id=par.id, id=sample(0:99, 1)*10+id.offset/10))
       }
-      id.offset <= id.offset+1
+      id.offset <<- id.offset+1
       return(cbind(as.data.frame(tlist), branch=branch, par.id=par.id, id=sign(temp$gen)*sample((abs(temp$gen)*100):((abs(temp$gen)+1)*1000000 -1), 1)*10+id.offset/10))
     } else {
       # Grabs everything that does not have children.
@@ -852,7 +852,7 @@ nodeToDF = function(tlist, branch=0, par.id = NA, id.offset=1){
         branchidx = seq(-.5, .5, length.out=length(branchidx))
         # branchidx = equals either -.5 (if temp$gen is even) or .5 (if temp$gen is odd)
       } else branchidx = c(-.5, .5)[temp$gen%%2+1]
-      id.offset <= id.offset+1
+      id.offset <<- id.offset+1
       # Creates a unique id
       id = sign(temp$gen)*sample((abs(temp$gen)*100):((abs(temp$gen)+1)*1000000 -1), 1)*10+id.offset/10 #changed to 100000
       return(plyr::rbind.fill(cbind(temp, branch=branch, id=id, par.id=par.id),
