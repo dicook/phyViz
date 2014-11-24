@@ -829,7 +829,7 @@ isParent = function(child, parent, tree){
 #' @param tlist list of varieties
 #' @param branch of particular variety in tree
 #' @param par.id the id of the parent
-#' @param id.offset id offset
+#' @param id id offset
 nodeToDF = local({
   id.offset <<- 1
   function(tlist, branch=0, par.id = NA, id=1){
@@ -862,7 +862,7 @@ nodeToDF = local({
                                 nodeToDF(tlist[[listidx[i]]], branch=branchidx[i], par.id=id))))
     }
   }
-})
+}, envir=new.env())
 
 #' Returns the image object to show the ancestors and descendants of a variety
 #'
