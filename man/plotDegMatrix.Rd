@@ -33,7 +33,7 @@ ig = treeToIG(sbTree)
 varieties=c("Beeson", "Calland", "Dillon", "Hood", "Narow", "Pella", "Tokyo", "Young", "Zane")
 plotDegMatrix(varieties,ig,sbTree,"Soybean name", "Soybean name", "Deg")
 
-plotDegMatrix(varieties,ig, sbTree) + ggplot2::scale_fill_continuous(low="yellow", high="purple")
+plotDegMatrix(varieties,ig, sbTree) + ggplot2::scale_fill_continuous(low="darkgreen", high="white")
 }
 \seealso{
 \url{http://www.r-project.org} for iGraph information
