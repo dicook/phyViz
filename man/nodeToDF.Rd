@@ -3,7 +3,11 @@
 \alias{nodeToDF}
 \title{Returns the data frame representation of all ancestors and descendants of a variety}
 \usage{
+<<<<<<< HEAD
 nodeToDF(tlist, branch = 0)
+=======
+nodeToDF(tlist, branch = 0, par.id = NA, id = 1)
+>>>>>>> 1b989d934b041415a8c460c666ac0f40ab52f301
 }
 \arguments{
   \item{tlist}{list of varieties}
