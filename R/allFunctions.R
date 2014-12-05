@@ -833,9 +833,10 @@ isParent = function(child, parent, tree){
 #' @param par.id the id of the parent
 #' @param id id offset
 nodeToDF = local({
-  id.offset <<- 1
+  id.offset <<- 0
   function(tlist, branch=0, par.id = NA, id=1){
     listidx = which(sapply(tlist, mode)=="list")
+    # This is a terminal node
     if(length(listidx)==0){
       temp = as.data.frame(tlist)
       if(nrow(temp)==0) return(data.frame())
@@ -931,7 +932,7 @@ size=size, colour=color) +
 #' varieties=c("Beeson", "Calland", "Dillon", "Hood", "Narow", "Pella", "Tokyo", "Young", "Zane")
 #' plotDegMatrix(varieties,ig,sbTree,"Soybean name", "Soybean name", "Deg")
 #' 
-#' plotDegMatrix(varieties,ig, sbTree) + ggplot2::scale_fill_continuous(low="yellow", high="purple")
+#' plotDegMatrix(varieties,ig, sbTree) + ggplot2::scale_fill_continuous(low="darkgreen", high="white")
 #' 
 #' @export
 plotDegMatrix = function(varieties,ig,tree,xLab="Variety",yLab="Variety",legendLab="Degree"){
