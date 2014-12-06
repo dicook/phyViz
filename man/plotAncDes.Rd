@@ -25,11 +25,7 @@ desired
 }
 \examples{
 data(sbTree)
-<<<<<<< HEAD
 plotAncDes("Essex", sbTree, 2, 3, "blue") + ggplot2::labs(x="Generation index",y="")
-=======
-plotAncDes("Essex", sbTree, 2, 3, "blue")
->>>>>>> 1b989d934b041415a8c460c666ac0f40ab52f301
 
 data(sbTree)
 plotAncDes("Tokyo", sbTree, vCol="red")
