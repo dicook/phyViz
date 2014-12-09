@@ -1,9 +1,28 @@
+#' Barley phylogenetic data
+#' 
+#' This data ????????.
+
 #' @name bTree
 #' @title Barley data
-#' @description This data set list barley information
+#' @description This data set contains barley phylogenetic information maintained by ??????????.
 #' @docType data
-#' @usage bTree
-#' @format a \code{RData} instance, 1 row per barley variety
-#' @source The available data consists of a data frame structure that contains 2505 direct child-parent relationships between pairs of barley varieties.
-#' @author Lindsay Rutter, 2014-12-06
+#' @format a \code{RData} instance, 1 row per each child-parent relationship between barley varieties ???
+#' @details \itemize{
+#' \item land ??????
+#' \item form ??????
+#' \item bsa.nr ?????
+#' \item child name of child variety
+#' \item breeder name of breeder
+#' \item year ???
+#' \item line.des line designation
+#' \item remark ????
+#' \item parent name of parent variety
+#' }
+#'
+#' @docType data
+#' @keywords datasets
+#' @name bTree
+#' @usage data(bTree)
+#' @format A data frame with 2505 rows and 9 variables
+#' @references
 NULL
