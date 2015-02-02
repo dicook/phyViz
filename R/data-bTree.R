@@ -24,5 +24,5 @@
 #' @name bTree
 #' @usage data(bTree)
 #' @format A data frame with 2505 rows and 9 variables
-#' @references
+#' @references Reference1
 NULL

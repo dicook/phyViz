@@ -881,8 +881,6 @@ nodeToDF = local({
 #' @examples
 #' data(sbTree)
 #' plotAncDes("Essex", sbTree, 2, 3, "blue") + ggplot2::labs(x="Generation index",y="")
-#' 
-#' data(sbTree)
 #' plotAncDes("Tokyo", sbTree, vCol="red")
 plotAncDes = function(v1, tree, mAnc=3, mDes=3, vCol="#D35C79"){
   color <- x <- y <- label2 <- size <- xstart <- ystart <- xend <- yend <- branchx <- branchy <- NULL
@@ -905,7 +903,7 @@ size=size, colour=color) +
       ggplot2::scale_y_continuous(expand = c(.1, 1.075))
   } else {
     plotGenImage = ggplot2::ggplot() + 
-      ggplot2::geom_text(ggplot2::aes(x=0, y=0, label="Please select varieties\n\n Note: It may take a minute to process the v1")) +         
+      ggplot2::geom_text(ggplot2::aes(x=0, y=0, label="Please select varieties\n\n Note: It may take a moment to process the v1")) +         
       ggplot2::theme_bw() + 
       ggplot2::theme(axis.text=ggplot2::element_blank(), 
             axis.ticks=ggplot2::element_blank(), 
