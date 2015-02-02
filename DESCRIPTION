@@ -10,13 +10,13 @@ License: GPL
 Depends:
     R (>= 3.0.2)
 Imports:
-    ggplot2,
-    igraph,
-    plyr,
-    reshape2,
-    stringr
-VignetteBuilder: knitr
+    ggplot2 (>= 1.0.0),
+    igraph (>= 0.7.1),
+    plyr (>= 1.8.1),
+    reshape2 (>= 1.4),
+    stringr (>= 0.6.2)
+VignetteBuilder: knitr (>= 1.7.8)
 Suggests:
-    knitr,
+    knitr (>= 1.7.8),
     roxygen2 (>= 3.0.0)
 Roxygen: list(wrap = TRUE)

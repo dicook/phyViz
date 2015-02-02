@@ -26,8 +26,6 @@ desired
 \examples{
 data(sbTree)
 plotAncDes("Essex", sbTree, 2, 3, "blue") + ggplot2::labs(x="Generation index",y="")
-
-data(sbTree)
 plotAncDes("Tokyo", sbTree, vCol="red")
 }
 

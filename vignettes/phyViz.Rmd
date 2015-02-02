@@ -1,10 +1,10 @@
 ---
-title: "How to use the package **phyViz**"
+title: "Getting started with the package **phyViz**"
 author: "Lindsay Rutter, Susan Vanderplas, Di Cook"
 output: 
   knitrBootstrap::simple_document:
-    toc: true
-    main: true
+    toc: TRUE
+    main: TRUE
     theme: cerulean
     highlight: idea
     clean_supporting: TRUE
@@ -18,25 +18,21 @@ output:
 
 -->
 
-**Description:** The **phyViz** package allows phylogeneticists to visualize and interpret their trees in multiple ways, each which come with their pros and cons. This vignette is intended to walk readers through the different options available with the package.
+**Description:** The **phyViz** package provides tools to examine genealogical data, generating basic statistics on their graphical structures using parent and child connections, and displaying the results. The genealogy can be drawn in relation to additional variables, such as development year, and the shortest path distances between genetic lines can be determined and displayed. Production of pairwise distance matrices and phylogenetic diagrams constrained by generation count are also available in the visualization toolkit. This vignette is intended to walk readers through the different methods available with the package.
 
-**Caution:** igraph must be used with version >= 0.7.0
+**Caution:** igraph must be used with version >= 0.7.1
 
 # Preprocessing Pipeline
 
-There is a preprocessing pipeline that you must use before visualizing your phylogentic tree. First, you must load the necessary libraries. Note that loading the phyViz library should automatically load three required libraries (plyr, reshape2, igraph): 
+There is a preprocessing pipeline to follow before visualizing your genealogical data. First, you must load the necessary libraries. Note that loading the phyViz library should automatically load several dependent libraries (ggplot2, igraph, plyr, reshape2, stringr): 
 
 ```{r, echo=4:6 , warning=F, message=F}
 options(warn=-1, width=80)
-library(knitr)
 opts_chunk$set(tidy=T, results="hold", comment="#|")
+
 library(phyViz)
-library(igraph)
-library(ggplot2)
-# library(reshape2)
-# library(plyr)
-# library(stringr)
-library(xtable)
+library(knitr)
+library(roxygen2)
 ```
 
 In the **phyViz** package, there is an example file containing phylogenetic tree of soybean varieties called **sbTree.rda**. It may be helpful to load that example file so that you can follow along with the commands and options introduced in this vignette. To ensure that you have uploaded the correct, raw **sbTree.rda** file, you can observe the first six lines of it:
@@ -46,7 +42,15 @@ data(sbTree)
 head(sbTree)
 ```
 
-Now that the sbTree file has been loaded, it must now be converted into an **igraph** graph object. The function **treeToIG** requires a data frame structured such that each line represents an edge, and takes optional arguments *vertexinfo* (a list of columns of the data frame which provide information for the starting "child" vertex, or a separate data frame containing information for each vertex with the first column as the vertex name), *edgeweights*, which default to 1 if not provided, and *isDirected*, which describes whether the graph is directed (true) or undirected (false); the default is false. In this example, we want a graph with edge weights of 1 and an undirected graph because our goal is to determine whether two vertices (individuals) are related. Hence, we use the default conditions:
+Now that the sbTree file has been loaded, it must now be converted into an **igraph** graph object. The function **treeToIG()** requires a data frame structured such that each line represents an edge. Try using the help command on this function:
+
+```{r}
+help(treeToIG)
+```
+
+This allows you to view a more thorough description of the function arguments. For instance, we see that the function takes optional parameter arguments, such as *vertexinfo* (a list of columns of the data frame which provide information for the starting "child" vertex, or a separate data frame containing information for each vertex with the first column as the vertex name), *edgeweights* (a column that contains edge values, with a default value of unity), and *isDirected* (a boolean value that describes whether the graph is directed (true) or undirected (false); the default is false).
+
+In this example, we want to produce a graph object that contains all edge weight values of 1 and is undirected, because our goal is to determine whether two vertices (individuals) are related. The **phyViz** package uses the software **igraph** to produce the graph object, and we will assign it the name **ig** (for igraph object). Here, we use the default conditions of the **treeToIG()** function to create our graph **ig**:
 
 ```{r}
 ig <- treeToIG(sbTree)
