@@ -585,8 +585,8 @@ getBasicStatistics = function(ig){
 #' getDescendants("Essex", sbTree, 1)
 #' getDescendants("Essex", sbTree, 3)
 getDescendants = function(v1, tree, gen=3){
-  dDF = buildAncDesCoordDF(nodeToDF(buildDesList(v1, tree)))
   eval({id.offset<<-0}, envir=environment(nodeToDF))
+  dDF = buildAncDesCoordDF(nodeToDF(buildDesList(v1, tree)))
   subDF = dDF[dDF$gen <= gen & dDF$gen != 0,]
   keep = c("label","gen")
   subDF = subDF[keep]
