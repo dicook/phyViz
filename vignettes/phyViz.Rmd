@@ -35,14 +35,17 @@ library(knitr)
 library(roxygen2)
 ```
 
-In the **phyViz** package, there is an example file containing phylogenetic tree of soybean varieties called **sbTree.rda**. It may be helpful to load that example file so that you can follow along with the commands and options introduced in this vignette. To ensure that you have uploaded the correct, raw **sbTree.rda** file, you can observe the first six lines of it:
+In the **phyViz** package, there is an example dataset containing genealogical information on soybean varieties called **sbTree.rda**. It may be helpful to load that example file so that you can follow along with the commands and options introduced in this vignette. To ensure that you have uploaded the correct, raw **sbTree.rda** file, you can observe the first six lines of it, and also determine its class type:
 
 ```{r}
 data(sbTree)
 head(sbTree)
+class(sbTree)
 ```
 
-Now that the sbTree file has been loaded, it must now be converted into an **igraph** graph object. The function **treeToIG()** requires a data frame structured such that each line represents an edge. Try using the help command on this function:
+We see that the **sbTree* data file is a data frame structure with five variables per row. Each row contains a child node character label and parent node character label. Each row also contains a numeric value corresponding to the year the child node was introduced, an integer value of the protein yield of the child node, and a logical value whether or not the year of introduction of the child node was imputed.
+
+Now that the sbTree file has been loaded as a data frame, it must now be converted into a graph object using the **treeToIG()** function. The **treeToIG()** function requires a data frame as input, and that data frame should be structured such that each row represents an edge with a child and parent relationship. For more information, try using the help command on the function:
 
 ```{r}
 help(treeToIG)
@@ -50,23 +53,26 @@ help(treeToIG)
 
 This allows you to view a more thorough description of the function arguments. For instance, we see that the function takes optional parameter arguments, such as *vertexinfo* (a list of columns of the data frame which provide information for the starting "child" vertex, or a separate data frame containing information for each vertex with the first column as the vertex name), *edgeweights* (a column that contains edge values, with a default value of unity), and *isDirected* (a boolean value that describes whether the graph is directed (true) or undirected (false); the default is false).
 
-In this example, we want to produce a graph object that contains all edge weight values of 1 and is undirected, because our goal is to determine whether two vertices (individuals) are related. The **phyViz** package uses the software **igraph** to produce the graph object, and we will assign it the name **ig** (for igraph object). Here, we use the default conditions of the **treeToIG()** function to create our graph **ig**:
+In this example, we want to produce an undirected graph object that contains all edge weight values of 1, because our goal is to set an edge value of unity for every pair of vertices (individuals) that are related as parent and child. The **treeToIG()** function uses the software **igraph** to convert the data frame into a graph object. For clarity, we will assign the outputted graph object the name **ig** (for igraph object), and then examine its class type:
 
 ```{r}
 ig <- treeToIG(sbTree)
+class(ig)
 ```
 
-We can add the other data we have about each of the nodes in ig in several ways. The sbTree dataset contains information about each child; to add that data as is to the tree, we can use the same command as before, but specify the vertexinfo parameter as follows: 
+If successful, we can confirm that the **ig** object is of class type **igraph**.
+
+We can add the other data we have about each of the nodes in **ig** in several ways. As we saw earlier, each row of the sbTree dataset contains information about each child. To append that data to the **ig** object, we can use the same command as before, but specify the **vertexinfo** parameter as follows: 
 
 ```{r}
-ig <- treeToIG(sbTree, vertexinfo=c("year", "yield", "year.imputed", "min.repro.year"))
+ig <- treeToIG(sbTree, vertexinfo=c("year", "yield", "year.imputed"))
 ```
 
 If we have separate data sets with node information, we can use that instead. For the example dataset, we must first obtain the node information: 
 
 ```{r}
 library(plyr)
-nodes <- unique(sbTree[,1:5])
+nodes <- unique(sbTree[,1:4])
 
 # get a data frame of all parents whose parents are not known (i.e. parents who are not listed as children as well)
 extra.nodes <- unique(data.frame(child=sbTree$parent[!sbTree$parent%in%sbTree$child & !is.na(sbTree$parent)], stringsAsFactors=FALSE))
@@ -84,32 +90,36 @@ The ig object is used in many of the other functions included with this package.
 
 # Functions for Individual Vertices
 
-**phyViz** offers several back-of-the-envelope functions that you can use to get information for individual vertices. 
+The **phyViz** package offers several functions that you can use to obtain information for individual vertices.
 
-First, the function **isParent** can return a logical indicator of whether the second variety is a parent of the first variety.
+First, the function **isParent()** can return a logical variable to indicate whether or not the second variety is a parent of the first variety.
 
 ```{r}
 isParent("Young","Essex",sbTree)
 isParent("Essex","Young",sbTree)
 ```
 
-Similarly, the function **isChild** can return a boolean variable to indicate whether or not the first variety is a child of the second variety.
+We see that "Essex" is a parent of "Young".
+
+Similarly, the function **isChild()** can return a logical variable to indicate whether or not the first variety is a child of the second variety.
 
 ```{r}
 isChild("Young","Essex",sbTree)
 isChild("Essex","Young",sbTree)
 ```
 
-It is also possible to quickly derive the year of a given variety using the **getYear** function:
+We see that, as expected, "Young" is a child of "Essex".
+
+It is also possible to derive the year of a given variety using the **getYear()** function:
 
 ```{r}
 getYear("Young",sbTree)
 getYear("Essex",sbTree)
 ```
 
-Fortunately, these example results make sense in that the "Young" variety is a child to the "Essex" variety by an age difference of six years.
+Fortunately, the returned year values are consistent, as the "Young" variety (1968) is a child to the "Essex" variety (1962) by an age difference of six years.
 
-In some cases, you may wish to have a list of all the parents of a given variety. This can be achieved using the **getParent** function:
+In some cases, you may wish to obtain a complete list of all the parents of a given variety. This can be achieved using the **getParent()** function:
 
 ```{r}
 getParent("Young",sbTree)
@@ -117,74 +127,89 @@ getParent("Tokyo",sbTree)
 getYear("Tokyo", sbTree)
 ```
 
-We learn from this that "Essex" is not the only parent of "Young". We also see that as "Tokyo" is a grandparent of the dataset (with a very early year, for this particular dataset, of 1907), it does not have any documented parents.
+We learn from this that "Essex" is not the only parent of "Young"; it also has a parent "Davis". We also see that "Tokyo" is a grandparent of the dataset; it does not have any documented parents and has an early year of introduction, 1907).
 
-Likewise, in other cases, you may wish to have a list of all the children of a given variety. This can be achieved using the **getChild** function:
+Likewise, in other cases, you may wish to obtain a complete list of all the children of a given variety. This can be achieved using the **getChild()** function:
 
 ```{r}
 getChild("Tokyo",sbTree)
 getChild("Ogden",sbTree)
 ```
 
-We find that even though the "Tokyo" variety is a grandparent of the dataset, it only had two children. However, one of its children, "Ogden", produced twelve children.
+We find that even though the "Tokyo" variety is a grandparent of the dataset, it only has two children, "Ogden" and "Volstate". However, one of its children, "Ogden", produced twelve children.
 
-If we want to know more than one generation past or previous, we can use the **getAncestors** and **getDescendants** function, where we specify the number of generations we wish to view. This will return a data frame to us with the labels of each ancestor or desendant, along with the number of generations each one is from the given variety.
+If we want to obtain a list that contains more than just one generation past or previous to a given variety, then we can use the **getAncestors()** and **getDescendants()** functions, where we specify the number of generations we wish to view. This will return a data frame to us with the labels of each ancestor or descendant, along with the number of generations each one is from the given variety.
 
-If we only look at the first generation of ancestors of the Young variety, we should see the aforementioned output as the **getParent** function of the Young variety:
+If we only look at one generation of ancestors of the "Young" variety, we should see the same information we did earlier when we used the **getParent()** function of the Young variety:
 
 ```{r}
 getAncestors("Young",sbTree,1)
 ```
 
-However, if we view the first 5 generations of ancestors of the Young variety, we can view ancestors past simply the parents:
+Indeed, we consistently see that the "Young" variety has only two ancestors within one generation, "Davis" and "Essex".
+
+However, if we view the first five generations of ancestors of the "Young"" variety, we can view four more generations of ancestors past simply the parents:
 
 ```{r}
 getAncestors("Young",sbTree,5)
+dim(getAncestors("Young",sbTree,5))
 ```
 
-Similarly, if we only look at the first generation of descendants of the Ogden variety, we should see the aforementioned output as the **getChild** function of the Ogden variety:
+In the second line of code above, we determined the dimensions of the returned data frame, and see that there are 27 ancestors within the first five ancestral generations of the "Young" variety.
+
+Similarly, if we only look at the first generation of descendants of the "Ogden"" variety, we should see the same information as we did earlier when we used the **getChild()** function on the "Ogden" variety:
 
 ```{r}
 getDescendants("Ogden",sbTree,1)
 ```
 
-However, we can view the first 2 generations of descendants of the Ogden variety:
+Indeed, we see again that "Ogden" has 12 children. 
+
+However, if we want to view not only the children, but also the grandchildren, of the "Ogden" variety, then we can use this function, only now specifying two generations of descendants:
 
 ```{r}
 getDescendants("Ogden",sbTree,2)
 ```
 
+We see that variety "Ogden" has 16 grandchildren from its 12 children.
+
 # Functions for Pairs of Vertices
 
-Say you have a pair of vertices, and you wish to determine the degree of separation of the shortest path between them, where edges represent parent-child relationships. You can accomplish that with the **getDegree** function.
+Say you have a pair of vertices, and you wish to determine the degree of the shortest path between them, where edges represent parent-child relationships. You can accomplish that with the **getDegree()** function.
 
 ```{r}
 getDegree("Tokyo", "Ogden", ig, sbTree)
 getDegree("Tokyo", "Holladay", ig, sbTree)
 ```
 
-As expected, the shortest path between the "Tokyo" and "Ogden" varieties has a value of one, as they are a direct parent-child relationship. However, the shortest path between "Tokyo" and one of its great-reat-great-etc-granchildren, "Holladay" has a much higher degree. Note that degree calculations in this case are not limited to one linear string of parent-child relationships; cousins and siblings and products thereof will also have computatable degrees via nonlinear strings of parent-child relationships.
+As expected, the shortest path between the "Tokyo" and "Ogden" varieties has a value of one, as we already determined that they have a direct parent-child relationship. However, the shortest path between "Tokyo" and one of its descendants, "Holladay", has a much higher degree of seven.
+
+Note that degree calculations in this case are not limited to one linear string of parent-child relationships; cousins and siblings and products thereof will also have computable degrees via nonlinear strings of parent-child relationships.
 
 # Functions for the Whole Tree
 
-There are many parameters about the tree that you may wish to know that cannot easily be obtained through images and tables. With the use of the **igraph** package, the below function **getBasicStatistics** can be used to return a list of information about typical graph theoretical measurements of the whole tree. For instance, is the whole tree connected? If not, how many separated components does it contain? In addition to these parameters, the **getBasicStatistics** function will also return the number of nodes, the number of edges, the average path length, the graph diameter, etc.:
+There are many parameters about the tree that you may wish to know that cannot easily be obtained through images and tables. The function **getBasicStatistics()** will return graph theoretical measurements of the whole tree. For instance, is the whole tree connected? If not, how many separated components does it contain? In addition to these parameters, the **getBasicStatistics()** function will also return the number of nodes, the number of edges, the average path length, the graph diameter, among others:
 
 ```{r}
 getBasicStatistics(ig)
 ```
 
-In this case, we learn that our tree is actually not all connected by parent-child edges, and that instead, it is composed of 11 separate components. We see that the average path length of the tree is 5.333, that the graph diameter is 13, and that the logN value is 5.438. We also see that the number of nodes in the tree is 230 that are connected by 340 edges.
+In this case, we learn that our tree is actually not all connected by parent-child edges, and that instead, it is composed of 11 separate components. We see that the average path length of the tree is 5.333, that the graph diameter is 13, and that the logN value is 5.438. We also see that the number of nodes in the tree is 230, and the number of edges in the tree is 340.
 
-But can we view a list of these nodes and edges? To do so, we can call the **getNodes** and **getEdges** commands to obtain non-repeated lists of the nodes and the edges in the tree. Here, we obtain a list of the 340 edges (with each row containing the names of the two connected vertices, and an edge weight, if existent). We then obtain a list of the 230 nodes. (In this example, we only view the first six items):
+But can we view a list of these nodes and edges? To do so, we can call the **getNodes()** and **getEdges()** commands to obtain lists of all the unique nodes and edges in the tree. Here, we obtain a list of the 340 edges (with each row containing the names of the two connected vertices, and an edge weight, if existent). We will simply view the first six rows of the object, and determine the number of edges by the number of rows (340):
 
 ```{r}
-head(getEdges(ig))
+eList = getEdges(ig)
+head(eList)
+dim(eList)
 ```
 
-We can also obtain a list of the 230 nodes:
+We then obtain a list of the 230 nodes. Again, we only view the first six rows of the object, and determine the number of nodes by the number of rows (230).
 
 ```{r}
-head(getNodes(sbTree))
+nList = getNodes(sbTree)
+head(nList)
+length(nList)
 ```
 
 # Visualizing the Tree

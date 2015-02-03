@@ -605,7 +605,17 @@ getDescendants = function(v1, tree, gen=3){
 #' getEdges(ig)
 #' @export
 getEdges = function(ig){
-  igraph::get.edgelist(ig)
+  eList = igraph::get.edgelist(ig)
+  for (i in 1:dim(eList)[1]){
+    if (!isChild(eList[i,1],eList[i,2], sbTree)){
+      p = eList[i,1]
+      c = eList[i,2]
+      eList[i,1] = c
+      eList[i,2] = p
+    }
+    colnames(eList) = c("child","parent")
+  }
+  eList
 }
 
 #' Returns the children of a particular variety (if they exist)
