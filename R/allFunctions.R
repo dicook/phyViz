@@ -910,14 +910,16 @@ size=size, colour=color) +
       ggplot2::theme(axis.text=ggplot2::element_blank(), 
             axis.ticks=ggplot2::element_blank()) + 
       ggplot2::scale_x_continuous(expand = c(.1, 1.075)) + 
-      ggplot2::scale_y_continuous(expand = c(.1, 1.075))
+      ggplot2::scale_y_continuous(expand = c(.1, 1.075)) + 
+      ggplot2::labs(x="",y="")
   } else {
     plotGenImage = ggplot2::ggplot() + 
       ggplot2::geom_text(ggplot2::aes(x=0, y=0, label="Please select varieties\n\n Note: It may take a moment to process the v1")) +         
       ggplot2::theme_bw() + 
       ggplot2::theme(axis.text=ggplot2::element_blank(), 
             axis.ticks=ggplot2::element_blank(), 
-            axis.title=ggplot2::element_blank())
+            axis.title=ggplot2::element_blank()) +
+      ggplot2::labs(x="",y="")
   }
     plotGenImage
 }

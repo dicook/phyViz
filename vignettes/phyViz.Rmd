@@ -196,7 +196,7 @@ getBasicStatistics(ig)
 
 In this case, we learn that our tree is actually not all connected by parent-child edges, and that instead, it is composed of 11 separate components. We see that the average path length of the tree is 5.333, that the graph diameter is 13, and that the logN value is 5.438. We also see that the number of nodes in the tree is 230, and the number of edges in the tree is 340.
 
-But can we view a list of these nodes and edges? To do so, we can call the **getNodes()** and **getEdges()** commands to obtain lists of all the unique nodes and edges in the tree. Here, we obtain a list of the 340 edges (with each row containing the names of the two connected vertices, and an edge weight, if existent). We will simply view the first six rows of the object, and determine the number of edges by the number of rows (340):
+But can we view a list of these nodes and edges? To do so, we can call the **getNodes()** and **getEdges()** commands to obtain lists of all the unique nodes and edges in the tree. Here, we obtain a list of the 340 edges (with each row containing the names of the two connected vertices, and an edge weight, if existent). We will simply view the first six rows of the object, and determine the number of edges by counting the number of rows (340):
 
 ```{r}
 eList = getEdges(ig)
@@ -204,7 +204,7 @@ head(eList)
 dim(eList)
 ```
 
-We then obtain a list of the 230 nodes. Again, we only view the first six rows of the object, and determine the number of nodes by the number of rows (230).
+We then obtain a list of the 230 nodes. Again, we only view the first six rows of the object, and determine the number of nodes by counting the number of rows (230).
 
 ```{r}
 nList = getNodes(sbTree)
@@ -214,11 +214,13 @@ length(nList)
 
 # Visualizing the Tree
 
+Until this point, the vignette has introduced functions that return lists, data frames, and statistics about the genealogical dataset. However, the **phyViz** package also contains visualization tools for genealogical datasets. Access to various types of visual plots and diagrams of the lineage can allow genealogical researchers to more efficiently and accurately explore an otherwise complicated data structure. Below, we introduce functions in **phyViz** that produce visual outputs of the dataset.
+
 ## Plotting the Ancestors and Descendants of a Vertex
 
 One visualization available in **phyViz** allows the user to view the ancestors and descendants of a given variety. The inputted variety is highlighted in the center of the plot, ancestors are displayed to the left of the center, and descendants are displayed to the right of the center. The further left or right from the center, the larger the number of generations that particular ancestor/descendant is from the inputted and centered variety.
 
-As such, this plotting command does not provide visual information about specific years associated with each related variety (as is done in some of the visualization tools introduced later), but it does categorize all varieties from a given generation onto the same point of the x-axis. Here, we specify that we want to plot 5 ancestor generations and 3 descendant generations of the variety Essex:
+As such, this plotting command does not provide visual information about specific years associated with each related variety (as is done in some of the visualization tools introduced later), but it does group all varieties from each generation group onto the same position of the horizontal axis. Here, we specify that we want to plot 5 ancestor generations and 3 descendant generations of the variety Essex:
 
 ```{r}
 plotAncDes("Essex", sbTree, 5, 3)
