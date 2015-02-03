@@ -3,7 +3,7 @@
 \alias{plotAncDes}
 \title{Returns the image object to show the ancestors and descendants of a variety}
 \usage{
-plotAncDes(v1, tree, mAnc = 3, mDes = 3, vCol = "#D35C79")
+plotAncDes(v1, tree, mAnc = 3, mDes = 3, vColor = "#D35C79")
 }
 \arguments{
   \item{v1}{variety of interest}
@@ -16,7 +16,7 @@ plotAncDes(v1, tree, mAnc = 3, mDes = 3, vCol = "#D35C79")
   \item{mDes}{maximum number of descendants of v1 to be
   shown}
 
-  \item{vCol}{the color of the text of the main variety}
+  \item{vColor}{the color of the text of the main variety}
 }
 \description{
 Returns the image object to show the ancestors and
@@ -26,6 +26,6 @@ desired
 \examples{
 data(sbTree)
 plotAncDes("Essex", sbTree, 2, 3, "blue") + ggplot2::labs(x="Generation index",y="")
-plotAncDes("Tokyo", sbTree, vCol="red")
+plotAncDes("Tokyo", sbTree, vColor="red")
 }
 

@@ -885,18 +885,18 @@ nodeToDF = local({
 #' @param mAnc maximum number of ancestors of v1 to be shown
 #' @param mDes maximum number of descendants of v1 to be shown
 #' @param tree the tree
-#' @param vCol the color of the text of the main variety
+#' @param vColor the color of the text of the main variety
 #' 
 #' @export
 #' @examples
 #' data(sbTree)
 #' plotAncDes("Essex", sbTree, 2, 3, "blue") + ggplot2::labs(x="Generation index",y="")
-#' plotAncDes("Tokyo", sbTree, vCol="red")
-plotAncDes = function(v1, tree, mAnc=3, mDes=3, vCol="#D35C79"){
+#' plotAncDes("Tokyo", sbTree, vColor="red")
+plotAncDes = function(v1, tree, mAnc=3, mDes=3, vColor="#D35C79"){
   color <- x <- y <- label2 <- size <- xstart <- ystart <- xend <- yend <- branchx <- branchy <- NULL
   # Plot the data frame, if it exists
   gDF = buildAncDesTotalDF(v1, tree, mAnc, mDes)
-  gDF[gDF$root.gen==0&gDF$gen==0,]$color = vCol
+  gDF[gDF$root.gen==0&gDF$gen==0,]$color = vColor
   if(nrow(gDF)>0){
     plotGenImage = ggplot2::qplot(data=gDF, x=x, y=y, label=label2, geom="text", vjust=-.25, hjust=.5, 
 size=size, colour=color) +

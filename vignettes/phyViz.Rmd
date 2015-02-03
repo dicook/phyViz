@@ -127,7 +127,7 @@ getParent("Tokyo",sbTree)
 getYear("Tokyo", sbTree)
 ```
 
-We learn from this that "Essex" is not the only parent of "Young"; it also has a parent "Davis". We also see that "Tokyo" is a grandparent of the dataset; it does not have any documented parents and has an early year of introduction, 1907).
+We learn from this that "Essex" is not the only parent of "Young"; it also has a parent "Davis". We also see that "Tokyo" does not have any documented parents in this dataset, and has an older year of introduction (1907) than other varieties we have examined thusfar.
 
 Likewise, in other cases, you may wish to obtain a complete list of all the children of a given variety. This can be achieved using the **getChild()** function:
 
@@ -218,19 +218,29 @@ Until this point, the vignette has introduced functions that return lists, data 
 
 ## Plotting the Ancestors and Descendants of a Vertex
 
-One visualization available in **phyViz** allows the user to view the ancestors and descendants of a given variety. The inputted variety is highlighted in the center of the plot, ancestors are displayed to the left of the center, and descendants are displayed to the right of the center. The further left or right from the center, the larger the number of generations that particular ancestor/descendant is from the inputted and centered variety.
+One visualization tool, **plotAncDes()**, allows the user to view the ancestors and descendants of a given variety. The inputted variety is highlighted in the center of the plot, ancestors are displayed to the left of the center, and descendants are displayed to the right of the center. The further left or right from the center, the larger the number of generations that particular ancestor/descendant is from the inputted and centered variety.
 
-As such, this plotting command does not provide visual information about specific years associated with each related variety (as is done in some of the visualization tools introduced later), but it does group all varieties from each generation group onto the same position of the horizontal axis. Here, we specify that we want to plot 5 ancestor generations and 3 descendant generations of the variety Essex:
+As such, this plotting command does not provide visual information about specific years associated with each related variety (as is done in some of the visualization tools introduced later), but it does group all varieties from each generation group onto the same position of the horizontal axis. Here, we specify that we want to plot 5 ancestor generations and 3 descendant generations of the variety "Essex":
 
 ```{r}
 plotAncDes("Essex", sbTree, 5, 3)
 ```
 
-We verify here, as we saw earlier, that the variety Tokyo has no ancestors, when we plot with the defaults of dispalying 3 generations of ancestors and 3 generations of descendants: 
+We immediately see that this visual representation of the ancestors and descendants of a given variety can often provide enhanced readability compared to the list output provided in the previous similar functions, **getAncestors()** and **getDescendants()**.
+
+We also see now that some node labels are repeated. For instance, the "5601T" variety appears twice, once as a grandchild (second generation descendant) of "Essex", and once as a great-granchild (third generation descendant) of "Essex". This is because there are two separate parent-child pathways between "Essex" and "5601T", one pathway with only one node ("Hutchson") between them, and one pathway with two nodes ("T80-69" and "TN89-39") between them.
+
+However, in this visual tool, we are constraining the horizontal axis to generation count. Without allowing nodes to repeat, this data information cannot be clearly and succinctly presented. Most graph visualization software that genealogists might use to view their datasets do not allow for repeated nodes, as per the definition of a graph. Hence, the **plotAncDes()** function is one of the more unique visual tools of the **phyViz** package.
+
+It should be noted that the **plotAncDes()** function, by default, highlights the centered variety label in pink. However, the user can alter this color, as we will show below. Furthermore, the user can specify additional grammar of graphics plotting tools (from the **ggplot2** package) to tailor the output of the **plotAncDes()** function.
+
+For example, we will now change the color of the center variety label **vColor** to be highlighted in blue. Also, we will add a horizontal axis label called "Generation index", using the **ggplot2** syntax. Note that this time we do not specify the generational count for ancestors and descendants, and so the default value of three generations is applied for both cases. Remember, to determine such default values, as well as all possible function parameters, simply run the help command on the function of interest, as in help(plotAncDes).
 
 ```{r}
-plotAncDes("Tokyo", sbTree)
+plotAncDes("Tokyo", sbTree, vColor = "blue") + ggplot2::labs(x="Generation index",y="")
 ```
+
+We verify immediately that the "Tokyo" variety does not have any ancestors in this dataset, an observation consistent with what we discovered earlier. We also see the "Tokyo" variety only has two children, but has many more grandchildren, and great-grand children.
 
 ## Plotting the Path between Two Vertices
 
