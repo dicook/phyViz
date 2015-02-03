@@ -15,8 +15,8 @@ Imports:
     plyr (>= 1.8.1),
     reshape2 (>= 1.4),
     stringr (>= 0.6.2)
-VignetteBuilder: knitr (>= 1.7.8)
+VignetteBuilder: knitr 
 Suggests:
-    knitr (>= 1.7.8),
+    knitr,
     roxygen2 (>= 3.0.0)
 Roxygen: list(wrap = TRUE)

@@ -28,10 +28,11 @@ There is a preprocessing pipeline to follow before visualizing your genealogical
 
 ```{r, echo=4:6 , warning=F, message=F}
 options(warn=-1, width=80)
+
+library(knitr)
 opts_chunk$set(tidy=T, results="hold", comment="#|")
 
 library(phyViz)
-library(knitr)
 library(roxygen2)
 ```
 

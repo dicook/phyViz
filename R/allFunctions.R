@@ -520,8 +520,8 @@ buildSpreadTotalDF = function(tree, ig, binVector=1:12){
 #' getAncestors("Essex", sbTree, 1)
 #' getAncestors("Essex", sbTree, 5)
 getAncestors = function(v1, tree, gen=3){
-  aDF = buildAncDesCoordDF(nodeToDF(buildAncList(v1, tree)))
   eval({id.offset<<-0}, envir=environment(nodeToDF))
+  aDF = buildAncDesCoordDF(nodeToDF(buildAncList(v1, tree)))
   subDF = aDF[aDF$gen <= gen & aDF$gen != 0,]
   keep = c("label","gen")
   subDF = subDF[keep]
