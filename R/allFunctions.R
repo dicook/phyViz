@@ -8,6 +8,7 @@
 #' @seealso \code{\link{buildAncList}} for information on determining ancestors
 #' @seealso \code{\link{buildDesList}} for information on determining descendants
 buildAncDesCoordDF = function(df){
+  eval({id.offset<<-0}, envir=environment(nodeToDF))
   root.gen <- gen <- par.id <- label <- NULL 
   # This gets rid of redundancy and creates a "center"
   if(nrow(subset(df, root.gen==0 & gen==0))>1){
@@ -128,6 +129,7 @@ buildAncDesCoordDF = function(df){
 #' v1="Essex"
 #' buildAncDesTotalDF(v1, sbTree)
 buildAncDesTotalDF = function(v1, tree, mAnc=3, mDes=3){
+  
   gen <- type <- NULL
   vals = list()
   # Set data frame that we will plot
