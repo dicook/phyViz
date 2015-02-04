@@ -30,10 +30,9 @@ between the inputted set of vertices
 \examples{
 data(sbTree)
 ig = treeToIG(sbTree)
-varieties=c("Beeson", "Calland", "Dillon", "Hood", "Narow", "Pella", "Tokyo", "Young", "Zane")
-plotDegMatrix(varieties,ig,sbTree,"Soybean name", "Soybean name", "Deg")
-
-plotDegMatrix(varieties,ig, sbTree) + ggplot2::scale_fill_continuous(low="darkgreen", high="white")
+varieties=c("Bedford", "Calland", "Narow", "Pella", "Tokyo", "Young", "Zane")
+p = plotDegMatrix(varieties, ig, sbTree, "Soybean label", "Soybean label", "Degree")
+p + ggplot2::scale_fill_continuous(low="white", high="darkgreen")
 }
 \seealso{
 \url{http://www.r-project.org} for iGraph information

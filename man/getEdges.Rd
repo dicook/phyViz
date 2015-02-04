@@ -3,10 +3,12 @@
 \alias{getEdges}
 \title{Returns edges (vertex names and edge weights) for a tree}
 \usage{
-getEdges(ig)
+getEdges(ig, tree)
 }
 \arguments{
   \item{ig}{iGraph object}
+
+  \item{tree}{the tree}
 }
 \description{
 Returns a matrix, where each row contains information about
@@ -16,6 +18,6 @@ the tree.
 \examples{
 data(sbTree)
 ig = treeToIG(sbTree)
-getEdges(ig)
+getEdges(ig, sbTree)
 }
 

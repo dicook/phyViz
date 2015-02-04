@@ -8,7 +8,7 @@
 #' @seealso \code{\link{buildAncList}} for information on determining ancestors
 #' @seealso \code{\link{buildDesList}} for information on determining descendants
 buildAncDesCoordDF = function(df){
-  eval({id.offset<<-0}, envir=environment(nodeToDF))
+  eval({id.offset<<-0}, envir=environment(buildAncDesCoordDF))
   root.gen <- gen <- par.id <- label <- NULL 
   # This gets rid of redundancy and creates a "center"
   if(nrow(subset(df, root.gen==0 & gen==0))>1){
@@ -489,22 +489,22 @@ buildSpreadTotalDF = function(tree, ig, binVector=1:12){
     currYear = getYear(totalDF[i,],tree)
     yearVector = c(yearVector, currYear)
   }
-
+  
   totalDF2 = cbind(totalDF, yearVector)
   colnames(totalDF2)[2] = "year"
   totalDF = totalDF2
-
+  
   totalDF = totalDF[order(totalDF$year, decreasing=FALSE), ]
   
   numrows <- ceiling(nrow(totalDF)/length(binVector))
-
+  
   idx <- matrix(1:(numrows*length(binVector)), ncol=length(binVector), nrow=numrows, byrow=TRUE)
   idx <- idx[, binVector]
   idx <- as.numeric(t(idx))[1:nrow(totalDF)]
-
+  
   spreadTotalDF <- totalDF
   spreadTotalDF$y <- jitter(rep(1:numrows, length.out=nrow(totalDF)), amount=.5)[idx]
-
+  
   spreadTotalDF
 }
 
@@ -522,7 +522,7 @@ buildSpreadTotalDF = function(tree, ig, binVector=1:12){
 #' getAncestors("Essex", sbTree, 1)
 #' getAncestors("Essex", sbTree, 5)
 getAncestors = function(v1, tree, gen=3){
-  eval({id.offset<<-0}, envir=environment(nodeToDF))
+  eval({id.offset<<-0}, envir=environment(getAncestors))
   aDF = buildAncDesCoordDF(nodeToDF(buildAncList(v1, tree)))
   subDF = aDF[aDF$gen <= gen & aDF$gen != 0,]
   keep = c("label","gen")
@@ -587,7 +587,7 @@ getBasicStatistics = function(ig){
 #' getDescendants("Essex", sbTree, 1)
 #' getDescendants("Essex", sbTree, 3)
 getDescendants = function(v1, tree, gen=3){
-  eval({id.offset<<-0}, envir=environment(nodeToDF))
+  eval({id.offset<<-0}, envir=environment(getDescendants))
   dDF = buildAncDesCoordDF(nodeToDF(buildDesList(v1, tree)))
   subDF = dDF[dDF$gen <= gen & dDF$gen != 0,]
   keep = c("label","gen")
@@ -601,15 +601,16 @@ getDescendants = function(v1, tree, gen=3){
 #' Returns a matrix, where each row contains information about an edge (two vertex names and edge weight, if present) of the tree.
 #'   
 #' @param ig iGraph object
+#' @param tree the tree
 #' @examples
 #' data(sbTree)
 #' ig = treeToIG(sbTree)
-#' getEdges(ig)
+#' getEdges(ig, sbTree)
 #' @export
-getEdges = function(ig){
+getEdges = function(ig, tree){
   eList = igraph::get.edgelist(ig)
   for (i in 1:dim(eList)[1]){
-    if (!isChild(eList[i,1],eList[i,2], sbTree)){
+    if (!isChild(eList[i,1],eList[i,2], tree)){
       p = eList[i,1]
       c = eList[i,2]
       eList[i,1] = c
@@ -901,7 +902,7 @@ plotAncDes = function(v1, tree, mAnc=3, mDes=3, vColor="#D35C79"){
   gDF[gDF$root.gen==0&gDF$gen==0,]$color = vColor
   if(nrow(gDF)>0){
     plotGenImage = ggplot2::qplot(data=gDF, x=x, y=y, label=label2, geom="text", vjust=-.25, hjust=.5, 
-size=size, colour=color) +
+                                  size=size, colour=color) +
       ggplot2::geom_segment(ggplot2::aes(x=xstart, y=ystart, xend=xend, yend=yend),inherit.aes=F) + 
       # Draw the underline of the variety
       ggplot2::geom_segment(ggplot2::aes(x=xend, y=yend, xend=branchx, yend=branchy),inherit.aes=F) +
@@ -910,7 +911,7 @@ size=size, colour=color) +
       ggplot2::scale_colour_identity() +
       ggplot2::theme_bw() +
       ggplot2::theme(axis.text=ggplot2::element_blank(), 
-            axis.ticks=ggplot2::element_blank()) + 
+                     axis.ticks=ggplot2::element_blank()) + 
       ggplot2::scale_x_continuous(expand = c(.1, 1.075)) + 
       ggplot2::scale_y_continuous(expand = c(.1, 1.075)) + 
       ggplot2::labs(x="",y="")
@@ -919,11 +920,11 @@ size=size, colour=color) +
       ggplot2::geom_text(ggplot2::aes(x=0, y=0, label="Please select varieties\n\n Note: It may take a moment to process the v1")) +         
       ggplot2::theme_bw() + 
       ggplot2::theme(axis.text=ggplot2::element_blank(), 
-            axis.ticks=ggplot2::element_blank(), 
-            axis.title=ggplot2::element_blank()) +
+                     axis.ticks=ggplot2::element_blank(), 
+                     axis.title=ggplot2::element_blank()) +
       ggplot2::labs(x="",y="")
   }
-    plotGenImage
+  plotGenImage
 }
 
 #' Returns the image object to show the heat map of degrees between the inputted set of vertices
@@ -941,10 +942,9 @@ size=size, colour=color) +
 #' @examples
 #' data(sbTree)
 #' ig = treeToIG(sbTree)
-#' varieties=c("Beeson", "Calland", "Dillon", "Hood", "Narow", "Pella", "Tokyo", "Young", "Zane")
-#' plotDegMatrix(varieties,ig,sbTree,"Soybean name", "Soybean name", "Deg")
-#' 
-#' plotDegMatrix(varieties,ig, sbTree) + ggplot2::scale_fill_continuous(low="darkgreen", high="white")
+#' varieties=c("Bedford", "Calland", "Narow", "Pella", "Tokyo", "Young", "Zane")
+#' p = plotDegMatrix(varieties, ig, sbTree, "Soybean label", "Soybean label", "Degree")
+#' p + ggplot2::scale_fill_continuous(low="white", high="darkgreen")
 #' 
 #' @export
 plotDegMatrix = function(varieties,ig,tree,xLab="Variety",yLab="Variety",legendLab="Degree"){
@@ -1003,19 +1003,19 @@ plotPath = function(path){
     # label overline, and edges between nodes; and text (geom_text) to write the node label.
     plotPathImage = ggplot2::ggplot(data = pPDF,ggplot2::aes(x = x, y = y)) + 
       ggplot2::geom_rect(data = textFrame, ggplot2::aes(xmin = x - strwidth(label, "inches")*1.2,
-                                      xmax = x + strwidth(label, "inches")*1.2, 
-                                      ymin = y-.1, ymax = y+.1), fill = "grey80") +
+                                                        xmax = x + strwidth(label, "inches")*1.2, 
+                                                        ymin = y-.1, ymax = y+.1), fill = "grey80") +
       ggplot2::geom_segment(ggplot2::aes(x=x - strwidth(label, "inches")*1.2, y=y-.1,
-                       xend =  x + strwidth(label, "inches")*1.2, yend = y-.1)) +
+                                         xend =  x + strwidth(label, "inches")*1.2, yend = y-.1)) +
       ggplot2::geom_segment(ggplot2::aes(x=x - strwidth(label, "inches")*1.2, y=y+.1,
-                       xend =  x + strwidth(label, "inches")*1.2, yend = y+.1)) +
+                                         xend =  x + strwidth(label, "inches")*1.2, yend = y+.1)) +
       ggplot2::geom_segment(ggplot2::aes(x=xstart, y=ystart, xend=xend, yend=yend)) +
       ggplot2::geom_text(data = textFrame,ggplot2::aes(x = x, y = y, label = label), size = 4) + 
       ggplot2::xlab("Year") +     
       ggplot2::theme(axis.text.y=ggplot2::element_blank(),axis.ticks.y=ggplot2::element_blank(),
-            axis.title.y=ggplot2::element_blank(),legend.position="none",
-            panel.grid.major.y=ggplot2::element_blank(),
-            panel.grid.minor=ggplot2::element_blank())
+                     axis.title.y=ggplot2::element_blank(),legend.position="none",
+                     panel.grid.major.y=ggplot2::element_blank(),
+                     panel.grid.minor=ggplot2::element_blank())
   }
   else{
     plotPathImage = print("There is no path to display between the two inputted vertices.")
@@ -1088,9 +1088,9 @@ plotPathOnTree = function(path, tree, ig, binVector=sample(1:12, 12)){
     ggplot2::xlab("Year") +    
     # Erase the y-axis, and only include grids from the x-axis
     ggplot2::theme(axis.text.y=ggplot2::element_blank(),axis.ticks.y=ggplot2::element_blank(),
-          axis.title.y=ggplot2::element_blank(),legend.position="none",
-          panel.grid.major.y=ggplot2::element_blank(),
-          panel.grid.minor=ggplot2::element_blank())
+                   axis.title.y=ggplot2::element_blank(),legend.position="none",
+                   panel.grid.major.y=ggplot2::element_blank(),
+                   panel.grid.minor=ggplot2::element_blank())
   # Return the plotTotalImage
   plotTotalImage
 }
@@ -1106,10 +1106,9 @@ plotPathOnTree = function(path, tree, ig, binVector=sample(1:12, 12)){
 #' @param legendLab string label on the legend (default is "Degree")
 #' @examples
 #' data(sbTree)
-#' varieties=c("Beeson", "Calland", "Dillon", "Hood", "Narow", "Pella", "Tokyo", "Young", "Zane")
-#' plotYearMatrix(varieties,sbTree)
-#' 
-#' plotYearMatrix(varieties,sbTree,"Soybean name", "Soybean name", "Year diff") + ggplot2::scale_fill_continuous(low="yellow", high="red")
+#' varieties=c("Bedford", "Calland", "Narow", "Pella", "Tokyo", "Young", "Zane")
+#' p = plotYearMatrix(varieties,sbTree,"Variety", "Variety", "Degree")
+#' p + ggplot2::scale_fill_continuous(low="white", high="darkgreen")
 #' 
 #' @export
 plotYearMatrix = function(varieties, tree, xLab = "Variety", yLab = "Variety", legendLab = "Difference in years"){
@@ -1171,6 +1170,6 @@ treeToIG = function(tree, vertexinfo = NULL, edgeweights = 1, isDirected=FALSE){
   
   edges <- subset(tree, !is.na(parent) & !is.na(child))[,c("child", "parent")]
   edges$weight <- edgeweights
-   
+  
   igraph::graph.data.frame(d=edges, directed=isDirected, vertices=nodes)
 }

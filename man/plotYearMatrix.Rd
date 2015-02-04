@@ -27,9 +27,8 @@ between the inputted set of vertices
 }
 \examples{
 data(sbTree)
-varieties=c("Beeson", "Calland", "Dillon", "Hood", "Narow", "Pella", "Tokyo", "Young", "Zane")
-plotYearMatrix(varieties,sbTree)
-
-plotYearMatrix(varieties,sbTree,"Soybean name", "Soybean name", "Year diff") + ggplot2::scale_fill_continuous(low="yellow", high="red")
+varieties=c("Bedford", "Calland", "Narow", "Pella", "Tokyo", "Young", "Zane")
+p = plotYearMatrix(varieties,sbTree,"Variety", "Variety", "Degree")
+p + ggplot2::scale_fill_continuous(low="white", high="darkgreen")
 }
 
