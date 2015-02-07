@@ -1,10 +1,11 @@
-#' Returns the coordinate positions of all ancestors and descendants of a variety
+# Initialize global variables
+utils::globalVariables("id.offset")
+
+#' Returns the coordinate positions of all ancestors and descendants of a variety.
 #' 
-#' Calculates coordinates to plot each ancestors and descendant of a variety on a tree.
-#' The x and y values describe the coordinates of the label, while the xstart, ystart, xend,
-#' and yend values describe the edges of the label.
+#' Calculates coordinates to plot each ancestors and descendant of a variety on a tree. The x and y values describe the coordinates of the label, while the xstart, ystart, xend, and yend values describe the edges of the label.
 #' 
-#' @param df data frame of the ancestors and descendants of a variety (from function buildAncDesTotalDF)
+#' @param df the data frame of the ancestors and descendants of a variety (from function buildAncDesTotalDF)
 #' @seealso \code{\link{buildAncList}} for information on determining ancestors
 #' @seealso \code{\link{buildDesList}} for information on determining descendants
 buildAncDesCoordDF = function(df){
@@ -112,15 +113,14 @@ buildAncDesCoordDF = function(df){
   return(df)
 }
 
-#' Returns the data frame of labels and plot coordinates of all ancestors and descendants of a variety
+#' Returns data frame with plot coordinates of all ancestors and descendants of a variety.
 #' 
-#' Returns the data frame that includes labels and plot coordinates of all ancestors and descendants of
-#' a variety. Users can specify the maximum number of ancestors and descendants to display
+#' Returns the data frame that includes labels and plot coordinates of all ancestors and descendants of a variety. Users can specify the maximum number of ancestors and descendants to display.
 #' 
-#' @param v1 variety of interest
-#' @param mAnc maximum number of ancestors of v1 to be shown
-#' @param mDes maximum number of descendants of v1 to be shown
-#' @param tree the tree
+#' @param v1 the label of the variety/vertex of interest (in character string format)
+#' @param mAnc the maximum number of generations of ancestors of v1 to be displayed (in numeric format)
+#' @param mDes the maximum number of generations of descendants of v1 to be displayed (in numeric format)
+#' @param tree the data tree (in data frame format)
 #' @seealso \code{\link{buildAncList}} for information on determining ancestors
 #' @seealso \code{\link{buildDesList}} for information on determining descendants
 #' @export
@@ -185,13 +185,13 @@ buildAncDesTotalDF = function(v1, tree, mAnc=3, mDes=3){
   genDF
 }
 
-#' Returns the ancestors of a particular variety (if they exist)
+#' Returns the ancestors of a particular variety (if they exist).
 #' 
 #' This function returns a nested list of the ancestors of the inputted variety.
 #' 
-#' @param v1 the first variety
-#' @param tree the tree
-#' @param gen the generation (Note: This should be left as default, as any other input will not affect results anyway)
+#' @param v1 the label of the variety/vertex of interest (in character string format)
+#' @param tree the data tree (in data frame format)
+#' @param gen the generation (note: This should be left as default, as any other input will not affect results anyway)
 #' @seealso \code{\link{getParent}} for information on determining parents
 #' @export
 #' @examples
@@ -218,14 +218,14 @@ buildAncList = function(v1, tree, gen = 0){
   } 
 }
 
-#' Returns the descendants of a particular variety (if they exist)
+#' Returns the descendants of a particular variety (if they exist).
 #' 
 #' This function returns a nested list of the descendants of the inputted variety.
 #' 
-#' @param v1 the first variety
-#' @param tree the tree
-#' @param gen the generation (Note: This should be left as default, as any other input will not affect results anyway)
-#' @seealso \code{\link{getChild}} for information on determining parents
+#' @param v1 the label of the variety/vertex of interest (in character string format)
+#' @param tree the data tree (in data frame format)
+#' @param gen the generation (note: This should be left as default, as any other input will not affect results)
+#' @seealso \code{\link{getChild}} for information on determining children
 #' @export
 #' @examples
 #' data(sbTree)
@@ -251,13 +251,14 @@ buildDesList = function(v1, tree, gen=0){
   } 
 }
 
-#' Build the edges in the  total tree graph
+#' Build the edges in the tree graph.
 #' 
-#' This function takes the ig object and creates a data frame object of the edges between all parent-child
-#' relationships in the graph
-#' @param tree the tree
-#' @param ig igraph object from treeToIG
-#' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
+#' This function takes the graph object and creates a data frame object of the edges between all parent-child relationships in the graph.
+#' 
+#' @param tree the data tree (in data frame format)
+#' @param ig the graph representation of the data tree (in igraph format)
+#' @param binVector the number of bins between 1 and length(binVector) (default is 12). For more information on choosing binVector size, please visit the phyViz vignette.
+#' @seealso \code{\link{treeToIG}} for information on producing ig from tree
 #' @seealso \url{http://www.r-project.org} for iGraph information
 buildEdgeTotalDF = function(tree, ig, binVector=1:12){
   
@@ -310,8 +311,8 @@ buildEdgeTotalDF = function(tree, ig, binVector=1:12){
 #' in the tree. However, the data frame object does not include the labels of the path varieties, as they
 #' will be treated differently.
 #' @param path path as returned from getPath() or a vector of two variety names which exist in the ig object
-#' @param tree the tree
-#' @param ig the igraph representation of the tree
+#' @param tree the data tree (in data frame format)
+#' @param ig the graph representation of the data tree (in igraph format)
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
 #' @seealso \url{http://www.r-project.org} for iGraph information
 #' @seealso \code{\link{getPath}} for information on input path building
@@ -415,8 +416,8 @@ buildPathDF = function(path){
 #' as inputs. From these objects, it creates a data frame object of the text label positions for the
 #' varieties in the path, as well as the edges only in the varieties in the path.
 #' @param path path as returned from getPath() or a vector of two variety names which exist in ig
-#' @param tree the tree
-#' @param ig igraph object
+#' @param tree the data tree (in data frame format)
+#' @param ig the graph representation of the data tree (in igraph format)
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
 #' @seealso \url{http://www.r-project.org} for iGraph information
 #' @seealso \url{http://www.r-project.org} for iGraph information
@@ -467,8 +468,8 @@ buildPlotTotalDF = function(path, tree, ig, binVector=1:12){
 #' 
 #' Constructs a data frame object so that varieties are spread such that they do not overlap, even
 #' though the x-axis position will represent years.
-#' @param tree the tree
-#' @param ig the igraph representation of the tree
+#' @param tree the data tree (in data frame format)
+#' @param ig the graph representation of the data tree (in igraph format)
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
 #' This vector will determine the order that increasing y index positions are repeatedly assigned to. For instance, if binVector = c(1,4,7,10,2,5,8,11,3,6,9,12), then y-axis position one will be assigned to a variety in the first bin of years, y-axis position two will be assigned to a variety in the fourth bin of years, ...., and y-axis position thirteen will be assigned again to a variety in the first bin of years. This vector can help minimize overlap of the labelling of varieties, without regard to how the layout affects the edges between varieties, as those edges will be colored faintly.
 #' @seealso \url{http://www.r-project.org} for iGraph information
@@ -512,8 +513,8 @@ buildSpreadTotalDF = function(tree, ig, binVector=1:12){
 #' 
 #' This function returns a list of the ancestors of the inputted variety within and including a given number of generations
 #' 
-#' @param v1 the variety
-#' @param tree the tree
+#' @param v1 the label of the variety/vertex of interest (in character string format)
+#' @param tree the data tree (in data frame format)
 #' @param gen the number of generations back to include as ancestors
 #' @export
 #' @examples
@@ -535,7 +536,7 @@ getAncestors = function(v1, tree, gen=3){
 #' 
 #' Returns basic statistics of the graph object (number of nodes, number of edges, whether or not the
 #' whole graph is connected, number of components, average path length, graph diameter, etc.)
-#' @param ig the igraph representation of the tree
+#' @param ig the graph representation of the data tree (in igraph format)
 #' @examples
 #' 
 #' data(sbTree)
@@ -577,8 +578,8 @@ getBasicStatistics = function(ig){
 #' 
 #' This function returns a list of the descendants of the inputted variety within and including a given number of generations
 #' 
-#' @param v1 the variety
-#' @param tree the tree
+#' @param v1 the label of the variety/vertex of interest (in character string format)
+#' @param tree the data tree (in data frame format)
 #' @param gen the number of generations back to include as descendants
 #' @export
 #' @examples
@@ -600,8 +601,8 @@ getDescendants = function(v1, tree, gen=3){
 #'
 #' Returns a matrix, where each row contains information about an edge (two vertex names and edge weight, if present) of the tree.
 #'   
-#' @param ig iGraph object
-#' @param tree the tree
+#' @param ig the graph representation of the data tree (in igraph format)
+#' @param tree the data tree (in data frame format)
 #' @examples
 #' data(sbTree)
 #' ig = treeToIG(sbTree)
@@ -625,8 +626,8 @@ getEdges = function(ig, tree){
 #' 
 #' This function returns zero or more values that indicate the children of the inputted variety.
 #' 
-#' @param v1 the first variety
-#' @param tree the tree
+#' @param v1 the label of the variety/vertex of interest (in character string format)
+#' @param tree the data tree (in data frame format)
 #' @examples
 #' data(sbTree)
 #' getChild("Tokyo", sbTree)
@@ -641,10 +642,10 @@ getChild = function(v1, tree){
 #' 
 #' Returns the degree (distance between unweighted edges) between two varieties, where an edge
 #' represents a parent-child relationship
-#' @param v1 the first variety
-#' @param v2 the second variety
-#' @param ig the igraph object
-#' @param tree the tree
+#' @param v1 the label of the first variety/vertex of interest (in character string format)
+#' @param v2 the label of the second variety/vertex of interest (in character string format)
+#' @param ig the graph representation of the data tree (in igraph format)
+#' @param tree the data tree (in data frame format)
 #' @examples
 #' data(sbTree)
 #' ig = treeToIG(sbTree)
@@ -666,7 +667,7 @@ getDegree = function(v1, v2, ig, tree){
 #'
 #' Returns a character list, where roww contains names of the unique nodes in a tree.
 #'   
-#' @param tree the tree object
+#' @param tree the data tree (in data frame format)
 #' @examples
 #' data(sbTree)
 #' getNodes(sbTree)
@@ -682,8 +683,8 @@ getNodes = function(tree){
 #' 
 #' This function returns up to two values that indicate the parents of the inputted variety.
 #' 
-#' @param v1 the first variety
-#' @param tree the tree
+#' @param v1 the label of the variety/vertex of interest (in character string format)
+#' @param tree the data tree (in data frame format)
 #' @examples
 #' data(sbTree)
 #' getParent("Tokyo", sbTree)
@@ -701,12 +702,12 @@ getParent = function(v1, tree){
 #' path will be returned. If there is not a path, a list of character(0) will be returned. Note:
 #' For a directed graph, the direction matters. However, this function will check both directions
 #' and return the path if it exists.
-#' @param v1 the first variety
-#' @param v2 the second variety
-#' @param ig the igraph representation of the tree
-#' @param tree the tree
-#' @param silent Print output? Defaults to FALSE. 
-#' @param isDirected boolean whether or not the graph is directed, defaults to FALSE
+#' @param v1 the label of the first variety/vertex of interest (in character string format)
+#' @param v2 the label of the second variety/vertex of interest (in character string format)
+#' @param ig the graph representation of the data tree (in igraph format)
+#' @param tree the data tree (in data frame format)
+#' @param silent whether or not to print output (defaults to false) 
+#' @param isDirected whether or not the graph is directed (defaults to false)
 #' @examples
 #' data(sbTree)
 #' ig = treeToIG(sbTree)
@@ -784,8 +785,8 @@ getPath = function(v1, v2, ig, tree, silent=FALSE, isDirected=FALSE){
 #' Determine the year of a variety
 #' 
 #' Returns the documented year of the inputted variety
-#' @param v1 the variety
-#' @param tree tree
+#' @param v1 the label of the variety/vertex of interest (in character string format)
+#' @param tree the data tree (in data frame format)
 #' @examples
 #' data(sbTree)
 #' getYear("Essex",sbTree)
@@ -800,7 +801,7 @@ getYear = function(v1, tree){
 #' Returns a boolean variable for whether the first variety is a child of the second variety
 #' @param child possible child variety
 #' @param parent possible parent variety
-#' @param tree tree
+#' @param tree the data tree (in data frame format)
 #' @examples
 #' data(sbTree)
 #' isChild("Essex","Young",sbTree)
@@ -823,7 +824,7 @@ isChild = function(child, parent, tree){
 #' Returns a boolean variable for whether the second variety is a parent of the first variety
 #' @param child possible child variety
 #' @param parent possible parent variety
-#' @param tree tree
+#' @param tree the data tree (in data frame format)
 #' @examples
 #' data(sbTree)
 #' isParent("Essex","Young",sbTree)
@@ -884,10 +885,10 @@ nodeToDF = local({
 #'
 #' Returns the image object to show the ancestors and descendants of a variety, with the variety highlighted, if desired
 #' 
-#' @param v1 variety of interest
-#' @param mAnc maximum number of ancestors of v1 to be shown
-#' @param mDes maximum number of descendants of v1 to be shown
-#' @param tree the tree
+#' @param v1 the label of the variety/vertex of interest (in character string format)
+#' @param mAnc the maximum number of generations of ancestors of v1 to be displayed (in numeric format)
+#' @param mDes the maximum number of generations of descendants of v1 to be displayed (in numeric format)
+#' @param tree the data tree (in data frame format)
 #' @param vColor the color of the text of the main variety
 #' 
 #' @export
@@ -932,8 +933,8 @@ plotAncDes = function(v1, tree, mAnc=3, mDes=3, vColor="#D35C79"){
 #' Returns the image object to show the heat map of degrees between the inputted set of vertices
 #' 
 #' @param varieties subset of varieties used to generate the heat map
-#' @param ig igraph
-#' @param tree tree
+#' @param ig the graph representation of the data tree (in igraph format)
+#' @param tree the data tree (in data frame format)
 #' @param xLab string label on the x axis (default is "Variety")
 #' @param yLab string label on the y axis (default is "Variety")
 #' @param legendLab string label on the legend (default is "Degree")
@@ -1036,8 +1037,8 @@ plotPath = function(path){
 #' nodes within the path are labelled in boldface, and connected with light-green
 #' boldfaced edges.
 #' @param path path as returned from getPath() or a vector of two variety names which exist in ig
-#' @param tree the tree
-#' @param ig igraph representation of the tree
+#' @param tree the data tree (in data frame format)
+#' @param ig the graph representation of the data tree (in igraph format)
 #' @param binVector vector of numbers between 1 and length(binVector), each repeated exactly once
 #' @examples
 #' data(sbTree)
@@ -1100,7 +1101,7 @@ plotPathOnTree = function(path, tree, ig, binVector=sample(1:12, 12)){
 #' Returns the image object to show the heat map of years between the inputted set of vertices
 #' 
 #' @param varieties subset of varieties used to generate the heat map
-#' @param tree tree
+#' @param tree the data tree (in data frame format)
 #' @param xLab string label on the x axis (default is "Variety")
 #' @param yLab string label on the y axis (default is "Variety")
 #' @param legendLab string label on the legend (default is "Degree")
@@ -1134,8 +1135,9 @@ plotYearMatrix = function(varieties, tree, xLab = "Variety", yLab = "Variety", l
 
 #' Process the tree graph
 #' 
-#' Processes the tree into an igraph object with appropriate vertex information, graph type, and edge weights. 
-#' @param tree A data frame representing tree information, containing one row for each EDGE, with at least two columns named parent and child, respectively, representing vertices connected by an edge. Terminal nodes should have "NA" for parent in order to preserve vertex information. 
+#' Processes the tree into an igraph object with appropriate vertex information, graph type, and edge weights.
+#' 
+#' @param tree the data tree (in data frame format)
 #' @param vertexinfo (default NULL) either names of columns in the tree which should be added to the database as vertex information or a data frame with information for all vertices such that the first column contains vertex names.
 #' @param edgeweights (default 1) name of a column which contains edge weights
 #' @param isDirected (default FALSE) should the graph be a directed graph?

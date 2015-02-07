@@ -24,7 +24,7 @@ output:
 
 # Preprocessing Pipeline
 
-There is a preprocessing pipeline to follow before visualizing your genealogical data. First, you must load the necessary libraries. Note that loading the phyViz library should automatically load several dependent libraries (ggplot2, igraph, plyr, reshape2, stringr): 
+There is a preprocessing pipeline to follow before visualizing your genealogical data. First, you must load the necessary libraries. Note that loading the phyViz library should automatically load several dependent libraries (ggplot2, igraph, plyr, reshape2): 
 
 ```{r, echo=4:6 , warning=F, message=F}
 options(warn=-1, width=80)
